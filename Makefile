@@ -3,6 +3,7 @@ BIBTEX=bibtex
 
 
 all:
+	@ mkdir -p tmp/
 	@ $(PDFLATEX) main.tex
 	@ $(BIBTEX) tmp/main.aux
 	@ $(PDFLATEX) main.tex
