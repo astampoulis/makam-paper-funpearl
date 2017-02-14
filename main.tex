@@ -54,6 +54,7 @@
 
 \newcommand\TODO[0]{\textbf{TODO}}
 \newcommand\lamprolog[0]{$\lambda$Prolog\xspace}
+\newenvironment{codequote}{\begin{quote}\begin{alltt}}{\end{alltt}\end{quote}}
 
 \begin{abstract}
 \TODO{} This is the abstract of the paper.
@@ -93,15 +94,15 @@
 
 \section{Starting out simple}
 
+
 We will start by encoding a version of the simply typed lambda calculus in \lamprolog. We define two
 new meta-types to represent the two sorts of our object language: terms and types. We also define
 the \texttt{typeof} relation that corresponds to the typing judgement of the language.
-
-\begin{alltt}
+\begin{codequote}
 term   : type.
 typ    : type.
 typeof : term -> typ -> prop.
-\end{alltt}
+\end{codequote}
 
 Defining the basic forms of the lambda calculus is easy, thanks to the support of higher-order
 abstract syntax in higher-order logic programming. We can reuse the meta-level function type in
@@ -111,20 +112,20 @@ as-is, instead of being a computation that can inspect the specific value of an 
 meta-level functions exactly represent an object-level binding of a single variable, without
 introducing \textit{exotic terms}.
 
-\begin{alltt}
+\begin{codequote}
 app    : term -> term -> term.
 lam    : typ -> (term -> term) -> term.
 arrow  : typ -> typ -> typ.
-\end{alltt}
+\end{codequote}
 
 Encoding the typing rule for application as a \lamprolog \textit{clause} for the \texttt{typeof} relation is a
 straightforward transliteration of the pen-and-paper version.
 
-\begin{alltt}
+\begin{codequote}
 typeof (app E1 E2) T' :-
   typeof E1 (arrow T T'),
   typeof E2 T.
-\end{alltt}
+\end{codequote}
 
 In logic programming, the goal of a rule is written first, followed by the premises; the \texttt{:-}
 operator can be read as "is implied by," and comma is logical conjuction. We use capital letters for
@@ -132,10 +133,10 @@ unification variables.
 
 The rule for lambda functions is similarly straightforward: 
 
-\begin{alltt}
+\begin{codequote}
 typeof (lam T1 E) (arrow T1 T2) :-
   (x:term -> typeof x T1 -> typeof (E x) T2).
-\end{alltt}
+\end{codequote}
 
 There are three things of note in the premise of the rule. First, we introduce a fresh term variable
 \texttt{x}, through the form \texttt{x:term ->}, which can be read as universal quantification. Second, we
@@ -146,27 +147,27 @@ to the body of the lambda function to type-check it, we need to apply it to the 
 With these definitions, we have already implemented a type-checker for the simply typed lambda
 calculus, as we can issue queries for the \texttt{typeof} relation to Makam:
 
-\begin{alltt}
+\begin{codequote}
 typeof (lam _ (fun x => x)) T' ?
 >> Yes:
 >> T' := arrow T T
-\end{alltt}
+\end{codequote}
 
 One benefit of using \lamprolog instead of rolling our own type-checker is that the occurs check is
 already implemented in the unification engine. As a result, a query that would result in an
 ill-formed cyclical type with a naive implementation of unification fails as expected.
 
-\begin{alltt}
+\begin{codequote}
 typeof (lam _ (fun x => app x x)) T' ?
 >> Impossible.
-\end{alltt}
+\end{codequote}
 
 Other than supporting higher-order abstract syntax, \lamprolog also supports polymorphic types and
 higher-order predicates, in a matter akin to traditional functional programming languages. For
 example, we can define the polymorphic \texttt{list} type, and an accompanying \texttt{map}
 higher-order predicate, as follows:
 
-\begin{alltt}
+\begin{codequote}
 list : type -> type.
 
 nil : list A.
@@ -175,53 +176,53 @@ cons : A -> list A -> list A.
 map : (A -> B -> prop) -> list A -> list B -> prop.
 map P nil nil.
 map P (cons X XS) (cons Y YS) :- P X Y, map P XS YS.
-\end{alltt}
+\end{codequote}
 
 Using the meta-level \texttt{list} type, we can encode object-level constructs such as tuples and product
 types directly:
 
-\begin{alltt}
+\begin{codequote}
 tuple : list term -> term.
 product : list typ -> typ.
-\end{alltt}
+\end{codequote}
 
 Similarly we can use the \texttt{map} predicate to define the typing relation for tuples. 
 
-\begin{alltt}
+\begin{codequote}
 typeof (tuple ES) (product TS) :-
   map typeof ES TS.
-\end{alltt}
+\end{codequote}
 
 Executing a query with a tuple yields the right result:
 
-\begin{alltt}
+\begin{codequote}
 typeof (lam _ (fun x => lam _ (fun y => tuple (cons x (cons y nil))))) T ?
 >> Yes:
 >> T := arrow T1 (arrow T2 (product (cons T1 (cons T2 nil))))
-\end{alltt}
+\end{codequote}
 
 So far we have only introduced the predicate \texttt{typeof} for typing. In the same way, we can introduce
 a predicate for evaluating terms, capturing the dynamic semantics of the language.
 
-\begin{alltt}
+\begin{codequote}
 eval : term -> term -> prop.
-\end{alltt}
+\end{codequote}
 
 Most of the rules are straightforward, following standard practice for big-step semantics.  We
 assume a call-by-value evaluation strategy.
 
-\begin{alltt}
+\begin{codequote}
 eval (lam T F) (lam T F).
 eval (tuple ES) (tuple VS) :- map eval ES VS.
-\end{alltt}
+\end{codequote}
 
 For the beta-redex case, function application for higher-order abstract syntax gives us
 capture-avoiding substitution directly:
 
-\begin{alltt}
+\begin{codequote}
 eval (app E E') V'' :-
   eval E (lam _ F), eval E' V', eval (F V') V''.
-\end{alltt}
+\end{codequote}
 
 %% === Conclusion
 
