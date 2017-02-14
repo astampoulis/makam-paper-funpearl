@@ -1,0 +1,144 @@
+#!/bin/bash
+
+MAINCOMMAND=`echo $0 | grep --only-matching -E "\-[a-z]*$"`
+MAINCOMMAND=${MAINCOMMAND:1}
+
+if [ "x$MAINCOMMAND" = "x" ]; then
+    MAINCOMMAND=pdflatex
+fi
+
+ERRORPATTERN="(Error:)|(Undefined control)|(Runaway)|(Paragraph ended)|(^[^:]+:[0-9]+:)"
+WARNINGPATTERN="(Warning: Reference)|(^[^:]+:[0-9]+:)"
+OUTPUTDIR=tmp/
+
+INOTIFYWAIT=inotifywait
+NOTIFYSEND="notify-send -t 500 --urgency critical"
+WHATTODO="watch"
+
+while getopts ":c" opt; do
+    case $opt in
+	c)
+	    WHATTODO="compile"
+	;;
+	\?)
+	    echo "Invalid option -$OPTARG"
+	    exit
+	;;
+    esac
+done
+	
+shift $(($OPTIND-1))
+
+
+if [ "$1x" == "x" ]; then
+    echo "Usage:"
+    echo "$0 [-c] master-tex-file"
+    echo 
+    echo "Watch for changes to TeX files of the current directory;"
+    echo "generate PDF for the master document and show the changes"
+    echo "automatically in an Evince window."
+    echo "The -c flag triggers a single compilation."
+    exit
+fi
+
+DIRNAME=`dirname $1`
+MYDIRNAME=`dirname $0`
+MAIN="$1"
+BASE=`echo $1 | sed -e 's/\.tex$//' -`
+PDF="$BASE.pdf"
+LOG="$BASE.log"
+
+function backup_ext {
+    EXT=$1
+    if [ -e $OUTPUTDIR/$BASE.$EXT ]; then
+	cp $OUTPUTDIR/$BASE.$EXT $OUTPUTDIR/$BASE.$EXT.backup
+    fi
+}
+
+function unbackup_ext {
+    EXT=$1
+    rm -f $OUTPUTDIR/$BASE.$EXT.backup
+}
+
+function restore_ext {
+    EXT=$1
+    mv -f $OUTPUTDIR/$BASE.$EXT.backup $OUTPUTDIR/$BASE.$EXT
+}
+
+function compile_tex {
+
+    $MAINCOMMAND -interaction batchmode -file-line-error -output-directory=$OUTPUTDIR $MAIN > /dev/null
+
+}
+
+function do_bibtex {
+
+    if [ -e $OUTPUTDIR/$BASE.aux ] &&
+       ( grep -E --silent "(\\citation)|(\\bibdata)|(\\bibstyle)" $OUTPUTDIR/$BASE.aux );
+    then bibtex --terse $OUTPUTDIR/$BASE.aux; fi
+
+}
+
+
+function generate {
+
+    echo -n ".. Generating $PDF "
+    date
+
+    for i in toc aux lof lot blg; do backup_ext $i; done
+    compile_tex
+    PDFRET="$?"
+
+    if [ "$PDFRET" -ne "0"  ]; then
+	echo "!! PDFLaTeX returned an error code.";
+	echo "Error log:"
+	echo
+	grep -E --after-context=3 "$ERRORPATTERN" $OUTPUTDIR/$LOG
+	# use the notification system to show the error too
+	grep -E --after-context=3 "$ERRORPATTERN" $OUTPUTDIR/$LOG | head -n 15 | sed -e 's/</[/g' | xargs -0 $NOTIFYSEND "Errors while generating $PDF"
+	
+    else
+
+	echo "   PDF was generated successfully.";
+	cp $OUTPUTDIR/$PDF $PDF
+
+	for i in toc aux lof lot blg; do unbackup_ext $i; done
+	do_bibtex $OUTPUTDIR/$BASE.aux
+	
+	grep -E -q "$WARNINGPATTERN" $OUTPUTDIR/$LOG
+	if [ "$?" -eq "0" ]; then
+	    
+	    echo "Warnings log:"
+	    grep -E --after-context=3 "$WARNINGPATTERN" $OUTPUTDIR/$LOG
+	    grep -E --after-context=3 "$WARNINGPATTERN" $OUTPUTDIR/$LOG | head -n 15 | sed -e 's/</[/g' | xargs -0 $NOTIFYSEND "Warnings while generating $PDF"
+
+	fi
+    fi
+
+}
+
+
+[ -e $OUTPUTDIR ] || mkdir $OUTPUTDIR
+
+if [ "$WHATTODO" == "watch" ]; then
+
+    [ -e $PDF ] || generate
+
+    evince $PDF &
+
+    echo "Watching TeX and PDF files for update; master TeX file is $MAIN."
+
+    while [ true ]; do
+
+      $INOTIFYWAIT --event modify -q `find -L -name \*.tex -or -name \*.tex.org -or -name \*.bib -or -name \*.bib.org | grep --invert-match -E "/\\.[a-z]|#"` | grep -q -E "\.(tex|bib|org)"
+
+      [ "$?" -eq "0" ] && generate
+
+    done
+
+else
+
+    generate
+
+fi
+
