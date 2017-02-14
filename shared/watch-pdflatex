@@ -12,7 +12,12 @@ WARNINGPATTERN="(Warning: Reference)|(^[^:]+:[0-9]+:)"
 OUTPUTDIR=tmp/
 
 INOTIFYWAIT=inotifywait
-NOTIFYSEND="notify-send -t 500 --urgency critical"
+if [[ -z "$(which notify-send)" ]]; then
+  NOTIFYSEND=""
+else
+  NOTIFYSEND="notify-send -t 500 --urgency critical"
+fi
+    
 WHATTODO="watch"
 
 while getopts ":c" opt; do
@@ -95,7 +100,9 @@ function generate {
 	echo
 	grep -E --after-context=3 "$ERRORPATTERN" $OUTPUTDIR/$LOG
 	# use the notification system to show the error too
-	grep -E --after-context=3 "$ERRORPATTERN" $OUTPUTDIR/$LOG | head -n 15 | sed -e 's/</[/g' | xargs -0 $NOTIFYSEND "Errors while generating $PDF"
+        if [[ ! -z $NOTIFYSEND ]]; then
+	  grep -E --after-context=3 "$ERRORPATTERN" $OUTPUTDIR/$LOG | head -n 15 | sed -e 's/</[/g' | xargs -0 $NOTIFYSEND "Errors while generating $PDF"
+        fi
 	
     else
 
@@ -110,7 +117,9 @@ function generate {
 	    
 	    echo "Warnings log:"
 	    grep -E --after-context=3 "$WARNINGPATTERN" $OUTPUTDIR/$LOG
-	    grep -E --after-context=3 "$WARNINGPATTERN" $OUTPUTDIR/$LOG | head -n 15 | sed -e 's/</[/g' | xargs -0 $NOTIFYSEND "Warnings while generating $PDF"
+            if [[ ! -z $NOTIFYSEND ]]; then
+	      grep -E --after-context=3 "$WARNINGPATTERN" $OUTPUTDIR/$LOG | head -n 15 | sed -e 's/</[/g' | xargs -0 $NOTIFYSEND "Warnings while generating $PDF"
+            fi
 
 	fi
     fi
@@ -124,7 +133,7 @@ if [ "$WHATTODO" == "watch" ]; then
 
     [ -e $PDF ] || generate
 
-    evince $PDF &
+    [[ ! -z "$(which evince)" ]] && ( evince $PDF & )
 
     echo "Watching TeX and PDF files for update; master TeX file is $MAIN."
 

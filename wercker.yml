@@ -1,0 +1,14 @@
+box: ablu/ubuntu-texlive-full
+
+dev:
+  steps:
+    - script:
+        code: apt-get install --yes inotify-tools
+    - internal/watch:
+        code: shared/watch-pdflatex main.tex
+
+build:
+  steps:
+    - script:
+      name: Build everything
+      code: make
