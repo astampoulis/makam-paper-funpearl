@@ -12,5 +12,8 @@ build:
     - install-packages:
         packages: inotify-tools pandoc
     - script:
-      name: Build everything
-      code: make
+        name: Clone submodules
+        code: git submodule update --init --recursive
+    - script:
+        name: Build everything
+        code: make
