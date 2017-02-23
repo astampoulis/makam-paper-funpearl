@@ -2,13 +2,15 @@ box: ablu/ubuntu-texlive-full
 
 dev:
   steps:
-    - script:
-        code: apt-get install --yes inotify-tools
+    - install-packages:
+        packages: inotify-tools pandoc
     - internal/watch:
-        code: shared/watch-pdflatex main.tex
+        code: make watch
 
 build:
   steps:
+    - install-packages:
+        packages: inotify-tools pandoc
     - script:
       name: Build everything
       code: make
