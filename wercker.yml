@@ -10,7 +10,7 @@ dev:
 build:
   steps:
     - install-packages:
-        packages: inotify-tools pandoc
+        packages: git inotify-tools pandoc
     - script:
         name: Clone submodules
         code: git submodule update --init --recursive
