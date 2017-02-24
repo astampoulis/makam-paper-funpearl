@@ -1,0 +1,144 @@
+We will start with encoding a version of the simply typed lambda
+calculus in \ensuremath{\lambda}Prolog. We define two new meta-types to represent the two
+sorts of our object language: terms and types. We also define the
+\texttt{typeof} relation that corresponds to the typing judgement of the
+language.
+
+\begin{verbatim}
+term   : type.
+typ    : type.
+typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
+\end{verbatim}
+
+Defining the basic forms of the \ensuremath{\lambda}-calculus is very easy, thanks to the
+support of higher-order abstract syntax in higher-order logic
+programming. We can reuse the meta-level function type in order to
+implement object-level binding. This is because the meta-level function
+space is \emph{parametric} -- that is, the body of a function is a value
+that can just mention the argument as-is, instead of being a computation
+that can inspect the specific value of an argument. Therefore,
+meta-level functions exactly represent an object-level binding of a
+single variable, without introducing \emph{exotic terms}.
+
+\begin{verbatim}
+app    : term \ensuremath{\to} term \ensuremath{\to} term.
+lam    : typ \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
+arrow  : typ \ensuremath{\to} typ \ensuremath{\to} typ.
+\end{verbatim}
+
+Encoding the typing rule for application as a \ensuremath{\lambda}Prolog \emph{clause} for
+the \texttt{typeof} relation is a straightforward transliteration of the
+pen-and-paper version.
+
+\begin{verbatim}
+typeof (app E1 E2) T' :-
+  typeof E1 (arrow T T'),
+  typeof E2 T.
+\end{verbatim}
+
+In logic programming, the goal of a rule is written first, followed by
+the premises; the \texttt{:-} operator can be read as ``is implied by,''
+and comma is logical conjuction. We use capital letters for unification
+variables.
+
+The rule for lambda functions is similarly straightforward:
+
+\begin{verbatim}
+typeof (lam T1 E) (arrow T1 T2) :-
+  (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
+\end{verbatim}
+
+There are three things of note in the premise of the rule. First, we
+introduce a fresh term variable \texttt{x}, through the form
+\texttt{x:term\ \ensuremath{\to}}, which can be read as universal
+quantification. Second, we introduce a new assumption through the form
+\texttt{typeof\ x\ T\ \ensuremath{\to}}, which essentially introduces a
+new rule for the \texttt{typeof} relation locally; this can be read as
+logical implication. Third, in order to get to the body of the lambda
+function to type-check it, we need to apply it to the fresh variable
+\texttt{x}.
+
+With these definitions, we have already implemented a type-checker for
+the simply typed lambda calculus, as we can issue queries for the
+\texttt{typeof} relation to Makam:
+
+\begin{verbatim}
+typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T' ?
+>> Yes:
+>> T' := arrow T T
+\end{verbatim}
+
+One benefit of using \ensuremath{\lambda}Prolog instead of rolling our own type-checker is
+that the occurs check is already implemented in the unification engine.
+As a result, a query that would result in an ill-formed cyclical type
+with a naive implementation of unification fails as expected.
+
+\begin{verbatim}
+typeof (lam _ (fun x \ensuremath{\Rightarrow} app x x)) T' ?
+>> Impossible.
+\end{verbatim}
+
+Other than supporting higher-order abstract syntax, \ensuremath{\lambda}Prolog also
+supports polymorphic types and higher-order predicates, in a matter akin
+to traditional functional programming languages. For example, we can
+define the polymorphic \texttt{list} type, and an accompanying
+\texttt{map} higher-order predicate, as follows:
+
+\begin{verbatim}
+list : type \ensuremath{\to} type.
+
+nil : list A.
+cons : A \ensuremath{\to} list A \ensuremath{\to} list A.
+
+map : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} list A \ensuremath{\to} list B \ensuremath{\to} prop.
+map P nil nil.
+map P (cons X XS) (cons Y YS) :- P X Y, map P XS YS.
+\end{verbatim}
+
+Using the meta-level list type, we can encode object-level constructs
+such as tuples and product types directly:
+
+\begin{verbatim}
+tuple : list term \ensuremath{\to} term.
+product : list typ \ensuremath{\to} typ.
+\end{verbatim}
+
+Similarly we can use the \texttt{map} predicate to define the typing
+relation for tuples.
+
+\begin{verbatim}
+typeof (tuple ES) (product TS) :-
+  map typeof ES TS.
+\end{verbatim}
+
+Executing a query with a tuple yields the correct result:
+
+\begin{verbatim}
+typeof (lam _ (fun x \ensuremath{\Rightarrow} lam _ (fun y \ensuremath{\Rightarrow} tuple (cons x (cons y nil))))) T ?
+>> Yes:
+>> T := arrow T1 (arrow T2 (product (cons T1 (cons T2 nil))))
+\end{verbatim}
+
+So far we have only introduced the predicate \texttt{typeof} for typing.
+In the same way, we can introduce a predicate for evaluating terms,
+capturing the dynamic semantics of the language.
+
+\begin{verbatim}
+eval : term \ensuremath{\to} term \ensuremath{\to} prop.
+\end{verbatim}
+
+Most of the rules are straightforward, following standard practice for
+big-step semantics. We assume a call-by-value evaluation strategy.
+
+\begin{verbatim}
+eval (lam T F) (lam T F).
+eval (tuple ES) (tuple VS) :- map eval ES VS.
+\end{verbatim}
+
+For the beta-redex case, function application for higher-order abstract
+syntax gives us capture-avoiding substitution directly:
+
+\begin{verbatim}
+eval (app E E') V'' :-
+  eval E (lam _ F), eval E' V', eval (F V') V''.
+\end{verbatim}

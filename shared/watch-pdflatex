@@ -9,6 +9,8 @@ fi
 
 ERRORPATTERN="(Error:)|(Undefined control)|(Runaway)|(Paragraph ended)|(^[^:]+:[0-9]+:)"
 WARNINGPATTERN="(Warning: Reference)|(^[^:]+:[0-9]+:)"
+
+MAKAMCODEDIR=makamcode
 OUTPUTDIR=tmp/
 
 INOTIFYWAIT=inotifywait
@@ -72,6 +74,7 @@ function restore_ext {
 
 function compile_tex {
 
+    ./convert_literate_files.sh $MAKAMCODEDIR generated
     $MAINCOMMAND -interaction batchmode -file-line-error -output-directory=$OUTPUTDIR $MAIN > /dev/null
 
 }
@@ -91,6 +94,7 @@ function generate {
     date
 
     for i in toc aux lof lot blg; do backup_ext $i; done
+
     compile_tex
     PDFRET="$?"
 
@@ -135,11 +139,11 @@ if [ "$WHATTODO" == "watch" ]; then
 
     [[ ! -z "$(which evince)" ]] && ( evince $PDF & )
 
-    echo "Watching TeX and PDF files for update; master TeX file is $MAIN."
+    echo "Watching Markdown, TeX and PDF files for update; master TeX file is $MAIN."
 
     while [ true ]; do
 
-      $INOTIFYWAIT --event modify -q `find -L -name \*.tex -or -name \*.tex.org -or -name \*.bib -or -name \*.bib.org | grep --invert-match -E "/\\.[a-z]|#"` | grep -q -E "\.(tex|bib|org)"
+      $INOTIFYWAIT --event modify -q `find -L -name \*.tex -or -name \*.md -or -name \*.bib | grep --invert-match -E "/\\.[a-z]|#"` | grep -q -E "\.(tex|bib|md)"
 
       [ "$?" -eq "0" ] && generate
 
