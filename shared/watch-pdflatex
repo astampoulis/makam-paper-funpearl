@@ -9,6 +9,8 @@ fi
 
 ERRORPATTERN="(Error:)|(Undefined control)|(Runaway)|(Paragraph ended)|(^[^:]+:[0-9]+:)"
 WARNINGPATTERN="(Warning: Reference)|(^[^:]+:[0-9]+:)"
+
+MAKAMCODEDIR=makamcode
 OUTPUTDIR=tmp/
 
 INOTIFYWAIT=inotifywait
@@ -72,7 +74,7 @@ function restore_ext {
 
 function compile_tex {
 
-    ./literate_makam_to_latex.sh impl/examples/paper $OUTPUTDIR
+    ./convert_literate_files.sh $MAKAMCODEDIR $OUTPUTDIR
     $MAINCOMMAND -interaction batchmode -file-line-error -output-directory=$OUTPUTDIR $MAIN > /dev/null
 
 }

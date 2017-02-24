@@ -6,6 +6,8 @@ dev:
         packages: inotify-tools pandoc
     - internal/watch:
         code: make watch
+    # - internal/shell:
+    #     cmd: /bin/bash
 
 build:
   steps:
