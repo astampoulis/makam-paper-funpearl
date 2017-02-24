@@ -4,8 +4,8 @@ dev:
   steps:
     - install-packages:
         packages: inotify-tools pandoc
-    - script:
-        code: if [[ -z "$JUST_COMPILE" ]]; then make watch; else make; fi
+    - internal/watch:
+        code: make watch
     # - internal/shell:
     #     cmd: /bin/bash
 

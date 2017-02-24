@@ -1,10 +1,14 @@
 \documentclass[format=acmlarge,review,anonymous]{acmart}\settopmatter{printfolios=true}
 
+\usepackage[utf8]{inputenc}
+\usepackage[greek,english]{babel}
 \usepackage{booktabs}
 \usepackage{subcaption}
 \usepackage{alltt}
 \usepackage{xspace}
 \usepackage{mathpartir}
+\usepackage{indentfirst}
+\usepackage{hyperref}
 
 \bibliographystyle{shared/ACM-Reference-Format}
 \citestyle{acmauthoryear}   %% For author/year citations
@@ -33,8 +37,8 @@
 
 \begin{document}
 
-\title{Makam}
-\subtitle{Functional Pearl}
+\title{Prototyping a Functional Language using Higher-Order Logic Programming}
+\subtitle{A Functional Pearl on learning the ways of \lamprolog/Makam}
 
 \author{Antonis Stampoulis}
 \affiliation{
@@ -55,15 +59,17 @@
 
 %% -- Macro definitions
 \newcommand\TODO[0]{\textbf{TODO}}
-\newcommand\lamprolog[0]{$\lambda$Prolog\xspace}
+\newcommand\lamprolog[0]{\foreignlanguage{greek}{λ}Prolog\xspace}
 \newcommand\fomega[0]{F$\omega$\xspace}
 \renewenvironment{verbatim}{\begin{quote}\begin{alltt}}{\end{alltt}\end{quote}}
 \newenvironment{codequote}{\begin{quote}\begin{alltt}}{\end{alltt}\end{quote}}
 \newcommand\hide[1]{}
 \newcommand\tightlist[0]{\itemsep1pt\parskip0pt\parsep0pt}
+\renewcommand\thesection{\textbf{CHAPTER \arabic{section}}}
+\renewcommand\thesubsection{\textbf{SECTION \arabic{section}.\arabic{subsection}}}
 
 \begin{abstract}
-\TODO{} This is the abstract of the paper.
+\TODO{} Need to write an abstract.
 \end{abstract}
 
 %% 2012 ACM Computing Classification System (CSS) concepts
@@ -89,30 +95,36 @@
 
 \maketitle
 
-\section{Introduction}
+{
+  % Hanging Indent
+  \setlength{\leftskip}{0.5em}
+  \setlength{\parindent}{-0.5em}
 
-\TODO{} This is the introduction. We will cite the work by \citet{miller1988overview} here.
-
-\section{Starting out simple}
-\input{generated/01-base-language}
-
-\section{Multiple binding}
-\input{generated/02-binding-forms}
-
-\section{Dependent binding}
-\input{generated/03-dependent-binding}
-
-\section{More ML-like language}
-\input{generated/04-ml-subset}
-
-\section{Adding Type Synonyms}
-\input{generated/05-type-synonyms}
-
-\section{Contextual Types}
-\input{generated/06-veriml-light}
-
-\section{Hindley-Milner Polymorphism}
-\input{generated/07-hindley-milner}
+  % No Indent
+  % \setlength{\parindent}{0em}
+  
+  \input{generated/00-introduction}
+  
+  \input{generated/01-base-language}
+  
+  \section{Multiple binding}
+  \input{generated/02-binding-forms}
+  
+  \section{Dependent binding}
+  \input{generated/03-dependent-binding}
+  
+  \section{More ML-like language}
+  \input{generated/04-ml-subset}
+  
+  \section{Adding Type Synonyms}
+  \input{generated/05-type-synonyms}
+  
+  \section{Contextual Types}
+  \input{generated/06-veriml-light}
+  
+  \section{Hindley-Milner Polymorphism}
+  \input{generated/07-hindley-milner}
+}
 
 \section{Conclusion}
 
