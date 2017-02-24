@@ -1,0 +1,273 @@
+Let us now add one more meta level: make our object language a
+meta-language as well! That is, we will add the ability to our object
+language to manipulate terms of a different object language, in a
+type-safe manner. This is similar, for example, to heterogeneous
+meta-programming in MetaHaskell; however, the setting we have in mind is
+closer to metalanguages where the object language is a logic, similar to
+Beluga (where the object language is LF) and VeriML (where the object
+language is the \(\lambda\text{HOL}\) logic).
+
+We will follow the construction of (cite my dissertation), but using a
+simpler object language. We will first define the notion of
+\emph{dependent objects}. These are objects that are external to the
+language that we have seen so far, but we will add a standard
+dependently typed subsystem to our language over them. (Similar to the
+DML construction/ the DML generalization by Licata and Harper.)
+Dependent objects are classified through \emph{dependent classifiers}:
+
+\begin{verbatim}
+depobject, depclassifier : type.
+depclassify : depobject \ensuremath{\to} depclassifier \ensuremath{\to} prop.
+\end{verbatim}
+
+We also have a (perhaps non-trivial) substitution operation for terms
+containing a variable of type \texttt{depobject}:
+
+\begin{verbatim}
+depsubst : [A] (depobject \ensuremath{\to} A) \ensuremath{\to} depobject \ensuremath{\to} A \ensuremath{\to} prop.
+\end{verbatim}
+
+(In the simple case this could just be the built-in function
+application:
+
+\begin{verbatim}
+depsubst F X (F X).
+\end{verbatim}
+
+We could have something more complicated than that though.)
+
+Now let's add the standards: dependent functions and dependent products:
+
+\begin{verbatim}
+lamdep : depclassifier \ensuremath{\to} (depobject \ensuremath{\to} term) \ensuremath{\to} term.
+appdep : term \ensuremath{\to} depobject \ensuremath{\to} term.
+packdep : depobject \ensuremath{\to} term \ensuremath{\to} (depobject \ensuremath{\to} typ) \ensuremath{\to} term.
+unpackdep : term \ensuremath{\to} (depobject \ensuremath{\to} term \ensuremath{\to} term) \ensuremath{\to} term.
+
+pidep : depclassifier \ensuremath{\to} (depobject \ensuremath{\to} typ) \ensuremath{\to} typ.
+sigdep : depclassifier \ensuremath{\to} (depobject \ensuremath{\to} typ) \ensuremath{\to} typ.
+
+typeof (lamdep DC EF) (pidep DC TF) :-
+  (x:depobject \ensuremath{\to} depclassify x DC \ensuremath{\to} typeof (EF x) (TF x)).
+
+typeof (appdep E DO) T' :-
+  typeof E (pidep DC TF),
+  depclassify DO DC,
+  depsubst TF DO T'.
+
+typeof (packdep DO E TYPF) (sigdep DC TYPF) :-
+  depclassify DO DC,
+  depsubst TYPF DO T',
+  typeof E T'.
+
+typeof (unpackdep E F) T' :-
+  typeof E (sigdep DC TYPF),
+  (do:depobject \ensuremath{\to} x:term \ensuremath{\to} depclassify do DC \ensuremath{\to} typeof x (TYPF do) \ensuremath{\to}
+   typeof (F do x) T').
+\end{verbatim}
+
+OK, let's now add a very simple object language -- the simply typed
+lambda calculus. Let's go again\ldots{} or actually, let's just import
+what we have already in a separate namespace:
+
+\begin{verbatim}
+%import "01-base-language" as object.
+
+%extend object.
+intconst : int \ensuremath{\to} term.
+intplus : term \ensuremath{\to} term \ensuremath{\to} term.
+
+tint : typ.
+
+typeof (intconst _) tint.
+typeof (intplus E1 E2) tint :- typeof E1 tint, typeof E2 tint.
+%end.
+\end{verbatim}
+
+(Note: we're just importing the previous literate development into a
+different namespace. Unfortunately I can't import the further
+developments right now, probably some issue with the importing code, but
+I think it's fine to skip for now. We could go with just defining a new
+language anew though.)
+
+Now let's turn these into dependent objects:
+
+\begin{verbatim}
+term : object.term \ensuremath{\to} depobject.
+typ : object.typ \ensuremath{\to} depobject.
+
+typ : object.typ \ensuremath{\to} depclassifier.
+ext : depclassifier.
+
+depclassify (term E) (typ T) :- object.typeof E T.
+\end{verbatim}
+
+To classify types, we'll need to make sure they're well-formed. For the
+time being, all types are well-formed by construction, but let's prepare
+for the future:
+
+\begin{verbatim}
+%extend object.
+wftype : typ \ensuremath{\to} prop.
+wftype_cases : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
+
+wftype T :- wftype_cases T T.
+wftype_cases T T :- structural wftype_cases T T.
+%end.
+
+depclassify (typ T) ext :- object.wftype T.
+\end{verbatim}
+
+Let's proceed to substitution:
+
+\begin{verbatim}
+depsubst_aux, depsubst_cases : [A] depobject \ensuremath{\to} depobject \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} prop.
+depsubst F X Res :- (x:depobject \ensuremath{\to} depsubst_aux x X (F x) Res).
+depsubst_aux Var Replace Where Result :-
+  if (depsubst_cases Var Replace Where Result)
+  then (success)
+  else (structural_recursion (depsubst_aux Var Replace) Where Result).
+\end{verbatim}
+
+Alright. Now let's see what we can do:
+
+\begin{verbatim}
+typeof
+  (lamdep ext (fun t \ensuremath{\Rightarrow}
+  (packdep t (tuple []) (fun _ \ensuremath{\Rightarrow} product [])))) T ?
+\end{verbatim}
+
+We can only use the dependent variables as they are, so not much use.
+The whole point of this though is being able to refer to dependent
+variables within the object terms:
+
+\begin{verbatim}
+%extend object.
+metaterm : depobject \ensuremath{\to} term.
+metatyp : depobject \ensuremath{\to} typ.
+
+typeof (metaterm E) T :-
+  refl.isnvar E,
+  depclassify E (typ T).
+  
+wftype_cases (metatyp T) (metatyp T) :-
+  refl.isnvar T,
+  depclassify T ext.
+%end.
+
+depsubst_cases Var (term Replace) (object.metaterm Var) Replace.
+depsubst_cases Var (typ Replace) (object.metatyp Var) Replace.
+\end{verbatim}
+
+OK, now let's see if we can do better:
+
+\begin{verbatim}
+typeof
+  (lamdep ext (fun t \ensuremath{\Rightarrow}
+  (packdep
+     (term (object.lam (object.metatyp t) (fun x \ensuremath{\Rightarrow} x)))
+     (tuple []) (fun _ \ensuremath{\Rightarrow} product [])))) T ?
+\end{verbatim}
+
+We can also handle the case of non-closed terms, using contextual types:
+
+\begin{verbatim}
+%extend object.
+subst : type \ensuremath{\to} type.
+subst : list A \ensuremath{\to} subst A.
+
+ctx : type \ensuremath{\to} type.
+ctx : subst typ \ensuremath{\to} bindmany term A \ensuremath{\to} ctx A.
+
+openctx : ctx A \ensuremath{\to} (subst term \ensuremath{\to} subst typ \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} prop.
+applyctx : ctx A \ensuremath{\to} subst term \ensuremath{\to} A \ensuremath{\to} prop.
+
+openctx (ctx Types Binds) P :-
+  openmany Binds (pfun vars body \ensuremath{\Rightarrow}
+    P (subst vars) Types body
+  ).
+
+applyctx (ctx _ Binds) (subst Args) Result :-
+  applymany Binds Args Result.
+
+map : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} subst A \ensuremath{\to} subst B \ensuremath{\to} prop.
+map P (subst L) (subst L') :- map P L L'.
+%end.
+
+openterm : object.ctx object.term \ensuremath{\to} depobject.
+ctxtyp : object.subst object.typ \ensuremath{\to} object.typ \ensuremath{\to} depclassifier.
+
+depclassify (openterm CtxE) (ctxtyp Typs T) :-
+  object.openctx CtxE (pfun vars typs e \ensuremath{\Rightarrow} [Units]
+    object.map (pfun t u \ensuremath{\Rightarrow} object.wftype t) typs (Units : object.subst unit),
+    object.map eq typs Typs,
+    object.typeof e T).
+\end{verbatim}
+
+And one last step: let's reify open terms back into the language:
+
+\begin{verbatim}
+%extend object.
+metaterm : depobject \ensuremath{\to} subst term \ensuremath{\to} term.
+
+typeof (metaterm E ES) T :-
+  refl.isnvar E,
+  depclassify E (ctxtyp Typs T),
+  object.map object.typeof ES Typs.
+%end.
+
+depsubst_cases Var (openterm CtxE) (object.metaterm Var Subst) Result :-
+  object.applyctx CtxE Subst E,
+  depsubst_aux Var (openterm CtxE) E Result.
+\end{verbatim}
+
+Let's try the final thing:
+
+\begin{verbatim}
+(eq _FUNCTION
+  (lamdep ext (fun t1 \ensuremath{\Rightarrow}
+    (lamdep ext (fun t2 \ensuremath{\Rightarrow}
+    (lamdep (ctxtyp (object.subst [object.metatyp t1]) (object.metatyp t2)) (fun x_e \ensuremath{\Rightarrow}
+    (packdep (openterm (object.ctx (object.subst []) (bindbase (object.lam _ (fun x \ensuremath{\Rightarrow}
+      object.tuple [object.metaterm x_e #SUBST, object.intconst 5]
+    ))))) (tuple []) (fun _ \ensuremath{\Rightarrow} product [])))))))),
+ typeof _FUNCTION FUNCTION_TYPE,
+
+ typeof 
+  (appdep (appdep 
+    _FUNCTION 
+    (typ object.tint)) 
+    (typ (object.product [object.tint])))
+ APPLIED_TYPE) ?
+>> Yes:
+>> SUBST := fun t1 t2 x_e x \ensuremath{\Rightarrow} subst (cons x nil),
+>> FUNCTION_TYPE :=
+>>  pidep ext (fun t1 \ensuremath{\Rightarrow}
+>>  pidep ext (fun t2 \ensuremath{\Rightarrow}
+>>  pidep (ctxtyp (object.subst (cons (object.metatyp t1) nil)) (object.metatyp t2))
+>>  (fun x_e \ensuremath{\Rightarrow}
+>>    sigdep 
+>>      (ctxtyp (subst nil) 
+>>       (arrow
+>>         (object.metatyp t1)
+>>         (product (cons (object.metatyp t2) (cons tint nil)))))
+>>     (fun _ \ensuremath{\Rightarrow} product nil)))),
+>> APPLIED_TYPE :=
+>>  pidep (ctxtyp
+>>    (object.subst (cons object.tint nil))
+>>    (object.product (cons object.tint nil)))
+>>  (fun x_e \ensuremath{\Rightarrow}
+>>    sigdep (ctxtyp
+>>      (subst nil)
+>>      (arrow
+>>        object.tint
+>>        (product (cons (object.product (cons object.tint nil)) (cons tint nil)))))
+>>    (fun _ \ensuremath{\Rightarrow} product nil))
+\end{verbatim}
+
+Note that we can infer both the type of the lambda abstraction and the
+substitution itself. Getting to that point in the VeriML implementation
+took months!
+
+Mention that adding polymorphic contexts and dependent pattern matching
+as in VeriML is also possible, but we won't show it here.

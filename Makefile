@@ -3,7 +3,7 @@ BIBTEX=bibtex
 
 all:
 	@ mkdir -p tmp/
-	@ ./convert_literate_files.sh makamcode tmp
+	@ ./convert_literate_files.sh makamcode generated
 	@ $(PDFLATEX) main.tex
 	@ $(BIBTEX) tmp/main.aux
 	@ $(PDFLATEX) main.tex

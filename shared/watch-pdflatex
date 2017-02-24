@@ -74,7 +74,7 @@ function restore_ext {
 
 function compile_tex {
 
-    ./convert_literate_files.sh $MAKAMCODEDIR $OUTPUTDIR
+    ./convert_literate_files.sh $MAKAMCODEDIR generated
     $MAINCOMMAND -interaction batchmode -file-line-error -output-directory=$OUTPUTDIR $MAIN > /dev/null
 
 }

@@ -12,6 +12,11 @@ fi
 INPUT_DIR=$1
 OUTPUT_DIR=$2
 
+if ( ! realpath $INPUT_DIR ); then
+  echo "Using pre-generated tex files"
+  exit 0;
+fi
+
 for INPUT_FILE in $INPUT_DIR/*.md; do
 
   awk -f impl/scripts/generate-makam.awk $INPUT_FILE
