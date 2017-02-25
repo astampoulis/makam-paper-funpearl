@@ -1,9 +1,9 @@
 Let us now proceed to encode more features of a programming language
 like ML using the techniques we have seen so far.
 
-First, let's add polymorphism, therefore extending our simply typed
-lambda calculus to System F. We will only consider the explicit
-polymorphism case for the time being, and explore type inference later.
+First we add polymorphism, therefore extending our simply typed lambda
+calculus to System F. We will only consider the explicit polymorphism
+case for the time being, leaving type inference for later.
 
 We need a type for quantification over types, as well as term-level
 constructs for functions over types and instantiating a polymorphic
@@ -25,13 +25,13 @@ typeof (appt E T) (TF T) :-
   typeof E (forall TF).
 \end{verbatim}
 
-One thing to note is that in a pen-and-paper version we would need to
+One thing to note is that in a pen-and-paper version, we would need to
 define a new context that keeps track of type variables that are in
 scope (typically named \(\Delta\)), and an auxiliary judgement of the
 form \(\Delta \vdash \tau \; \text{wf}\) that checks that all type
 variables used in \(\tau\) are in scope. Here we get type
 well-formedness for free. Furthermore, if we had to keep track of
-further information about type variables (e.g.~their kind), we could
+further information about type variables (e.g.~their kinds), we could
 have added an assumption of the form
 \texttt{kindof\ a\ K\ \ensuremath{\to}}. Since the local assumption
 context can carry rules for any predicate, no extra declaration or
@@ -47,10 +47,10 @@ typeof (lamt (fun a \ensuremath{\Rightarrow} lam a (fun x \ensuremath{\Rightarro
 \end{verbatim}
 
 Moving on towards a more ML-like language, we would like to add the
-option to declare algebraic datatypes. This requires us to first
-introduce a notion of top-level programs, composed of a series of
-declarations of types and terms, as well as a predicate to check that a
-program is well-formed:
+option to declare algebraic datatypes. We must first introduce a notion
+of top-level programs, each composed of a series of declarations of
+types and terms, as well as a predicate to check that a program is
+well-formed:
 
 \begin{verbatim}
 program : type.
@@ -58,7 +58,7 @@ wfprogram : program \ensuremath{\to} prop.
 \end{verbatim}
 
 Let us add \texttt{let} definitions as a first example of a program
-component. These introduce a term variable that can be used in the rest
+component, each introducing a term variable that can be used in the rest
 of the program:
 
 \begin{verbatim}
@@ -69,8 +69,8 @@ wfprogram (let E P) :-
   (x:term \ensuremath{\to} typeof x T \ensuremath{\to} wfprogram (P x)).
 \end{verbatim}
 
-We also need a ``last'' component for the program -- typically this
-takes the form of a main expression:
+We also need a ``last'' component for the program, typically a main
+expression:
 
 \begin{verbatim}
 main : term \ensuremath{\to} program.
@@ -79,9 +79,9 @@ wfprogram (main E) :-
   typeof E _.
 \end{verbatim}
 
-Let us now proceed to algebraic datatypes. Datatypes have a name, a
+Let us now proceed to algebraic datatypes. A datatype has a name, a
 number of type parameters, and a list of constructors; constructors
-themselves have a name and a list of arguments:
+themselves have names and lists of arguments:
 
 \begin{verbatim}
 typeconstructor : type \ensuremath{\to} type.
@@ -103,18 +103,18 @@ datatype :
 \end{verbatim}
 
 The datatype introduces a type constructor, as well as a number of
-constructors in the rest of the program. Here we use dependency to carry
-the arity of the type constructor in its meta-level type, avoiding the
-need for a well-formedness predicate for types. Of course, in situations
-where object-level types are more complicated, we would need to
-incorporate kind checking into our predicates.
+constructors, in the rest of the program. Here we use dependency to
+carry the arity of the type constructor in its meta-level type, avoiding
+the need for a well-formedness predicate for types. Of course, in
+situations where object-level types are more complicated, we would need
+to incorporate kind checking into our predicates.
 
 Let us now proceed to well-formedness for datatype declarations. We will
 need two auxiliary predicates: one that keeps information about a
 constructor -- which type it belongs to, what arguments it expects; and
 another one that abstracts over the type variables used in the datatype
 declaration, creating a polymorphic type for the type of the
-constructor, that can be instantiated with different types at different
+constructor, which can be instantiated with different types at different
 places.
 
 \begin{verbatim}
@@ -131,10 +131,10 @@ constructor_polytypes TypVars (CtorType :: CtorTypes) (PolyType :: PolyTypes) :-
   constructor_polytypes TypVars CtorTypes PolyTypes.
 \end{verbatim}
 
-One interesting part in this one is the two \texttt{applymany} calls:
-these are used in the opposite direction than what we have used it so
-far, getting \texttt{TypVars} and \texttt{CtorType} as inputs, and
-producing \texttt{PolyType} as an output. We need to be careful though
+One interesting part intereaction is in the two \texttt{applymany}
+calls: these are used in the opposite direction than what we have used
+it so far, getting \texttt{TypVars} and \texttt{CtorType} as inputs and
+producing \texttt{PolyType} as an output. We need to be careful, though,
 to make sure that \texttt{PolyType} cannot capture the \texttt{TypVars}
 variables:
 
@@ -172,7 +172,7 @@ typeof (patt_constr Constructor Args) S' S (tconstr TypConstr TypArgs) :-
   typeof Args S' S Typs.
 \end{verbatim}
 
-As an example, we will define lists, and the append function for them:
+As an example, we will define lists and their append function:
 
 \begin{verbatim}
 wfprogram
