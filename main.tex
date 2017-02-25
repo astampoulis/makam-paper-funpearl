@@ -68,6 +68,8 @@
 \renewcommand\thesection{\textbf{CHAPTER \arabic{section}}}
 \renewcommand\thesubsection{\textbf{SECTION \arabic{section}.\arabic{subsection}}}
 \newcommand\hero[1]{\textit{#1}.}
+\newcommand\heroSTUDENT[0]{\hero{STUDENT}}
+\newcommand\heroADVISOR[0]{\hero{ADVISOR}}
 
 \begin{abstract}
 \TODO{} Need to write an abstract.
@@ -109,7 +111,6 @@
   
   \input{generated/01-base-language}
   
-  \section{Multiple binding}
   \input{generated/02-binding-forms}
   
   \section{Dependent binding}

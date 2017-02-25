@@ -26,7 +26,7 @@ for INPUT_FILE in $INPUT_DIR/*.md; do
       -e 's/->/\\ensuremath{\\to}/g' \
       -e 's/=\\textgreater\{\}/\\ensuremath{\\Rightarrow}/g' \
       -e 's/=>/\\ensuremath{\\Rightarrow}/g' \
-      -e 's/^([A-Z]+)\./\\hero{\1}/g' \
+      -e 's/^([A-Z]+)\./\\hero\1{}/g' \
       $OUTPUT_FILE
 
 done

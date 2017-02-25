@@ -1,41 +1,42 @@
 \section{Where our heroes set on a road to prototype a type
 system}\label{where-our-heroes-set-on-a-road-to-prototype-a-type-system}
 
-\hero{STUDENT} (\ldots{}) So yes, I think my next step should be writing a toy
+\heroSTUDENT{} (\ldots{}) So yes, I think my next step should be writing a toy
 implementation of the type system we have in mind, so that we can try
 out some examples and see what works and what does not.
 
-\hero{ADVISOR} Definitely -- trying out examples will help us refine our ideas
+\heroADVISOR{} Definitely -- trying out examples will help us refine our ideas
 too.
 
-\hero{STUDENT} Let's see though, we have an ML core, dependently typed
+\heroSTUDENT{} Let's see though, we have an ML core, dependently typed
 constructs, and contextual types like in
 \citet{nanevski2008contextual}\ldots{} I guess I will need a few months?
 
-\hero{ADVISOR} That sounds like a lot. Why don't you use some kind of
+\heroADVISOR{} That sounds like a lot. Why don't you use some kind of
 metalanguage to implement the prototype?
 
-\hero{STUDENT} You mean a tool like PLT Redex \citep{felleisen2009semantics},
+\heroSTUDENT{} You mean a tool like PLT Redex \citep{felleisen2009semantics},
 the K Framework \citep{rosu2010overview,ellison2009rewriting}, Spoofax
-\citep{kats2010spoofax}, or CRSX \citep{rose2011crsx}?
+\citep{kats2010spoofax}, Needle \& Knot \citep{keuchel2016needle} or
+CRSX \citep{rose2011crsx}?
 
-\hero{ADVISOR} Sure, all fine choices. Though I do not think these frameworks
+\heroADVISOR{} Sure, all fine choices. Though I do not think these frameworks
 have been used to implement a type system as advanced as the one we have
 in mind, or can handle all the binding constructs we will need\ldots{} I
 was actually thinking we should use higher-order logic programming.
 
-\hero{STUDENT} Oh, so \lamprolog \citep{miller1988overview} or LF
+\heroSTUDENT{} Oh, so \lamprolog \citep{miller1988overview} or LF
 \citep{pfenning1999system}.
 
-\hero{ADVISOR} Yes. Actually a few years back I worked on this new
+\heroADVISOR{} Yes. Actually a few years back I worked on this new
 implementation of \lamprolog
 just for this purpose -- rapid prototyping of languages. It's called
 Makam. It should be able to handle what we have in mind, and we won't
 need more than a few hours.
 
-\hero{STUDENT} Sounds great! Anything I can read up on it?
+\heroSTUDENT{} Sounds great! Anything I can read up on it?
 
-\hero{ADVISOR} Not much unfortunately\ldots{} Let's just work on this
+\heroADVISOR{} Not much unfortunately\ldots{} Let's just work on this
 together, it'll be fun.
 
 (Our heroes install Makam from
