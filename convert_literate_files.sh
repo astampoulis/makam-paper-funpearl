@@ -19,13 +19,14 @@ for INPUT_FILE in $INPUT_DIR/*.md; do
   OUTPUT_FILE="$OUTPUT_DIR/$(basename $INPUT_FILE .md).tex"
   echo "Generating $OUTPUT_FILE from $INPUT_FILE"
   pandoc -S $INPUT_FILE -o $OUTPUT_FILE
-  sed -i \
+  sed -r -i \
       -e 's/λ/\\ensuremath{\\lambda}/g' \
       -e 's/ω/\\ensuremath{\\omega}/g' \
-      -e 's/-\\textgreater{}/\\ensuremath{\\to}/g' \
+      -e 's/-\\textgreater\{\}/\\ensuremath{\\to}/g' \
       -e 's/->/\\ensuremath{\\to}/g' \
-      -e 's/=\\textgreater{}/\\ensuremath{\\Rightarrow}/g' \
+      -e 's/=\\textgreater\{\}/\\ensuremath{\\Rightarrow}/g' \
       -e 's/=>/\\ensuremath{\\Rightarrow}/g' \
+      -e 's/^([A-Z]+)\./\\hero{\1}/g' \
       $OUTPUT_FILE
 
 done

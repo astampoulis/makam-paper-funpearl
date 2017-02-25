@@ -1,34 +1,34 @@
 \section{Where our heroes get the easy stuff out of the
 way}\label{where-our-heroes-get-the-easy-stuff-out-of-the-way}
 
-STUDENT. OK, let's just start with the simply typed lambda calculus to
-see how this works. Let's define just the basics, application, lambda
+\hero{HAGOP} OK, let's just start with the simply typed lambda calculus to see
+how this works. Let's define just the basics, application, lambda
 abstraction and the arrow type.
 
-ADVISOR. Right. We will first need to define the two meta-types for
-these two sorts:
+\hero{ROZA} Right. We will first need to define the two meta-types for these
+two sorts:
 
 \begin{verbatim}
 term : type.
 typ : type.
 \end{verbatim}
 
-STUDENT. Oh, so \texttt{type} is the reserved keyword for the meta-level
+\hero{HAGOP} Oh, so \texttt{type} is the reserved keyword for the meta-level
 kind of types, and we'll use \texttt{typ} for our object-level types?
 
-ADVISOR. Exactly. And let's do the easy constructors first:
+\hero{ROZA} Exactly. And let's do the easy constructors first:
 
 \begin{verbatim}
 app : term \ensuremath{\to} term \ensuremath{\to} term.
 arrow : typ \ensuremath{\to} typ \ensuremath{\to} typ.
 \end{verbatim}
 
-STUDENT. So we add constructors to a type at any point, we do not list
+\hero{HAGOP} So we add constructors to a type at any point, we do not list
 them out when we define it like in Haskell. But how about lambdas? I
 have heard that \lamprolog supports higher-order abstract syntax, which
 should make those really easy to add too, right?
 
-ADVISOR. Yes, functions at the meta-level are parametric, so they
+\hero{ROZA} Yes, functions at the meta-level are parametric, so they
 correspond exactly to single variable binding -- they cannot perform any
 computation, and thus we do not have to worry about exotic terms. So
 this works fine for Church-style lambdas:
@@ -37,17 +37,17 @@ this works fine for Church-style lambdas:
 lam : typ \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
 \end{verbatim}
 
-STUDENT. I see. And how about the typing judgement,
+\hero{HAGOP} I see. And how about the typing judgement,
 \(\Gamma \vdash e : \tau\) ?
 
-ADVISOR. Let's add a predicate for that. Only, no \(\Gamma\), there is
-an implicit context of assumptions:
+\hero{ROZA} Let's add a predicate for that. Only, no \(\Gamma\), there is an
+implicit context of assumptions that will serve the same purpose.
 
 \begin{verbatim}
 typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
 \end{verbatim}
 
-STUDENT. Let me see if I can get the typing rule for application. I know
+\hero{HAGOP} Let me see if I can get the typing rule for application. I know
 that in Prolog we write the conclusion of a rule first, and the premises
 follow the \texttt{:-} sign. Does something like this work?
 
@@ -56,13 +56,13 @@ typeof (app E1 E2) T' :-
   typeof E1 (arrow T T'), typeof E2 T.
 \end{verbatim}
 
-ADVISOR. Yes! That's exactly right. Makam uses capital letters for
+\hero{ROZA} Yes! That's exactly right. Makam uses capital letters for
 unification variables.
 
-STUDENT. I will need help with the lambda typing rule though. What's the
+\hero{HAGOP} I will need help with the lambda typing rule though. What's the
 equivalent of extending the context as in \(\Gamma, x : \tau\) ?
 
-ADVISOR. Simple, we introduce a fresh constructor for terms, and a new
+\hero{ROZA} Simple, we introduce a fresh constructor for terms, and a new
 typing rule for it:
 
 \begin{verbatim}
@@ -70,19 +70,19 @@ typeof (lam T1 E) (arrow T1 T2) :-
   (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
 \end{verbatim}
 
-STUDENT. Hmm, so \texttt{x:term\ \ensuremath{\to}} introduces the fresh
+\hero{HAGOP} Hmm, so \texttt{x:term\ \ensuremath{\to}} introduces the fresh
 constructor standing for the new variable, and
 \texttt{typeof\ x\ T1\ \ensuremath{\to}} introduces the new assumption?
 Oh, and we need to get to the body of the lambda function in order to
 type-check it, that's why you do \texttt{E\ x}.
 
-ADVISOR. Yes. Note that the introductions are locally scoped, so they
-are only into effect for the recursive call to \texttt{typeof}.
+\hero{ROZA} Yes. Note that the introductions are locally scoped, so they are
+only into effect for the recursive call to \texttt{typeof}.
 
-STUDENT. Makes sense. So do we have a type checker already? Can we run
+\hero{HAGOP} Makes sense. So do we have a type checker already? Can we run
 queries?
 
-ADVISOR. We do! Observe:
+\hero{ROZA} We do! Observe:
 
 \begin{verbatim}
 typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T ?
@@ -90,11 +90,12 @@ typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T ?
 >> T := arrow T1 T1
 \end{verbatim}
 
-STUDENT. Cool! But wait, last time I implemented unification in my toy
-STLC implementation it was easy to make it go into an infinite loop with
-\(\lambda x. x x\). How does that work here?
+\hero{HAGOP} Cool! So underscores for unification variables we don't care
+about, and \texttt{?} for queries. But wait, last time I implemented
+unification in my toy STLC implementation it was easy to make it go into
+an infinite loop with \(\lambda x. x x\). How does that work here?
 
-ADVISOR. Well you were missing the occurs-check. \lamprolog unification
+\hero{ROZA} Well you were missing the occurs-check. \lamprolog unification
 includes it:
 
 \begin{verbatim}
@@ -102,10 +103,10 @@ typeof (lam _ (fun x \ensuremath{\Rightarrow} app x x)) T' ?
 >> Impossible.
 \end{verbatim}
 
-STUDENT. Right. Cool, so what else can we do? How about adding tuples to
-our language? Can we use something like a polymorphic list?
+\hero{HAGOP} Right. So let's see, what else can we do? How about adding tuples
+to our language? Can we use something like a polymorphic list?
 
-ADVISOR. Sure! \lamprolog has polymorphic types and higher-order
+\hero{ROZA} Sure, \lamprolog has polymorphic types and higher-order
 predicates:
 
 \begin{verbatim}
@@ -118,7 +119,15 @@ map P nil nil.
 map P (cons X XS) (cons Y YS) :- P X Y, map P XS YS.
 \end{verbatim}
 
-STUDENT. Nice! So this should work:
+\hero{HAGOP} Nice! I guess that's why you wanted to go with \lamprolog for
+doing this instead of LF, since you cannot use polymorphism there?
+
+\hero{ROZA} Indeed. We will see, once we figure out what our language should
+be, one thing we could do is transcribe our definitions to LF, and then
+we could even use Beluga \citep{pientka2008programming} to do all our
+metatheoretic proofs.
+
+\hero{HAGOP} Sounds good. So, for tuples, this should work:
 
 \begin{verbatim}
 tuple : list term \ensuremath{\to} term.
@@ -127,7 +136,7 @@ typeof (tuple ES) (product TS) :-
   map typeof ES TS.
 \end{verbatim}
 
-ADVISOR. It does! And we can use syntactic sugar for \texttt{cons} and
+\hero{ROZA} Yes, and we can use syntactic sugar for \texttt{cons} and
 \texttt{nil} too:
 
 \begin{verbatim}
@@ -136,10 +145,9 @@ typeof (lam _ (fun x \ensuremath{\Rightarrow} lam _ (fun y \ensuremath{\Rightarr
 >> T := arrow T1 (arrow T2 (product [T1, T2]))
 \end{verbatim}
 
-STUDENT. So how about evaluation? Can we write the big-step semantics
-too?
+\hero{HAGOP} So how about evaluation? Can we write the big-step semantics too?
 
-ADVISOR. Why not? Let's add a predicate and do the two easy rules:
+\hero{ROZA} Why not? Let's add a predicate and do the two easy rules:
 
 \begin{verbatim}
 eval : term \ensuremath{\to} term \ensuremath{\to} prop.
@@ -147,13 +155,13 @@ eval (lam T F) (lam T F).
 eval (tuple ES) (tuple VS) :- map eval ES VS.
 \end{verbatim}
 
-STUDENT. OK, let me try my hand at the beta-redex case. I'll just do
-call-by-value. And I think in \(\lamprolog\) function application is
-exactly capture-avoiding substitution, so this should be fine:
+\hero{HAGOP} OK, let me try my hand at the beta-redex case. I'll just do
+call-by-value. And I think in \lamprolog function application is exactly
+capture-avoiding substitution, so this should be fine:
 
 \begin{verbatim}
 eval (app E E') V'' :-
   eval E (lam _ F), eval E' V', eval (F V') V''.
 \end{verbatim}
 
-ADVISOR. Exactly! See, I told you this would be easy!
+\hero{ROZA} Exactly! See, I told you this would be easy!
