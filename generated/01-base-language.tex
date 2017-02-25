@@ -11,14 +11,14 @@ typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
 \end{verbatim}
 
 Defining the basic forms of the \ensuremath{\lambda}-calculus is very easy, thanks to the
-support of higher-order abstract syntax in higher-order logic
+support for higher-order abstract syntax in higher-order logic
 programming. We can reuse the meta-level function type in order to
-implement object-level binding. This is because the meta-level function
-space is \emph{parametric} -- that is, the body of a function is a value
-that can just mention the argument as-is, instead of being a computation
-that can inspect the specific value of an argument. Therefore,
-meta-level functions exactly represent an object-level binding of a
-single variable, without introducing \emph{exotic terms}.
+implement object-level binding. The reason is that the meta-level
+function space is \emph{parametric} -- that is, the body of a function
+is a value that can just mention the argument as-is, instead of being a
+computation that can inspect the specific value of an argument.
+Therefore, a meta-level function exactly represents an object-level
+binding of a single variable, without introducing \emph{exotic terms}.
 
 \begin{verbatim}
 app    : term \ensuremath{\to} term \ensuremath{\to} term.
@@ -53,10 +53,10 @@ introduce a fresh term variable \texttt{x}, through the form
 \texttt{x:term\ \ensuremath{\to}}, which can be read as universal
 quantification. Second, we introduce a new assumption through the form
 \texttt{typeof\ x\ T\ \ensuremath{\to}}, which essentially introduces a
-new rule for the \texttt{typeof} relation locally; this can be read as
-logical implication. Third, in order to get to the body of the lambda
-function to type-check it, we need to apply it to the fresh variable
-\texttt{x}.
+new rule for the \texttt{typeof} relation locally; this pattern can be
+read as logical implication. Third, in order to get to the body of the
+lambda function to type-check it, we need to apply it to the fresh
+variable \texttt{x}.
 
 With these definitions, we have already implemented a type-checker for
 the simply typed lambda calculus, as we can issue queries for the

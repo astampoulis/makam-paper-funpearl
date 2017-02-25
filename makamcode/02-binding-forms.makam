@@ -20,8 +20,7 @@ lammany : (list term -> term) -> term.
 
 However, this type does not correspond to the construct we are trying to encode. The type `list term
 -> term` introduces a fresh local variable for the `list` type, as opposed to a number of fresh
-local variables for the `term` type. Since the HOAS function space is parametric, there is no way to
-even refer to the potential elements of the fresh `list` -- we can only refer to the fresh list in
+local variables for the `term` type. Since the HOAS function space is parametric, it not even possible to refer to the potential elements of the fresh `list` -- we can only refer to the fresh list in
 full.
 
 Instead, we would like a type that represents all types of the form:
@@ -75,7 +74,7 @@ operations:
 We can define three equivalent operations as predicates, for the multiple binding
 case: 
 
--- *a generalization of application*, for substituting all the variables in a `bindmany` 
+-- *a generalization of application*, for substituting all the variables in a `bindmany` .
 
 *)
 
@@ -87,7 +86,7 @@ applymany (bindnext F) (HD :: TL) Body :-
 (*
 
 -- *local introduction of multiple fresh variables at once* within a predicate P; a list
-  of the variables is passed to it 
+  of the variables is passed to it.
 
 *)
 
@@ -99,11 +98,10 @@ intromany (bindnext F) P :-
 (*
 
 -- *local introduction of a number of assumptions* of the form `P X Y` within a predicate
-   `Q`.
-   
-This is intended to be used, for example, for introducing assumptions
-for predicates such as `typeof`, taking a list of term variables and a
-list of types, in the same order.
+   `Q`. 
+   This is intended to be used, for example, for introducing assumptions
+   for predicates such as `typeof`, taking a list of term variables and a
+   list of types, in the same order.
 
 *)
 
@@ -130,16 +128,16 @@ openmany F P :-
 
 (*
 
-Two notational idiosyncrasies here of Makam, the λProlog dialect we are using:
+This definition employs two notational idiosyncrasies of Makam, the λProlog dialect we are using:
 
-`pfun` is syntactic convenience for anonymous predicate literals, allowing to use the normal syntax
+`pfun` is syntactic convenience for anonymous predicate literals, allowing us to use the normal syntax
 for propositions that we use elsewhere, i.e. in clause premises.  It is otherwise entirely
 equivalent to the `fun` construct for anonymous functions.
 
-The square bracket notation, used above in `[Body]`, introduces a new metavariable; it therefore can
+The square-bracket notation, used above in `[Body]`, introduces a new metavariable; it therefore can
 be read as existential quantification. Metavariables are allowed to capture all the free variables
-in scope at the point where they are introduced.  For most of them, introduced implicitly in each
-clause, this means the free variables in scope when the clause is used. In this case however it is
+in scope at the points where they are introduced.  For most of them, introduced implicitly in each
+clause, we capture the free variables in scope when their clauses are executed. In this case, however, it is
 necessary that `Body` can capture the fresh variables introduced by the `intromany` predicate too,
 hence the explicit metavariable introduction.
 
@@ -225,5 +223,5 @@ Still, even though this encoding matches the binding structure correctly, it is 
 does not guarantee that the same number of variables are introduced in both cases and that the same
 number of definitions are given. Though this requirement is enforced at the level of the typing
 rules, it would be better if we could enforce it at the syntax level.  This would require some sort
-of dependency though, which at first does not seem possible to do in λProlog.
+of dependency, though, which at first does not seem possible to do in λProlog.
 *)
