@@ -5,13 +5,13 @@
 
 (*
 
-The type system of λProlog can be viewed as a particular subset of System F$_ω$: namely, it is the
+The type system of λProlog can be viewed as a particular subset of System F$_\omega$: namely, it is the
 simply typed lambda calculus extended with prenex polymorphism and simple type constructors of the
 form `type -> type -> ... -> type`. (As an aside, `prop` can be viewed as a separate sort, but we
 take the view that it is just a distinguished extensible type.)
 
 As is well-known from Haskell even before the addition of kind definitions, type promotion, and
-type-in-type, this subset of System F$_ω$ is enough to model some form of dependency. For example, we
+type-in-type, this subset of System F$_\omega$ is enough to model some form of dependency. For example, we
 can introduce two types for modelling natural numbers, then define vectors as a GADT using them:
 
 *)
