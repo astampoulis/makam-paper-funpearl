@@ -20,8 +20,7 @@ for INPUT_FILE in $INPUT_DIR/*.md; do
   echo "Generating $OUTPUT_FILE from $INPUT_FILE"
   pandoc -S $INPUT_FILE -o $OUTPUT_FILE
   sed -r -i \
-      -e 's/λ/\\ensuremath{\\lambda}/g' \
-      -e 's/ω/\\ensuremath{\\omega}/g' \
+      -e 's/([α-ω]+)/\\foreignlanguage{greek}{\1}/g' \
       -e 's/-\\textgreater\{\}/\\ensuremath{\\to}/g' \
       -e 's/->/\\ensuremath{\\to}/g' \
       -e 's/=\\textgreater\{\}/\\ensuremath{\\Rightarrow}/g' \

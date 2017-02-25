@@ -1,12 +1,12 @@
-The type system of \ensuremath{\lambda}Prolog can be viewed as a particular subset of
-System F\ensuremath{\omega}: namely, it is the simply typed lambda calculus extended with
+The type system of \foreignlanguage{greek}{λ}Prolog can be viewed as a particular subset of
+System F\foreignlanguage{greek}{ω}: namely, it is the simply typed lambda calculus extended with
 prenex polymorphism and simple type constructors of the form
 \texttt{type\ \ensuremath{\to}\ type\ \ensuremath{\to}\ ...\ \ensuremath{\to}\ type}.
 (As an aside, \texttt{prop} can be viewed as a separate sort, but we
 take the view that it is just a distinguished extensible type.)
 
 As is well-known from Haskell even before the addition of kind
-definitions, type promotion and type-in-type, this subset of System F\ensuremath{\omega}
+definitions, type promotion and type-in-type, this subset of System F\foreignlanguage{greek}{ω}
 is enough to model some form of dependency. For example, we can
 introduce two types for modelling natural numbers, and define vectors as
 a GADT using those:
@@ -20,11 +20,11 @@ vnil : vector natZ A.
 vcons : A \ensuremath{\to} vector N A \ensuremath{\to} vector (natS N) A.
 \end{verbatim}
 
-In fact, \ensuremath{\lambda}Prolog naturally supports pattern-matching over such
+In fact, \foreignlanguage{greek}{λ}Prolog naturally supports pattern-matching over such
 constructors as well, through \emph{ad-hoc polymorphism}, where
 polymorphic type variables are allowed to be instantiated at
 \emph{runtime} rather than at type-checking time. The mechanism through
-which ad-hoc polymorphism works in \ensuremath{\lambda}Prolog is simple: before performing
+which ad-hoc polymorphism works in \foreignlanguage{greek}{λ}Prolog is simple: before performing
 unification at the term-level, we perform unification at the type level
 first, therefore further determining any uninstantiated type variables.
 Therefore, when we check to see whether the current goal matches the
@@ -60,9 +60,9 @@ when the two types are the same. Having to specify ad-hoc polymorphism
 explicitly helps us avoid such mistakes.
 
 Though this support for ad-hoc polymorphism was part of the original
-\ensuremath{\lambda}Prolog design, we have not found extensive coverage of its implications
+\foreignlanguage{greek}{λ}Prolog design, we have not found extensive coverage of its implications
 in the literature. Furthermore, it is not supported well by standard
-implementations of \ensuremath{\lambda}Prolog (like Teyjus), which was one of the reasons
+implementations of \foreignlanguage{greek}{λ}Prolog (like Teyjus), which was one of the reasons
 that prompted us to work on Makam.
 
 Armed with GADTs of this form, we can now introduce dependently-typed
