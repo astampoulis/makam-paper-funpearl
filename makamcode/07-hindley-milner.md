@@ -6,13 +6,11 @@
 ```
 -->
 
-Let's now do Hindley-Milner let-polymorphism:
+Next we extend with Hindley-Milner let-polymorphism:
 
 ```makam
 let : term -> (term -> term) -> term.
 ```
-
-Easy so far.
 
 The inference rule looks like this:
 \begin{displaymath}
@@ -27,7 +25,7 @@ The inference rule looks like this:
 
 (We have not added any side-effectful operations, so no need to add a value restriction.)
 
-This is easy to transcribe in Makam, assuming a predicate for generalizing a type:
+The rule is easy to transcribe in Makam, assuming a predicate for generalizing a type:
 
 ```makam
 generalize : typ -> typ -> prop.
@@ -38,13 +36,13 @@ typeof (let E F) T' :-
   (x:term -> typeof x Tgen -> typeof (F x) T').
 ```
 
-So we need to do the following:
+So we need the following ingredients:
 
-- something that picks out free-variables from a term -- or, in our setting, uninstantiated meta-variables
-- something that picks out free-variables from the local context
+- something that picks out free variables from a term -- or, in our setting, uninstantiated meta-variables
+- something that picks out free variables from the local context
 - a way to turn something that includes meta-variables into a `forall` type
 
-This predicate picks out the first metavariable of a certain type it finds. It uses `generic.fold`
+This predicate picks out the first metavariable of a certain type it finds. It uses `generic.fold`,
 which is another generic operation, defined similarly to `structural_recursion`, but which performs
 a fold over arbitrary types.
 
@@ -61,11 +59,10 @@ findunif T X :- findunif none T (some X).
 Note that the second rule, the important one, will only match when we encounter a metavariable
 of the same type as the one we require, as we do type specialization.
 
-Now let's add something, that given a specific meta-variable and a specific term, replaces the
-meta-variable with the term. We will see later why this is necessary. Here we will need another
-reflective predicate, `refl.sameunif` that succeeds when its two arguments are the same exact
-metavariable. As opposed to unifying two metavariables, this allows us to "pick out" occurrences
-of a specific metavariable.
+Now we add an operation that, given a specific meta-variable and a specific term, replaces the
+meta-variable with the term. We will see later why this operation is necessary. Here we will need another
+reflective predicate, `refl.sameunif`, that succeeds when its two arguments are the same exact
+metavariable, to avoid the undesired side effect of unifying distinct metavariables.
 
 ```makam
 replaceunif : [A B] A -> A -> B -> B -> prop.
@@ -100,8 +97,8 @@ generalize T T :-
 ```
 
 Recursive case: there exists at least one unification variable. We will pick out that unification
-variable, abstract over it and repeat the process to pick out any remaining ones.  We will check
-whether we are allowed to generalize by getting something that holds all `typ`s in the current
+variable, abstract over it, and repeat the process to pick out any remaining ones.  We will check
+whether we are allowed to generalize by computing a summary of all `typ`s in the current
 variable environment -- that is, all `T`s for any `typeof x T` local assumptions -- and making sure
 that the current unification variable does not occur in that.  Getting the types in the environment
 is done through the `get_types_in_environment` predicate, and we will leave the type of its result
@@ -120,7 +117,7 @@ generalize T Res :-
 ```
 
 What can `get_types_in_environment` be? We could change all our typing rules to add a list argument
-that holds all the types that we put in the context, and thread it through all our predicates.
+that holds all the types that we put in the context, threading it through all our predicates.
 However, again using reflective predicates, there is an easier way to do that: we can simply get
 all the local assumptions for the `typeof` predicate for terms, which will exactly correspond
 to the local assumptions for the current set of free variables:
@@ -130,9 +127,7 @@ get_types_in_environment Assumptions :-
   refl.assume_get (typeof : term -> typ -> prop) Assumptions.
 ```
 
-We're done!
-
-Example, easy:
+That is the end of our extension to Hindley-Milner inference, and here is a first easy example query.
 
 ```makam
 typeof (let (lam _ (fun x => x)) (fun id => id)) T ?

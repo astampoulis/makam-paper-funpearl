@@ -5,14 +5,14 @@
 
 (*
 
-The type system of λProlog can be viewed as a particular subset of System Fω: namely, it is the
+The type system of λProlog can be viewed as a particular subset of System F$_ω$: namely, it is the
 simply typed lambda calculus extended with prenex polymorphism and simple type constructors of the
 form `type -> type -> ... -> type`. (As an aside, `prop` can be viewed as a separate sort, but we
 take the view that it is just a distinguished extensible type.)
 
-As is well-known from Haskell even before the addition of kind definitions, type promotion and
-type-in-type, this subset of System Fω is enough to model some form of dependency. For example, we
-can introduce two types for modelling natural numbers, and define vectors as a GADT using those:
+As is well-known from Haskell even before the addition of kind definitions, type promotion, and
+type-in-type, this subset of System F$_ω$ is enough to model some form of dependency. For example, we
+can introduce two types for modelling natural numbers, then define vectors as a GADT using them:
 
 *)
 
@@ -54,7 +54,7 @@ foldl P S nil S.
 foldl P S (cons HD TL) S'' <- P HD S S', foldl P S' TL S''.
 ```
 
-If ad-hoc polymorphism is allowed for `A` and `B`, this is a well-typed definition. However, the
+If ad-hoc polymorphism is allowed for `A` and `B`, the definition is well-typed. However, the
 erroneous call to `P` forces the types `A` and `B` to be unified, and therefore the `fold` predicate
 is unnecessarily restricted to only work when the two types are the same. Having to specify ad-hoc
 polymorphism explicitly helps us avoid such mistakes.
@@ -64,10 +64,10 @@ found extensive coverage of its implications in the literature. Furthermore, it 
 well by standard implementations of λProlog (like Teyjus), which was one of the reasons that
 prompted us to work on Makam.
 
-Armed with GADTs of this form, we can now introduce dependently-typed binding forms, where the
-number of variables that are being bound is reflected in the type. One way to do this is through
-a type of the form `dbind A N B`, standing for a dependently-typed binding of `N` fresh variables
-of type `A`'s into a body of type `B`. `N` will be instantiated with `natZ` and `natS` as above. 
+Armed with GADTs of this form, we can now introduce dependently typed binding forms, where the
+number of variables that are being bound is reflected in the type. One approach uses
+a type of the form `dbind A N B`, standing for a dependently typed binding of `N` fresh variables
+of type `A` into a body of type `B`. `N` will be instantiated with `natZ` and `natS` as above. 
 
 *)
 
@@ -90,9 +90,9 @@ dbindnext : (A -> dbind A T B) -> dbind A (A * T) B.
 
 (*
 
-The definitions for helper predicates, such as `intromany`, `applymany`, etc. follow the case for
+The definitions for helper predicates, such as `intromany`, `applymany`, etc., follow the case for
 `bindmany` closely, only with more precise types.  We first define a helper type `subst A T` that is
-equivalent to the type of tuples `T` we expect. This is not strictly necessary but allows for more
+equivalent to the type of tuples `T` we expect, which is not strictly necessary but allows for more
 precise types: 
 
 *)
@@ -152,9 +152,7 @@ map P (X :: XS) (Y :: YS) :- P X Y, map P XS YS.
 (*
 
 (Here we have not captured the relationship between the type of tuples `T` and `T'` precisely,
-namely that one structurally matches the other with `A`s replaced by `B`s. We could capture that by
-adding another argument of a dependent type that captures that relationship, but we will elide this
-to avoid needlessly complicating the presentation.)
+namely that one structurally matches the other with `A`s replaced by `B`s. With a more complicated presentation, we could capture it by adding another argument of a dependent type.)
   
 Using this type, we can define `letrec` as follows: 
 
@@ -184,7 +182,7 @@ typeof (letrec Defs Body) T' :-
 
 ## Patterns
 We can also use the same 'dependency' trick for other, more complicated forms of binding. One such
-example which we sketch below is linear ordered binding as in the case of patterns. The point is
+example, which we sketch below, is linear ordered binding as in the case of patterns. The point is
 that having explicit support in our metalanguage only for single-variable binding, as is standard in
 HOAS, together with the two kinds of polymorphism we have shown, is enough. Using them, we can
 encode complicated binding forms, that often require explicit support in other meta-linguistic
@@ -196,14 +194,14 @@ of patterns, there is not really a notion of binding: pattern variables are "int
 point of use. However, the list of variables that we build up can be reused in order to be actually
 bound into a term -- e.g. the body of a pattern-matching branch.
 
-(Single-variable binding is really a way to introduce a "point" in an AST where we can "refer back
+(Single-variable binding is really a way to introduce a "point" in an AST that we can "refer back
 to" from its children; or the means to introduce sharing in the notion of ASTs, allowing to refer to
-the same "thing" a number of times. There's no sharing going on inside patterns though; hence no
+the same "thing" a number of times. There is no sharing going on inside patterns, though; hence no
 binding constructs are needed for encoding the patterns themselves.)
 
-Each sub-pattern that makes up a pattern needs to dependent on two arguments, in order to capture
-the linearity -- the fact that variables "go away" after their first use. The first argument
-represents all the variables that can be used, and initially matches the type argument of the
+Each sub-pattern that makes up a pattern needs to depend on two arguments, in order to capture
+the linearity -- the fact that variables "go away" after their first uses. The first argument
+represents all the variables that can be used, initially matching the type argument of the
 top-level pattern; the second argument represents the variables that "remain" to be used after this
 sub-pattern is traversed. We use "initially" and "after" to refer to the order of visiting the
 sub-patterns in a structural, depth-first traversal of the pattern. The "difference" between the
@@ -272,7 +270,7 @@ case_or_else : term -> patt T unit -> dbind term T term -> term -> term.
 (*
 
 The first argument is the scrutinee; the second is the pattern; the third is the branch body, where
-we bind the same number of variables as the ones used in the pattern, and the last argument is the
+we bind the same number of variables as the ones used in the pattern; and the last argument is the
 `else` case.
 
 The typing relation for patterns is defined as follows: given a pattern and a list of types for the
@@ -330,7 +328,7 @@ patt_to_term (patt_tuple PS) (tuple ES) Subst' Subst :-
   pattlist_to_termlist PS ES Subst' Subst.
 
 pattlist_to_termlist [] [] Subst Subst.
-pattlist_to_termlist (P :: PS) (T :: TS) Subst3 Subst1 <-
+pattlist_to_termlist (P :: PS) (T :: TS) Subst3 Subst1 :-
   pattlist_to_termlist PS TS Subst3 Subst2,
   patt_to_term P T Subst2 Subst1.
 
@@ -352,7 +350,7 @@ eq X X.
 
 (*
 
-Example of pattern matching: predecessor for nats.
+Here is an example of pattern matching: predecessor for natural numbers.
 
 *)
 

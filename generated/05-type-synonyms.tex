@@ -11,7 +11,7 @@ wfprogram (type_synonym Syn Program') :-
    wfprogram (Program' t)).
 \end{verbatim}
 
-Simple enough. How to typecheck them though? We need something like the
+Simple enough. How to typecheck them, though? We need something like the
 conversion rule:
 
 \begin{displaymath}
@@ -24,7 +24,7 @@ conversion rule:
 
 Here \(=_{\delta}\) means equality up to expanding type synonyms.
 
-We will need a type equality predicate:
+We will need a type-equality predicate:
 
 \begin{verbatim}
 teq : typ \ensuremath{\to} typ \ensuremath{\to} prop.
@@ -46,15 +46,15 @@ bi-directional typing parlance, instead of analyzing the type \texttt{T}
 of the expression \texttt{E}, we want to synthesize the type starting
 from a new meta-variable \texttt{T\textquotesingle{}}, and then check
 that the two types are equal using \texttt{teq}. So we need to change
-our rule to only apply in the case where \texttt{T} starts with a
+our rule to apply only in the case where \texttt{T} starts with a
 concrete type constructor, rather than when it is an uninstantiated
 meta-variable.
 
-It is typical for a logic programming language to have a predicate that
+It is typical for a logic-programming language to have a predicate that
 only succeeds when a specific term is uninstantiated (usually called
 \texttt{var}). In Makam this is called \texttt{refl.isunif} -- the
 \texttt{refl} namespace prefix standing for the fact that we call these
-kinds of predicates ``reflective'', as they give us extra-logical
+kinds of predicates ``reflective,'' as they give us extra-logical
 information about the form of a term (sometimes referred to as
 ``meta-predicates'' in Prolog parlance). Our second attempt thus looks
 as follows:
@@ -64,11 +64,11 @@ typeof E T :- not(refl.isunif T), typeof E T', teq T T'.
 \end{verbatim}
 
 Upon further consideration, we see that this rule leads to an infinite
-loop as well: since \texttt{teq} should be reflective, for every proof
-of \texttt{typeof\ E\ T\textquotesingle{}} through the other rules, a
-new proof using this rule will be discovered, which will lead to another
-proof for it, etc. One way to fix it is to make sure that this rule is
-only used once at the end, if typing using the other rules fails:
+loop as well: since \texttt{teq} should be reflexive, for every proof of
+\texttt{typeof\ E\ T\textquotesingle{}} through the other rules, a new
+proof using this rule will be discovered, which will lead to another
+proof for it, etc. One fix is to make sure that this rule is only used
+once at the end, if typing using the other rules fails:
 
 \begin{verbatim}
 typeof, typeof_cases, typeof_conversion : term \ensuremath{\to} typ \ensuremath{\to} prop.
@@ -109,7 +109,7 @@ typeof (P : patt A B) S' S T :-
   teq T T'.
 \end{verbatim}
 
-Now let's go and define the actual \texttt{teq} predicate. A first
+Now let us go and define the actual \texttt{teq} predicate. A first
 approach would be to just write out each case individually:
 
 \begin{verbatim}
@@ -145,10 +145,10 @@ teq (Constructor Arguments) (Constructor Arguments') :-
 What we mean here, taking the \texttt{arrow} rule as an example, is that
 \texttt{Constructor} would match with \texttt{arrow}, and
 \texttt{Arguments} would get instantiated with the list of arguments of
-the constructor. One thing to be careful about though is that the types
-of arguments are not all the same. As a result, instead of a homogeneous
-list, we need a heterogeneous list. This is simple to represent using
-the existential type, \texttt{dyn}:
+the constructor. One thing to be careful about, though, is that the
+types of arguments are not all the same. As a result, instead of a
+homogeneous list, we need a heterogeneous list, which is simple to
+represent using the existential type, \texttt{dyn}:
 
 \begin{verbatim}
 dyn : type.
@@ -173,7 +173,7 @@ elements of the list.
 dyn.map : (forall A. [A] A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} list dyn \ensuremath{\to} list dyn \ensuremath{\to} prop.
 \end{verbatim}
 
-This is in contrast to a type like
+This type is in contrast to one like
 \texttt{{[}A{]}\ (A\ \ensuremath{\to}\ A\ \ensuremath{\to}\ prop)\ \ensuremath{\to}\ list\ dyn\ \ensuremath{\to}\ list\ dyn\ \ensuremath{\to}\ prop},
 which would instantiate the type \texttt{A} to the type of the first
 element of the list, making further applications to different types
@@ -184,7 +184,7 @@ suggests -- nor do any \lamprolog implementations that we are aware of.
 Instead, it provides a way to side-step this issue, through a predicate
 that replaces polymorphic type variables with fresh variables, allowing
 it to be instantiated with new types. This is called \texttt{dyn.call},
-and \texttt{dyn.map} can be defined in terms of that:
+and \texttt{dyn.map} can be defined in terms of it:
 
 \begin{verbatim}
 dyn.call : [B] (A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} B \ensuremath{\to} B \ensuremath{\to} prop.
@@ -199,8 +199,8 @@ polymorphic constructor with fresh type variables.)
 
 Based on these, the only thing missing is a way to actually check
 whether a term is a ground term that can be decomposed into a
-constructor and a list of arguments. Makam provides this in the form of
-the \texttt{refl.headargs} predicate:
+constructor and a list of arguments. Makam provides that functionality
+in the form of the \texttt{refl.headargs} predicate:
 
 \begin{verbatim}
 refl.headargs : B \ensuremath{\to} A \ensuremath{\to} list dyn \ensuremath{\to} prop.
@@ -208,7 +208,7 @@ refl.headargs : B \ensuremath{\to} A \ensuremath{\to} list dyn \ensuremath{\to} 
 
 (Other Prolog implementations also provide predicates towards the same
 effect; for example, SWI-Prolog provides
-\texttt{compound\_name\_arguments} which is quite similar. Though such
+\texttt{compound\_name\_arguments}, which is quite similar. Though such
 predicates are not typical in other \lamprolog implementations, they
 should not be viewed as a hack: we could always define these within the
 language if we maintained a discipline, where we added a rule to
@@ -220,13 +220,13 @@ arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
 refl.headargs (arrowmany TS T) [arrowmany, [dyn TS, dyn T]].
 \end{verbatim}
 
-Maybe taking extra care to check that we are not instantiating a
-unification by using \texttt{refl.isunif}.)
+The only other wrinkle would be to check via \texttt{refl.isunif} that
+we are not instantiating a unification variable.)
 
 We are now ready to proceed to defining the boilerplate generically. We
 will do this as a reusable higher-order predicate for structural
-recursion, that we will use to implement \texttt{teq}. We will define it
-in open recursion style, providing the predicate to use on recursive
+recursion, which we will use to implement \texttt{teq}. We will define
+it in open-recursion style, providing the predicate to use on recursive
 calls as an argument:
 
 \begin{verbatim}
@@ -239,8 +239,8 @@ structural_recursion Rec X Y :-
 \end{verbatim}
 
 We also need to handle built-in types, such as the meta-level
-\texttt{int} and \texttt{string} types, in case they are used as an
-argument with other constructors:
+\texttt{int} and \texttt{string} types, in case they are used as
+arguments with other constructors:
 
 \begin{verbatim}
 structural_recursion Rec (X : string) (X : string).
@@ -283,20 +283,20 @@ teq_aux T' (tconstr TC Args) :-
 Other than minimizing the boilerplate, the great thing about using
 \texttt{structural\_recursion} is that no adaptation needs to be done
 when we add any new constructor to our \texttt{typ} datatype -- even if
-that uses new types that we have not defined before. For example, we did
+it uses new types that we have not defined before. For example, we did
 not have to take any special provision to handle types we defined
 earlier such as \texttt{dbind} -- everything works out thanks to the
 reflective predicates we are using. (Mention something about the
 expression problem?)
 
 The one form of terms that \texttt{structural\_recursion} does not
-handle are uninstantiated unification variables. We find that leaving
-that as something that we handle whenever we define a new predicate that
-uses \texttt{structural\_recursion} works fine. In this case,
-\texttt{teq} is only supposed to be used with ground terms, so it is
-fine if we fail when we encounter a unification variable.
+handle are uninstantiated unification variables. We have found that it
+works well to define special handling of unification variables for each
+new generically recursive predicate. In this case, \texttt{teq} is only
+supposed to be used with ground terms, so it is fine if we fail when we
+encounter a unification variable.
 
-Let's try an example out:
+Let us try out an example:
 
 \begin{verbatim}
 ascribe : term \ensuremath{\to} typ \ensuremath{\to} term.
@@ -317,12 +317,9 @@ wfprogram (
 >> Yes.
 \end{verbatim}
 
-Let's make sure we don't diverge on type error:
+Let us make sure we do not diverge on type error:
 
 \begin{verbatim}
-ascribe : term \ensuremath{\to} typ \ensuremath{\to} term.
-typeof (ascribe E T) T :- typeof E T.
-
 wfprogram (
   (type_synonym (dbindnext (fun a \ensuremath{\Rightarrow} dbindbase (product [a, a])))
   (fun bintuple \ensuremath{\Rightarrow} 

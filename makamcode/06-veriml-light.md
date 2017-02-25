@@ -35,7 +35,7 @@ depsubst F X (F X).
 ```
 We could have something more complicated than that though.)
 
-Now let's add the standards: dependent functions and dependent products:
+Now let us add the standards: dependent functions and dependent products:
 
 ```makam
 lamdep : depclassifier -> (depobject -> term) -> term.
@@ -65,9 +65,9 @@ typeof (unpackdep E F) T' :-
    typeof (F do x) T').
 ```
 
-OK, let's now add a very simple object language -- the simply typed lambda
-calculus. Let's go again... or actually, let's just import what we have
-already in a separate namespace:
+Let us now add a very simple object language -- the simply typed lambda
+calculus, which we have
+already defined in a separate namespace:
 
 ```makam
 %import "01-base-language" as object.
@@ -83,12 +83,12 @@ typeof (intplus E1 E2) tint :- typeof E1 tint, typeof E2 tint.
 %end.
 ```
 
-(Note: we're just importing the previous literate development into a different
+(Note: we are just importing the previous literate development into a different
 namespace. Unfortunately I can't import the further developments right now,
 probably some issue with the importing code, but I think it's fine to skip for now.
 We could go with just defining a new language anew though.)
 
-Now let's turn these into dependent objects:
+Now let us turn these into dependent objects:
 
 ```makam
 term : object.term -> depobject.
@@ -100,8 +100,8 @@ ext : depclassifier.
 depclassify (term E) (typ T) :- object.typeof E T.
 ```
 
-To classify types, we'll need to make sure they're well-formed. For the time
-being, all types are well-formed by construction, but let's prepare for the
+To classify types, we will need to make sure they are well-formed. For the time
+being, all types are well-formed by construction, but let us prepare for the
 future:
 
 ```makam
@@ -116,7 +116,7 @@ wftype_cases T T :- structural wftype_cases T T.
 depclassify (typ T) ext :- object.wftype T.
 ```
 
-Let's proceed to substitution:
+Next is substitution:
 
 ```makam
 depsubst_aux, depsubst_cases : [A] depobject -> depobject -> A -> A -> prop.
@@ -127,7 +127,7 @@ depsubst_aux Var Replace Where Result :-
   else (structural_recursion (depsubst_aux Var Replace) Where Result).
 ```
 
-Alright. Now let's see what we can do:
+Now let us see what we can do with these definitions:
 
 ```makam
 typeof
@@ -136,7 +136,7 @@ typeof
 ```
 
 We can only use the dependent variables as they are, so not much use.
-The whole point of this though is being able to refer to dependent variables
+The whole motivation behind these features is to refer to dependent variables
 within the object terms:
 
 ```makam
@@ -157,7 +157,7 @@ depsubst_cases Var (term Replace) (object.metaterm Var) Replace.
 depsubst_cases Var (typ Replace) (object.metatyp Var) Replace.
 ```
 
-OK, now let's see if we can do better:
+We are getting closer to the program we really want to write:
 
 ```makam
 typeof
@@ -201,7 +201,7 @@ depclassify (openterm CtxE) (ctxtyp Typs T) :-
     object.typeof e T).
 ```
 
-And one last step: let's reify open terms back into the language:
+And one last step: reify open terms back into the language:
 
 ```makam
 %extend object.
@@ -218,7 +218,7 @@ depsubst_cases Var (openterm CtxE) (object.metaterm Var Subst) Result :-
   depsubst_aux Var (openterm CtxE) E Result.
 ```
 
-Let's try the final thing:
+Here is the final example program.
 
 ```makam
 (eq _FUNCTION
