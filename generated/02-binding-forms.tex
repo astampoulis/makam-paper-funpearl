@@ -3,7 +3,7 @@ multiple
 binding}\label{where-our-heroes-add-parentheses-and-discover-how-to-do-multiple-binding}
 
 \heroSTUDENT{} Still, I feel like we've been playing to the strengths of
-\lamprolog\ldots{} Yes, single-variable binding, substitutions and so on
+\foreignlanguage{greek}{λ}Prolog\ldots{} Yes, single-variable binding, substitutions and so on
 work nicely, but how about any other form of binding? Say, binding
 multiple variables at the same time? We are definitely going to need
 that for the language we have in mind, and I remember that
@@ -106,7 +106,7 @@ built-in operations:
 correspond to those, right?
 
 \heroADVISOR{} Correct, and they will be predicates, since that's the only
-kind of computation we can define in \lamprolog{}. So let's first do the
+kind of computation we can define in \foreignlanguage{greek}{λ}Prolog. So let's first do the
 predicate that generalizes application:
 
 \begin{verbatim}
@@ -139,12 +139,12 @@ assumemany P (X :: XS) (Y :: YS) Q :- (P X Y \ensuremath{\to} assumemany P XS YS
 \end{verbatim}
 
 \heroADVISOR{} That looks good. Maybe one thing to note is that this last rule
-might not work in other \lamprolog implementations, as it introduces an
+might not work in other \foreignlanguage{greek}{λ}Prolog implementations, as it introduces an
 assumption for a predicate that is not known statically, and that is
 usually not allowed. That's why I said we should use Makam.
 
 \heroSTUDENT{} Is that a limitation that has to do with the correspondence of
-\lamprolog to logic?
+\foreignlanguage{greek}{λ}Prolog to logic?
 
 \heroADVISOR{} Not really, I believe that is because of implementation
 concerns mostly -- it would significantly complicate VMs for the
@@ -183,7 +183,8 @@ typeof (lammany F) (arrowmany TS T') :-
       assumemany typeof xs TS (typeof Body T'))).
 \end{verbatim}
 
-\heroSTUDENT{} Would it make sense to combine \texttt{intromany} and
+\heroSTUDENT{} Oh, so \texttt{{[}Body{]}} is like existential quantification.
+I wonder, would it make sense to combine \texttt{intromany} and
 \texttt{appmany} into one predicate, like this, since we will probably
 always need both the variables and the body of a \texttt{bindmany}?
 
@@ -256,5 +257,5 @@ encode that in our typing rules\ldots{}
 sound like an accurate encoding.
 
 \heroADVISOR{} You're right, but we would need some sort of dependency to
-enforce those kinds of limitations\ldots{} and \lamprolog does not have
+enforce those kinds of limitations\ldots{} and \foreignlanguage{greek}{λ}Prolog does not have
 dependent types.

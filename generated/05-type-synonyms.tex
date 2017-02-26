@@ -180,7 +180,7 @@ element of the list, making further applications to different types
 impossible.
 
 Makam currently does not provide higher-rank types as the above type
-suggests -- nor do any \lamprolog implementations that we are aware of.
+suggests -- nor do any \foreignlanguage{greek}{λ}Prolog implementations that we are aware of.
 Instead, it provides a way to side-step this issue, through a predicate
 that replaces polymorphic type variables with fresh variables, allowing
 it to be instantiated with new types. This is called \texttt{dyn.call},
@@ -209,8 +209,8 @@ refl.headargs : B \ensuremath{\to} A \ensuremath{\to} list dyn \ensuremath{\to} 
 (Other Prolog implementations also provide predicates towards the same
 effect; for example, SWI-Prolog provides
 \texttt{compound\_name\_arguments}, which is quite similar. Though such
-predicates are not typical in other \lamprolog implementations, they
-should not be viewed as a hack: we could always define these within the
+predicates are not typical in other \foreignlanguage{greek}{λ}Prolog implementations, they should
+not be viewed as a hack: we could always define these within the
 language if we maintained a discipline, where we added a rule to
 \texttt{refl.headargs} for every constructor that we introduce. For
 example:

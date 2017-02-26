@@ -173,7 +173,7 @@ prop`, which would instantiate the type `A` to the type of the first element of 
 list, making further applications to different types impossible.
 
 Makam currently does not provide higher-rank types as the above type suggests
--- nor do any \lamprolog implementations that we are aware of. Instead, it provides
+-- nor do any λProlog implementations that we are aware of. Instead, it provides
 a way to side-step this issue, through a predicate that replaces polymorphic
 type variables with fresh variables, allowing it to be instantiated with new types.
 This is called `dyn.call`, and `dyn.map` can be defined in terms of it:
@@ -199,7 +199,7 @@ refl.headargs : B -> A -> list dyn -> prop.
 
 (Other Prolog implementations also provide predicates towards the same effect;
 for example, SWI-Prolog provides `compound_name_arguments`, which is quite similar.
-Though such predicates are not typical in other \lamprolog implementations, they
+Though such predicates are not typical in other λProlog implementations, they
 should not be viewed as a hack: we could always define these within the language
 if we maintained a discipline, where we added a rule to `refl.headargs` for every
 constructor that we introduce. For example:

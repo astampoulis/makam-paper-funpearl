@@ -8,7 +8,7 @@ BEGIN { inmakam = 0;
 /^>>/ { if (inmakam) { printf "(* %s *)\n", $0 >> outputfile; } }
 
 !(/^```$/ || /^```makam$/ || /^>>/ || \
-  /^<\!--/ || /^-->/ \
+  /^<\!--/ || /^-->/ || /^\.\.\./ \
  ) { print $0 >> outputfile }
 
 END { if (!inmakam) { print "*)" >> outputfile } }

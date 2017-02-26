@@ -25,7 +25,7 @@ arrow : typ \ensuremath{\to} typ \ensuremath{\to} typ.
 
 \heroSTUDENT{} So we add constructors to a type at any point, we do not list
 them out when we define it like in Haskell. But how about lambdas? I
-have heard that \lamprolog supports higher-order abstract syntax, which
+have heard that \foreignlanguage{greek}{λ}Prolog supports higher-order abstract syntax, which
 should make those really easy to add too, right?
 
 \heroADVISOR{} Yes, functions at the meta-level are parametric, so they
@@ -95,7 +95,7 @@ about, and \texttt{?} for queries. But wait, last time I implemented
 unification in my toy STLC implementation it was easy to make it go into
 an infinite loop with \(\lambda x. x x\). How does that work here?
 
-\heroADVISOR{} Well you were missing the occurs-check. \lamprolog unification
+\heroADVISOR{} Well you were missing the occurs-check. \foreignlanguage{greek}{λ}Prolog unification
 includes it:
 
 \begin{verbatim}
@@ -106,7 +106,7 @@ typeof (lam _ (fun x \ensuremath{\Rightarrow} app x x)) T' ?
 \heroSTUDENT{} Right. So let's see, what else can we do? How about adding
 tuples to our language? Can we use something like a polymorphic list?
 
-\heroADVISOR{} Sure, \lamprolog has polymorphic types and higher-order
+\heroADVISOR{} Sure, \foreignlanguage{greek}{λ}Prolog has polymorphic types and higher-order
 predicates:
 
 \begin{verbatim}
@@ -119,7 +119,7 @@ map P nil nil.
 map P (cons X XS) (cons Y YS) :- P X Y, map P XS YS.
 \end{verbatim}
 
-\heroSTUDENT{} Nice! I guess that's why you wanted to go with \lamprolog for
+\heroSTUDENT{} Nice! I guess that's why you wanted to go with \foreignlanguage{greek}{λ}Prolog for
 doing this instead of LF, since you cannot use polymorphism there?
 
 \heroADVISOR{} Indeed. We will see, once we figure out what our language
@@ -157,7 +157,7 @@ eval (tuple ES) (tuple VS) :- map eval ES VS.
 \end{verbatim}
 
 \heroSTUDENT{} OK, let me try my hand at the beta-redex case. I'll just do
-call-by-value. And I think in \lamprolog function application is exactly
+call-by-value. And I think in \foreignlanguage{greek}{λ}Prolog function application is exactly
 capture-avoiding substitution, so this should be fine:
 
 \begin{verbatim}

@@ -6,7 +6,7 @@
 ```
 -->
 
-STUDENT. Still, I feel like we've been playing to the strengths of \lamprolog... Yes,
+STUDENT. Still, I feel like we've been playing to the strengths of λProlog... Yes,
 single-variable binding, substitutions and so on work nicely, but how about any other form
 of binding? Say, binding multiple variables at the same time? We are definitely going to
 need that for the language we have in mind, and I remember that \citet{keuchel2016needle}
@@ -86,7 +86,7 @@ operations:
 STUDENT. So we should add three operations for `bindmany` that correspond to those, right?
 
 ADVISOR. Correct, and they will be predicates, since that's the only kind of computation
-we can define in \lamprolog{}. So let's first do the predicate that generalizes
+we can define in λProlog. So let's first do the predicate that generalizes
 application:
 
 ```makam
@@ -119,11 +119,11 @@ assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
 ```
 
 ADVISOR. That looks good. Maybe one thing to note is that this last rule might not work in
-other \lamprolog implementations, as it introduces an assumption for a predicate that is
+other λProlog implementations, as it introduces an assumption for a predicate that is
 not known statically, and that is usually not allowed. That's why I said we should use
 Makam.
 
-STUDENT. Is that a limitation that has to do with the correspondence of \lamprolog to
+STUDENT. Is that a limitation that has to do with the correspondence of λProlog to
 logic? 
 
 ADVISOR. Not really, I believe that is because of implementation concerns mostly -- it
@@ -165,8 +165,9 @@ typeof (lammany F) (arrowmany TS T') :-
       assumemany typeof xs TS (typeof Body T'))).
 ```
 
-STUDENT. Would it make sense to combine `intromany` and `appmany` into one predicate, like
-this, since we will probably always need both the variables and the body of a `bindmany`?
+STUDENT. Oh, so `[Body]` is like existential quantification. I wonder, would it make sense
+to combine `intromany` and `appmany` into one predicate, like this, since we will probably
+always need both the variables and the body of a `bindmany`?
 
 ```makam
 openmany : bindmany A B -> (list A -> B -> prop) -> prop.
@@ -229,4 +230,20 @@ STUDENT. Wait. I let you get away before with the zero binders in `bindmany`, bu
 pushing it a little bit. This doesn't sound like an accurate encoding.
 
 ADVISOR. You're right, but we would need some sort of dependency to enforce those kinds of
-limitations... and \lamprolog does not have dependent types.
+limitations... and λProlog does not have dependent types.
+
+<!--
+The type-checking rule would be as follows:
+
+```makam
+letrec : bindmany term (list term) -> bindmany term term -> term.
+
+typeof (letrec XS_Defs XS_Body) T' :-
+  openmany XS_Defs (pfun xs defs =>
+    assumemany typeof xs TS (map typeof defs TS)
+  ),
+  openmany XS_Body (pfun xs body =>
+    assumemany typeof xs TS (typeof body T')
+  ).
+```
+-->

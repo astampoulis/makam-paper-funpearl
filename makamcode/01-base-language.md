@@ -21,7 +21,7 @@ arrow : typ -> typ -> typ.
 ```
 
 STUDENT. So we add constructors to a type at any point, we do not list them out when we
-define it like in Haskell. But how about lambdas? I have heard that \lamprolog supports
+define it like in Haskell. But how about lambdas? I have heard that λProlog supports
 higher-order abstract syntax, which should make those really easy to add too, right?
 
 ADVISOR. Yes, functions at the meta-level are parametric, so they correspond exactly to
@@ -84,7 +84,7 @@ queries. But wait, last time I implemented unification in my toy STLC implementa
 was easy to make it go into an infinite loop with $\lambda x. x x$. How does that work
 here?
 
-ADVISOR. Well you were missing the occurs-check. \lamprolog unification includes it:
+ADVISOR. Well you were missing the occurs-check. λProlog unification includes it:
 
 ```makam
 typeof (lam _ (fun x => app x x)) T' ?
@@ -94,7 +94,7 @@ typeof (lam _ (fun x => app x x)) T' ?
 STUDENT. Right. So let's see, what else can we do? How about adding tuples to our language?
 Can we use something like a polymorphic list?
 
-ADVISOR. Sure, \lamprolog has polymorphic types and higher-order predicates:
+ADVISOR. Sure, λProlog has polymorphic types and higher-order predicates:
 
 ```
 list : type -> type.
@@ -106,7 +106,7 @@ map P nil nil.
 map P (cons X XS) (cons Y YS) :- P X Y, map P XS YS.
 ```
 
-STUDENT. Nice! I guess that's why you wanted to go with \lamprolog for doing this instead of
+STUDENT. Nice! I guess that's why you wanted to go with λProlog for doing this instead of
 LF, since you cannot use polymorphism there?
 
 ADVISOR. Indeed. We will see, once we figure out what our language should be, one thing we
@@ -141,7 +141,7 @@ eval (tuple ES) (tuple VS) :- map eval ES VS.
 ```
 
 STUDENT. OK, let me try my hand at the beta-redex case. I'll just do call-by-value. And I
-think in \lamprolog function application is exactly capture-avoiding substitution, so
+think in λProlog function application is exactly capture-avoiding substitution, so
 this should be fine:
 
 ```makam
