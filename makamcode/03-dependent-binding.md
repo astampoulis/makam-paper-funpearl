@@ -281,7 +281,6 @@ me write a few cases.
 
 ```makam
 typeof : [T T' Ttyp T'typ] patt T T' -> subst typ T'typ -> subst typ Ttyp -> typ -> prop.
-
 typeof patt_var S' (cons T S') T.
 typeof patt_wild S S T.
 typeof patt_zero S S nat.
@@ -293,8 +292,8 @@ sub-pattern, we produce the types of all the variables, and the type of the patt
 itself. Makes sense. I'll do tuples:
 
 ```makam
-typeof :
-  [T T' Ttyp T'typ] pattlist T T' -> subst typ T'typ -> subst typ Ttyp -> list typ -> prop.
+typeof : [T T' Ttyp T'typ]
+  pattlist T T' -> subst typ T'typ -> subst typ Ttyp -> list typ -> prop.
 typeof (patt_tuple PS) S' S (product TS) :- typeof PS S' S TS.
 typeof [] S S [].
 typeof (P :: PS) S3 S1 (T :: TS) :- typeof PS S3 S2 TS, typeof P S2 S1 T.
