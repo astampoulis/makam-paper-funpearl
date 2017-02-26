@@ -7,7 +7,7 @@
 -->
 
 \begin{scenecomment}
-(Our heroes work on a few features as an improvisation based on the Rast makam. Roza is singing, and Hagop is playing the oud.)
+(Our heroes need a small break, so they work on a few features as an improvisation based on the Rast makam. Roza is singing, and Hagop is playing the oud.)
 \end{scenecomment}
 
 \begin{verse}
