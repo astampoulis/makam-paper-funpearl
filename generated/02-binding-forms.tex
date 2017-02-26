@@ -24,7 +24,8 @@ lammany : (list term \ensuremath{\to} term) \ensuremath{\to} term.
 \heroADVISOR{} Yes, that doesn't quite work. It would introduce a fresh
 variable for \texttt{list}s, not a number of fresh variables for
 \texttt{term}s. HOAS functions are parametric, too, which means we
-cannot even get to the potential elements of the fresh \texttt{list}.
+cannot even get to the potential elements of the fresh \texttt{list}
+inside the \texttt{term}.
 
 \heroSTUDENT{} Right. So I don't know, instead we want to use a type that
 stands for \texttt{term\ \ensuremath{\to}\ term},

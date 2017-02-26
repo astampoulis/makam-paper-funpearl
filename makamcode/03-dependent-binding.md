@@ -385,9 +385,7 @@ couple of cases.
  typeof _PRED T,
  eval (app _PRED zero) PRED0, eval (app _PRED (succ (succ zero))) PRED2) ?
 >> Yes:
->> T := arrow nat nat
->> PRED0 := zero
->> PRED2 := succ zero
+>> T := arrow nat nat, PRED0 := zero, PRED2 := succ zero
 ```
 
 ADVISOR. Seems to be working fine!

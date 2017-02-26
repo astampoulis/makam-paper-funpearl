@@ -1,83 +1,42 @@
-Let us now proceed to encode more features of a programming language
-like ML using the techniques we have seen so far.
+\section{Where our heroes add more ML features and reflect on structural
+recursion}\label{where-our-heroes-add-more-ml-features-and-reflect-on-structural-recursion}
 
-First we add polymorphism, therefore extending our simply typed lambda
-calculus to System F. We will only consider the explicit polymorphism
-case for the time being, leaving type inference for later.
+\begin{scenecomment}
+(Our heroes work on a few features as an improvisation based on the Rast makam. Roza is singing, and Hagop is playing the oud.)
+\end{scenecomment}
 
-We need a type for quantification over types, as well as term-level
-constructs for functions over types and instantiating a polymorphic
-function with a specific type.
+\begin{verse}
+``Explicit System F polymorphism is easy, at some point we'll do Hindley-Milner too. \\
+Types are well-formed by construction, an extra $\vdash \tau \; \text{wf}$ judgement we won't do. \\
+The implicit assumptions context is great, no need to thread an extra type context $\Delta$ through.''
+\end{verse}
 
 \begin{verbatim}
 forall : (typ \ensuremath{\to} typ) \ensuremath{\to} typ.
 lamt : (typ \ensuremath{\to} term) \ensuremath{\to} term.
 appt : term \ensuremath{\to} typ \ensuremath{\to} term.
+typeof (lamt E) (forall T) :- (a:typ \ensuremath{\to} typeof (E a) (T a)).
+typeof (appt E T) (TF T) :- typeof E (forall TF).
 \end{verbatim}
 
-The typing rules are similarly straightforward.
-
-\begin{verbatim}
-typeof (lamt E) (forall T) :-
-  (a:typ \ensuremath{\to} typeof (E a) (T a)).
-
-typeof (appt E T) (TF T) :-
-  typeof E (forall TF).
-\end{verbatim}
-
-One thing to note is that in a pen-and-paper version, we would need to
-define a new context that keeps track of type variables that are in
-scope (typically named \(\Delta\)), and an auxiliary judgement of the
-form \(\Delta \vdash \tau \; \text{wf}\) that checks that all type
-variables used in \(\tau\) are in scope. Here we get type
-well-formedness for free. Furthermore, if we had to keep track of
-further information about type variables (e.g.~their kinds), we could
-have added an assumption of the form
-\texttt{kindof\ a\ K\ \ensuremath{\to}}. Since the local assumption
-context can carry rules for any predicate, no extra declaration or
-change to the existing rules would be needed, as would be required in
-the pen-and-paper version in order to incorporate the new \(\Delta\)
-context.
-
-With these additions, we can give a polymorphic type to the identity
-function:
-
-\begin{verbatim}
-typeof (lamt (fun a \ensuremath{\Rightarrow} lam a (fun x \ensuremath{\Rightarrow} x))) T ?
-\end{verbatim}
-
-Moving on towards a more ML-like language, we would like to add the
-option to declare algebraic datatypes. We must first introduce a notion
-of top-level programs, each composed of a series of declarations of
-types and terms, as well as a predicate to check that a program is
-well-formed:
+\begin{verse}
+``We are now adding top-level programs, to get into datatype declarations. \\
+We would rather do modules, but those would need quite a bit of deliberation. \\
+And we still got contextual types to do, those will require our full attention.''
+\end{verse}
 
 \begin{verbatim}
 program : type.
 wfprogram : program \ensuremath{\to} prop.
-\end{verbatim}
 
-Let us add \texttt{let} definitions as a first example of a program
-component, each introducing a term variable that can be used in the rest
-of the program:
-
-\begin{verbatim}
 let : term \ensuremath{\to} (term \ensuremath{\to} program) \ensuremath{\to} program.
+wfprogram (let E P) :- typeof E T, (x:term \ensuremath{\to} typeof x T \ensuremath{\to} wfprogram (P x)).
 
-wfprogram (let E P) :-
-  typeof E T,
-  (x:term \ensuremath{\to} typeof x T \ensuremath{\to} wfprogram (P x)).
-\end{verbatim}
-
-We also need a ``last'' component for the program, typically a main
-expression:
-
-\begin{verbatim}
 main : term \ensuremath{\to} program.
-
-wfprogram (main E) :-
-  typeof E _.
+wfprogram (main E) :- typeof E _.
 \end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
 
 Let us now proceed to algebraic datatypes. A datatype has a name, a
 number of type parameters, and a list of constructors; constructors

@@ -1,39 +1,61 @@
 (*
+# Where our heroes add more ML features and reflect on structural recursion
+
 *)
 
 %use "03-dependent-binding".
 
 (*
 
-Let us now proceed to encode more features of a programming language like ML using the
-techniques we have seen so far.
+\begin{scenecomment}
+(Our heroes work on a few features as an improvisation based on the Rast makam. Roza is singing, and Hagop is playing the oud.)
+\end{scenecomment}
 
-First we add polymorphism, therefore extending our simply typed lambda calculus to System
-F. We will only consider the explicit polymorphism case for the time being, leaving type
-inference for later.
-
-We need a type for quantification over types, as well as term-level constructs for functions
-over types and instantiating a polymorphic function with a specific type.
+\begin{verse}
+``Explicit System F polymorphism is easy, at some point we'll do Hindley-Milner too. \\
+Types are well-formed by construction, an extra $\vdash \tau \; \text{wf}$ judgement we won't do. \\
+The implicit assumptions context is great, no need to thread an extra type context $\Delta$ through.''
+\end{verse}
 
 *)
 
 forall : (typ -> typ) -> typ.
 lamt : (typ -> term) -> term.
 appt : term -> typ -> term.
+typeof (lamt E) (forall T) :- (a:typ -> typeof (E a) (T a)).
+typeof (appt E T) (TF T) :- typeof E (forall TF).
 
 (*
 
-The typing rules are similarly straightforward.
+\begin{verse}
+``We are now adding top-level programs, to get into datatype declarations. \\
+We would rather do modules, but those would need quite a bit of deliberation. \\
+And we still got contextual types to do, those will require our full attention.''
+\end{verse}
 
 *)
 
-typeof (lamt E) (forall T) :-
-  (a:typ -> typeof (E a) (T a)).
+program : type.
+wfprogram : program -> prop.
 
-typeof (appt E T) (TF T) :-
-  typeof E (forall TF).
+let : term -> (term -> program) -> program.
+wfprogram (let E P) :- typeof E T, (x:term -> typeof x T -> wfprogram (P x)).
+
+main : term -> program.
+wfprogram (main E) :- typeof E _.
 
 (*
+
+---
+
+First we add polymorphism, therefore extending our simply typed lambda calculus to System
+F. We will only consider the explicit polymorphism case for the time being, leaving type
+inference for later.
+
+We need a type for quantification over types, as well as term-level constructs for
+functions over types and instantiating a polymorphic function with a specific type.
+
+The typing rules are similarly straightforward.
 
 One thing to note is that in a pen-and-paper version, we would need to define a new context that
 keeps track of type variables that are in scope (typically named $\Delta$), and an auxiliary

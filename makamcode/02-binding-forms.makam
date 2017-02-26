@@ -24,7 +24,7 @@ lammany : (list term -> term) -> term.
 
 ADVISOR. Yes, that doesn't quite work. It would introduce a fresh variable for `list`s,
 not a number of fresh variables for `term`s. HOAS functions are parametric, too, which
-means we cannot even get to the potential elements of the fresh `list`.
+means we cannot even get to the potential elements of the fresh `list` inside the `term`.
 
 STUDENT. Right. So I don't know, instead we want to use a type that stands for `term ->
 term`, `term -> term -> term`, and so on. Can we write `term -> ... -> term`?
