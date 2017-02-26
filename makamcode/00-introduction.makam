@@ -1,11 +1,11 @@
 (*
 # Where our heroes set on a road to prototype a type system
 
-STUDENT. (...) So yes, I think my next step should be writing a toy implementation of the
+\hero{HAGOP (Student)} (...) So yes, I think my next step should be writing a toy implementation of the
 type system we have in mind, so that we can try out some examples and see what works
 and what does not.
 
-ADVISOR. Definitely -- trying out examples will help us refine our ideas, too.
+\hero{ROZA (Advisor)} Definitely -- trying out examples will help you refine your ideas, too.
 
 STUDENT. Let's see, though; we have an ML core, dependently typed constructs, and
 contextual types like in \citet{nanevski2008contextual}... I guess I will need a few
