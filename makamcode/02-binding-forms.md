@@ -204,13 +204,13 @@ thought of another thing that could be challenging: mutually recursive `let rec`
 ADVISOR. Sure -- how about this?
 
 ```makam
-letrec : bindmany term (list term) -> bindmany term term -> term.
+letrec : bindmany term (list term * term) -> term.
 ```
 
-STUDENT. Bind many terms into a list of terms, then bind other terms into a term... Is the
-first list the definitions and the second list the body?
+STUDENT. Bind many terms into a list of terms and a term, I guess `*` is for tuples... Is
+the first element the definitions and the second element the body?
 
-ADVISOR. Yes -- just to make this clear, for this expression ...
+ADVISOR. Yes -- so, for this expression ...
 
 ```
 let rec f = f_def and g = g_def in body
@@ -219,21 +219,14 @@ let rec f = f_def and g = g_def in body
 STUDENT. ... we would write something like this:
 
 ```
-letrec (bindnext (fun f => bindnext (fun g => bindbase ([f_def, g_def]))))
-       (bindnext (fun f => bindnext (fun g => bindbase body)))
+letrec (bindnext (fun f => bindnext (fun g => bindbase ([f_def, g_def], body))))
 ```
 
-ADVISOR. Yes, and we need to be careful so that the number of binders matches between the
-definitions and the body, and also that we have as many definitions as we have
-binders. We can go ahead and encode that in our typing rules...
+ADVISOR. Yes, and we need to be careful so that the number of binders matches the number
+of definitions in the list. We can go ahead and encode that in our typing rules...
 
-STUDENT. Wait. I let you get away before with the zero binders in `bindmany`, this is
+STUDENT. Wait. I let you get away before with the zero binders in `bindmany`, but this is
 pushing it a little bit. This doesn't sound like an accurate encoding.
 
 ADVISOR. You're right, but we would need some sort of dependency to enforce those kinds of
 limitations... and \lamprolog does not have dependent types.
-
-STUDENT. Well neither did Haskell a few years back, people still got functional pearls
-published though?
-
-ADVISOR. That is a weird thing to say.

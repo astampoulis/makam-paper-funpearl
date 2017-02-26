@@ -228,14 +228,14 @@ mutually recursive \texttt{let\ rec}s?
 \heroADVISOR{} Sure -- how about this?
 
 \begin{verbatim}
-letrec : bindmany term (list term) \ensuremath{\to} bindmany term term \ensuremath{\to} term.
+letrec : bindmany term (list term * term) \ensuremath{\to} term.
 \end{verbatim}
 
-\heroSTUDENT{} Bind many terms into a list of terms, then bind other terms
-into a term\ldots{} Is the first list the definitions and the second
-list the body?
+\heroSTUDENT{} Bind many terms into a list of terms and a term, I guess
+\texttt{*} is for tuples\ldots{} Is the first element the definitions
+and the second element the body?
 
-\heroADVISOR{} Yes -- just to make this clear, for this expression \ldots{}
+\heroADVISOR{} Yes -- so, for this expression \ldots{}
 
 \begin{verbatim}
 let rec f = f_def and g = g_def in body
@@ -244,24 +244,17 @@ let rec f = f_def and g = g_def in body
 \heroSTUDENT{} \ldots{} we would write something like this:
 
 \begin{verbatim}
-letrec (bindnext (fun f \ensuremath{\Rightarrow} bindnext (fun g \ensuremath{\Rightarrow} bindbase ([f_def, g_def]))))
-       (bindnext (fun f \ensuremath{\Rightarrow} bindnext (fun g \ensuremath{\Rightarrow} bindbase body)))
+letrec (bindnext (fun f \ensuremath{\Rightarrow} bindnext (fun g \ensuremath{\Rightarrow} bindbase ([f_def, g_def], body))))
 \end{verbatim}
 
 \heroADVISOR{} Yes, and we need to be careful so that the number of binders
-matches between the definitions and the body, and also that we have as
-many definitions as we have binders. We can go ahead and encode that in
-our typing rules\ldots{}
+matches the number of definitions in the list. We can go ahead and
+encode that in our typing rules\ldots{}
 
 \heroSTUDENT{} Wait. I let you get away before with the zero binders in
-\texttt{bindmany}, this is pushing it a little bit. This doesn't sound
-like an accurate encoding.
+\texttt{bindmany}, but this is pushing it a little bit. This doesn't
+sound like an accurate encoding.
 
 \heroADVISOR{} You're right, but we would need some sort of dependency to
 enforce those kinds of limitations\ldots{} and \lamprolog does not have
 dependent types.
-
-\heroSTUDENT{} Well neither did Haskell a few years back, people still got
-functional pearls published though?
-
-\heroADVISOR{} That is a weird thing to say.
