@@ -2,8 +2,8 @@
 way}\label{where-our-heroes-get-the-easy-stuff-out-of-the-way}
 
 \heroSTUDENT{} OK, let's just start with the simply typed lambda calculus to
-see how this works. Let's define just the basics, application, lambda
-abstraction and the arrow type.
+see how this works. Let's define just the basics: application, lambda
+abstraction, and the arrow type.
 
 \heroADVISOR{} Right. We will first need to define the two meta-types for
 these two sorts:
@@ -23,10 +23,10 @@ app : term \ensuremath{\to} term \ensuremath{\to} term.
 arrow : typ \ensuremath{\to} typ \ensuremath{\to} typ.
 \end{verbatim}
 
-\heroSTUDENT{} So we add constructors to a type at any point, we do not list
+\heroSTUDENT{} So we add constructors to a type at any point; we do not list
 them out when we define it like in Haskell. But how about lambdas? I
 have heard that \foreignlanguage{greek}{λ}Prolog supports higher-order abstract syntax, which
-should make those really easy to add too, right?
+should make those really easy to add, too, right?
 
 \heroADVISOR{} Yes, functions at the meta-level are parametric, so they
 correspond exactly to single variable binding -- they cannot perform any
@@ -59,10 +59,10 @@ typeof (app E1 E2) T' :-
 \heroADVISOR{} Yes! That's exactly right. Makam uses capital letters for
 unification variables.
 
-\heroSTUDENT{} I will need help with the lambda typing rule though. What's the
-equivalent of extending the context as in \(\Gamma, x : \tau\) ?
+\heroSTUDENT{} I will need help with the lambda typing rule, though. What's
+the equivalent of extending the context as in \(\Gamma, x : \tau\) ?
 
-\heroADVISOR{} Simple, we introduce a fresh constructor for terms, and a new
+\heroADVISOR{} Simple; we introduce a fresh constructor for terms and a new
 typing rule for it:
 
 \begin{verbatim}
@@ -74,10 +74,10 @@ typeof (lam T1 E) (arrow T1 T2) :-
 constructor standing for the new variable, and
 \texttt{typeof\ x\ T1\ \ensuremath{\to}} introduces the new assumption?
 Oh, and we need to get to the body of the lambda function in order to
-type-check it, that's why you do \texttt{E\ x}.
+type-check it, so that's why you do \texttt{E\ x}.
 
 \heroADVISOR{} Yes. Note that the introductions are locally scoped, so they
-are only into effect for the recursive call to \texttt{typeof}.
+are only in effect for the recursive call to \texttt{typeof}.
 
 \heroSTUDENT{} Makes sense. So do we have a type checker already? Can we run
 queries?
@@ -91,11 +91,11 @@ typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T ?
 \end{verbatim}
 
 \heroSTUDENT{} Cool! So underscores for unification variables we don't care
-about, and \texttt{?} for queries. But wait, last time I implemented
+about and \texttt{?} for queries. But wait, last time I implemented
 unification in my toy STLC implementation it was easy to make it go into
 an infinite loop with \(\lambda x. x x\). How does that work here?
 
-\heroADVISOR{} Well you were missing the occurs-check. \foreignlanguage{greek}{λ}Prolog unification
+\heroADVISOR{} Well, you were missing the occurs-check. \foreignlanguage{greek}{λ}Prolog unification
 includes it:
 
 \begin{verbatim}
@@ -124,8 +124,8 @@ doing this instead of LF, since you cannot use polymorphism there?
 
 \heroADVISOR{} Indeed. We will see, once we figure out what our language
 should be, one thing we could do is transcribe our definitions to LF,
-and then we could even use Beluga \citep{pientka2008programming} to do
-all our metatheoretic proofs.
+and then we could even use Beluga \citep{pientka2010beluga} to do all
+our metatheoretic proofs.
 
 \heroSTUDENT{} Sounds good. So, for tuples, this should work:
 

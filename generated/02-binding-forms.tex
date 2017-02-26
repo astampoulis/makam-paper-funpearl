@@ -3,14 +3,14 @@ multiple
 binding}\label{where-our-heroes-add-parentheses-and-discover-how-to-do-multiple-binding}
 
 \heroSTUDENT{} Still, I feel like we've been playing to the strengths of
-\foreignlanguage{greek}{λ}Prolog\ldots{} Yes, single-variable binding, substitutions and so on
+\foreignlanguage{greek}{λ}Prolog\ldots{}. Yes, single-variable binding, substitutions, and so on
 work nicely, but how about any other form of binding? Say, binding
 multiple variables at the same time? We are definitely going to need
 that for the language we have in mind, and I remember that
 \citet{keuchel2016needle} mention that HOAS encodings do not work for
 such forms of binding.
 
-\heroADVISOR{} I beg to differ. Let's try it out, let's try adding
+\heroADVISOR{} I beg to differ. Let's try it out; let's try adding
 multiple-argument functions for example -- I mean uncurried ones. Want
 to give it at try?
 
@@ -21,10 +21,10 @@ know this is wrong.
 lammany : (list term \ensuremath{\to} term) \ensuremath{\to} term.
 \end{verbatim}
 
-\heroADVISOR{} Yes, that doesn't quite work. This would introduce a fresh
+\heroADVISOR{} Yes, that doesn't quite work. It would introduce a fresh
 variable for \texttt{list}s, not a number of fresh variables for
-\texttt{term}s. HOAS functions are parametric too, which means we cannot
-even get to the potential elements of the fresh \texttt{list}.
+\texttt{term}s. HOAS functions are parametric, too, which means we
+cannot even get to the potential elements of the fresh \texttt{list}.
 
 \heroSTUDENT{} Right. So I don't know, instead we want to use a type that
 stands for \texttt{term\ \ensuremath{\to}\ term},
@@ -33,8 +33,8 @@ Can we write \texttt{term\ \ensuremath{\to}\ ...\ \ensuremath{\to}\ term}?
 
 \heroADVISOR{} Well, not quite, but we have already defined something similar,
 a type that roughly stands for \texttt{term\ *\ term},
-\texttt{term\ *\ term\ *\ term}, we did not need anything special for
-that\ldots{}
+\texttt{term\ *\ term\ *\ term}, and we did not need anything special
+for that\ldots{}
 
 \heroSTUDENT{} You mean the \texttt{list} type?
 
@@ -46,16 +46,16 @@ bindnil : term \ensuremath{\to} bindmanyterms.
 bindcons : (term \ensuremath{\to} bindmanyterms) \ensuremath{\to} bindmanyterms.
 \end{verbatim}
 
-\heroSTUDENT{} Hmm. That looks quite similar to lists, the parentheses in
+\heroSTUDENT{} Hmm. That looks quite similar to lists; the parentheses in
 \texttt{cons} are different. \texttt{nil} gets an extra \texttt{term}
-argument too\ldots{}
+argument, too\ldots{}.
 
 \heroADVISOR{} Yes\ldots{} So what is happening here is that \texttt{bindcons}
 takes a single argument, adding another binder; and \texttt{bindnil} is
 when we get to the body and don't need any more binders, so we just need
 the body.
 
-\heroSTUDENT{} Oh so could we generalize their types? Maybe that will help me
+\heroSTUDENT{} Oh, so could we generalize their types? Maybe that will help me
 get a better grasp of it. How is this?
 
 \begin{verbatim}
@@ -68,10 +68,10 @@ bindnext : (Variable \ensuremath{\to} bindmany Variable Body) \ensuremath{\to} b
 for the constructors to look nicer, we have allowed binding zero
 variables. We could definitely disallow that by changing
 \texttt{bindbase} to take a \texttt{Variable\ \ensuremath{\to}\ Body}
-argument instead, but let's just go along with this, it will make all
-our predicates simpler to write too.
+argument instead, but let's just go along with this; it will make all
+our predicates simpler to write, too.
 
-\heroSTUDENT{} I see. That is quite an interesting datatype, is there some
+\heroSTUDENT{} I see. That is quite an interesting datatype. Is there some
 reference about it?
 
 \heroADVISOR{} Not that I know of -- though I think this is part of PL
@@ -129,7 +129,7 @@ intromany (bindnext F) P :-
   (x:A \ensuremath{\to} intromany (F x) (fun tl \ensuremath{\Rightarrow} P (x :: tl))).
 \end{verbatim}
 
-\heroSTUDENT{} Let me see. So pattern match on the two cases, introduce an
+\heroSTUDENT{} Let me see. So pattern match on the two cases, introducing an
 extra assumption in the \texttt{bindnext} case. How does this look?
 
 \begin{verbatim}
@@ -146,12 +146,12 @@ usually not allowed. That's why I said we should use Makam.
 \heroSTUDENT{} Is that a limitation that has to do with the correspondence of
 \foreignlanguage{greek}{λ}Prolog to logic?
 
-\heroADVISOR{} Not really, I believe that is because of implementation
-concerns mostly -- it would significantly complicate VMs for the
-language. But Makam is interpreted, so it sidesteps that.
+\heroADVISOR{} Not really; I believe it is because of implementation concerns
+mostly -- it would significantly complicate VMs for the language. But
+Makam is interpreted, so it sidesteps that.
 
 \heroSTUDENT{} Interesting. So let me try doing the typing rule now. I'll add
-a type for multiple argument functions. Would this work?
+a type for multiple-argument functions. Would this work?
 
 \begin{verbatim}
 arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
@@ -163,16 +163,16 @@ typeof (lammany F) (arrowmany TS T') :-
 
 \heroADVISOR{} Almost. There is an issue here: the unification variable
 \texttt{Body} cannot capture the free variables \texttt{xs} that get
-introduced later. Unification variables are allowed to capture all the
-free variables in scope at the point where they are introduced. By
-default, they get introduced when the rule fires, but here we need to
-explicitly say that \texttt{Body} should be introduced when
-\texttt{intromany} uses its predicate argument; Makam uses square
-bracket notation for that. Oh, and a Makam idiosyncrasy: the parser
-isn't clever enough to tell that the predicate argument to
+introduced later. A unification variable is allowed to capture all the
+free variables in scope at the point where it is introduced. By default,
+they get introduced when we check whether a rule fires, but here we need
+to say explicitly that \texttt{Body} should be introduced when
+\texttt{intromany} uses its predicate argument; Makam uses
+square-bracket notation for that. Oh, and a Makam idiosyncrasy: the
+parser isn't clever enough to tell that the predicate argument to
 \texttt{intromany} is, in fact, a predicate, so we can't use the normal
 predicate syntax for it. There is the syntactic form \texttt{pfun} for
-anonymous predicates, save for predicate syntax, it's entirely identical
+anonymous predicates; save for predicate syntax, it's entirely identical
 to \texttt{fun}. So:
 
 \begin{verbatim}
@@ -205,15 +205,15 @@ typeof (lammany (bindnext (fun x \ensuremath{\Rightarrow} bindnext (fun y \ensur
 
 \heroSTUDENT{} Great, I think I got the hang of this. We could definitely add
 a multiple-argument application construct \texttt{appmany} or define the
-rules for \texttt{eval} for these. But that would be easy, we can do
-that later. Something that worries me though -- all these fancy
-higher-order abstract binders, how do we \ldots{} make them concrete?
-Say, how do we print them?
+rules for \texttt{eval} for these. But that would be easy; we can do it
+later. Something that worries me, though -- all these fancy higher-order
+abstract binders, how do we \ldots{} make them concrete? Say, how do we
+print them?
 
 \heroADVISOR{} That's actually quite easy. We just add a concrete name to
 them. A plain old \texttt{string}. Our typing rules etc. do not care
 about it, but we could use it for parsing concrete syntax into our
-abstract binding syntax, or for pretty-printing\ldots{} Let's not get
+abstract binding syntax, or for pretty-printing\ldots{}. Let's not get
 into that for the time being, but let's just say that we could have
 defined \texttt{bindnext} with an extra \texttt{string} argument; and
 then \texttt{intromany} and friends would just ignore it.
@@ -222,7 +222,7 @@ then \texttt{intromany} and friends would just ignore it.
 bindnext : string \ensuremath{\to} (Variable \ensuremath{\to} bindmany Variable Body) \ensuremath{\to} bindmany Variable Body.
 \end{verbatim}
 
-\heroSTUDENT{} Interesting, I would like to see more about this, but maybe
+\heroSTUDENT{} Interesting. I would like to see more about this, but maybe
 some other time. I thought of another thing that could be challenging:
 mutually recursive \texttt{let\ rec}s?
 
@@ -232,7 +232,7 @@ mutually recursive \texttt{let\ rec}s?
 letrec : bindmany term (list term * term) \ensuremath{\to} term.
 \end{verbatim}
 
-\heroSTUDENT{} Bind many terms into a list of terms and a term, I guess
+\heroSTUDENT{} Bind many terms into a list of terms and a term. I guess
 \texttt{*} is for tuples\ldots{} Is the first element the definitions
 and the second element the body?
 
@@ -250,11 +250,11 @@ letrec (bindnext (fun f \ensuremath{\Rightarrow} bindnext (fun g \ensuremath{\Ri
 
 \heroADVISOR{} Yes, and we need to be careful so that the number of binders
 matches the number of definitions in the list. We can go ahead and
-encode that in our typing rules\ldots{}
+encode that in our typing rules\ldots{}.
 
 \heroSTUDENT{} Wait. I let you get away before with the zero binders in
-\texttt{bindmany}, but this is pushing it a little bit. This doesn't
-sound like an accurate encoding.
+\texttt{bindmany}, but this is pushing it a little bit. It doesn't sound
+like an accurate encoding.
 
 \heroADVISOR{} You're right, but we would need some sort of dependency to
 enforce those kinds of limitations\ldots{} and \foreignlanguage{greek}{λ}Prolog does not have

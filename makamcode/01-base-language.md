@@ -1,7 +1,7 @@
 # Where our heroes get the easy stuff out of the way
 
 STUDENT. OK, let's just start with the simply typed lambda calculus to see how this
-works. Let's define just the basics, application, lambda abstraction and the arrow type.
+works. Let's define just the basics: application, lambda abstraction, and the arrow type.
 
 ADVISOR. Right. We will first need to define the two meta-types for these two sorts:
 
@@ -20,9 +20,9 @@ app : term -> term -> term.
 arrow : typ -> typ -> typ.
 ```
 
-STUDENT. So we add constructors to a type at any point, we do not list them out when we
+STUDENT. So we add constructors to a type at any point; we do not list them out when we
 define it like in Haskell. But how about lambdas? I have heard that λProlog supports
-higher-order abstract syntax, which should make those really easy to add too, right?
+higher-order abstract syntax, which should make those really easy to add, too, right?
 
 ADVISOR. Yes, functions at the meta-level are parametric, so they correspond exactly to
 single variable binding -- they cannot perform any computation, and thus we do not have to
@@ -52,10 +52,10 @@ typeof (app E1 E2) T' :-
 
 ADVISOR. Yes! That's exactly right. Makam uses capital letters for unification variables.
 
-STUDENT. I will need help with the lambda typing rule though. What's the equivalent of
+STUDENT. I will need help with the lambda typing rule, though. What's the equivalent of
 extending the context as in $\Gamma, x : \tau$ ?
 
-ADVISOR. Simple, we introduce a fresh constructor for terms, and a new typing rule for it:
+ADVISOR. Simple; we introduce a fresh constructor for terms and a new typing rule for it:
 
 ```makam
 typeof (lam T1 E) (arrow T1 T2) :-
@@ -64,9 +64,9 @@ typeof (lam T1 E) (arrow T1 T2) :-
 
 STUDENT. Hmm, so `x:term ->` introduces the fresh constructor standing for the new
 variable, and `typeof x T1 ->` introduces the new assumption? Oh, and we need to get to
-the body of the lambda function in order to type-check it, that's why you do `E x`.
+the body of the lambda function in order to type-check it, so that's why you do `E x`.
 
-ADVISOR. Yes. Note that the introductions are locally scoped, so they are only into effect
+ADVISOR. Yes. Note that the introductions are locally scoped, so they are only in effect
 for the recursive call to `typeof`.
 
 STUDENT. Makes sense. So do we have a type checker already? Can we run queries?
@@ -79,12 +79,12 @@ typeof (lam _ (fun x => x)) T ?
 >> T := arrow T1 T1
 ```
 
-STUDENT. Cool! So underscores for unification variables we don't care about, and `?` for
+STUDENT. Cool! So underscores for unification variables we don't care about and `?` for
 queries. But wait, last time I implemented unification in my toy STLC implementation it
 was easy to make it go into an infinite loop with $\lambda x. x x$. How does that work
 here?
 
-ADVISOR. Well you were missing the occurs-check. λProlog unification includes it:
+ADVISOR. Well, you were missing the occurs-check. λProlog unification includes it:
 
 ```makam
 typeof (lam _ (fun x => app x x)) T' ?
@@ -111,7 +111,7 @@ LF, since you cannot use polymorphism there?
 
 ADVISOR. Indeed. We will see, once we figure out what our language should be, one thing we
 could do is transcribe our definitions to LF, and then we could even use Beluga
-\citep{pientka2008programming} to do all our metatheoretic proofs.
+\citep{pientka2010beluga} to do all our metatheoretic proofs.
 
 STUDENT. Sounds good. So, for tuples, this should work:
 
