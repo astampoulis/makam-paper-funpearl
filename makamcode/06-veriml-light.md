@@ -1,3 +1,5 @@
+# Where our heroes add dependent types and contextual types
+
 <!--
 ```makam
 %use "05-type-synonyms".

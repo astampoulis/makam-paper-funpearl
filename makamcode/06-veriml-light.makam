@@ -1,4 +1,6 @@
 (*
+# Where our heroes add dependent types and contextual types
+
 *)
 
 %use "05-type-synonyms".

@@ -21,7 +21,7 @@ typeof (appt E T) (TF T) :- typeof E (forall TF).
 \begin{verse}
 ``We are now adding top-level programs, to get into datatype declarations. \\
 We would rather do modules, but those would need quite a bit of deliberation. \\
-And we still got contextual types to do, those will require our full attention.''
+And we still have contextual types to do, those will require our full attention.''
 \end{verse}
 
 \begin{verbatim}
@@ -68,25 +68,25 @@ datatype :
 
 \heroADVISOR{} Right, so when declaring a datatype, we introduce a
 \texttt{typeconstructor} variable so that we can refer to the type
-recursive when we declare our constructors. And we also have acces to
+recursively when we declare our constructors. And we also have access to
 the right number of polymorphic variables, matching the \texttt{Arity}
 of the constructor. I like how you split out the declaration of the type
-itself from the ``rest of the program'' part, this could become unwieldy
-otherwise.
+itself from the ``rest of the program'' part, since this could become
+unwieldy otherwise.
 
 \heroSTUDENT{} That's what I thought too. And I see why you made the type
-constructors carry their arity -- to keep types well-formed by
+constructors carry their arities -- to keep types well-formed by
 construction. In order to be able to actually refer to the type
-constructors though, don't we need a type former:
+constructors, though, don't we need a type former:
 
 \begin{verbatim}
 tconstr : typeconstructor T \ensuremath{\to} subst typ T \ensuremath{\to} typ.
 \end{verbatim}
 
 \heroADVISOR{} We do. Also keep in mind that in a richer type system, we
-probably would need an extra kind checking predicate. But this will do
+probably would need an extra kind-checking predicate. But this will do
 for now. Let's just make sure this is fine -- I'll write down the
-declaration of binary terms, to make sure we're not missing anything,
+declaration of binary trees, to make sure we're not missing anything,
 and typecheck it with Makam.
 
 \begin{verbatim}
@@ -99,7 +99,7 @@ and typecheck it with Makam.
 
 \heroSTUDENT{} Looks good. Should we proceed to the actual well-formedness for
 datatype declarations? I think we will need a predicate to keep track of
-information about constructors -- which datatype it belongs to and what
+information about a constructor -- which datatype it belongs to and what
 arguments it expects. That way we can carry that information in the
 assumptions context.
 
@@ -163,7 +163,7 @@ the needed binders, as an output. And since the way we're using it,
 \texttt{PolyType} cannot capture the \texttt{TypVars}, it all works out
 correctly!
 
-\heroADVISOR{} Excellent! Let's add the term-level former for constructors
+\heroADVISOR{} Excellent! Let's add the term-level former for constructors,
 too.
 
 \heroSTUDENT{} That is easy, compared to what we just did.
@@ -177,4 +177,4 @@ typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
 \end{verbatim}
 
 \heroADVISOR{} You're getting the hang of this. Let's do something actually
-difficult then. Type synonyms.
+difficult, then; type synonyms.

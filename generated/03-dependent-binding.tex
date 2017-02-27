@@ -4,7 +4,7 @@ polymorphism}\label{where-our-heroes-get-out-of-the-bind-using-ad-hoc-polymorphi
 \heroSTUDENT{} No dependent types\ldots{} so what is the \foreignlanguage{greek}{λ}Prolog type system?
 Is it some version of System F?
 
-\heroADVISOR{} It is a subset of System F\(_\omega\) actually -- so, the
+\heroADVISOR{} It is a subset of System F\(_\omega\), actually -- so, the
 simply typed lambda calculus, plus prenex polymorphism, plus simple type
 constructors of the form
 \texttt{type\ \ensuremath{\to}\ type\ \ensuremath{\to}\ ...\ \ensuremath{\to}\ type}.
@@ -20,8 +20,8 @@ have dependently typed datatypes there through GADTs.
 \heroADVISOR{} How so?
 
 \heroSTUDENT{} Well, you can use empty datatypes to encode type-level data, by
-exploiting the type parameters\ldots{} For example, you could do
-type-level natural numbers with \texttt{NatZ\ ::\ *} and
+exploiting the type parameters. For example, you could do type-level
+natural numbers with \texttt{NatZ\ ::\ *} and
 \texttt{NatS\ ::\ *\ \ensuremath{\to}\ *} and then use them as a
 ``dependent'' index for vectors.
 
@@ -45,7 +45,7 @@ works in \foreignlanguage{greek}{λ}Prolog is through \emph{ad-hoc polymorphism}
 variables can be unified at \emph{runtime} rather than at type-checking
 time. So before performing term-level unification, type-level
 unification is done, so uninstantiated type variables can be further
-determined; we can thus ``learn'' and propagete extra type information
+determined; we can thus ``learn'' and propagate extra type information
 at runtime. So we could do \texttt{map} for vectors as follows:
 
 \begin{verbatim}
@@ -54,15 +54,15 @@ vmap P vnil vnil.
 vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
 \end{verbatim}
 
-\heroSTUDENT{} Interesting. The \texttt{{[}N{]}} notation in the type of
-\texttt{vmap}, what is that?
+\heroSTUDENT{} Interesting. What is the \texttt{{[}N{]}} notation in the type
+of \texttt{vmap}?
 
 \heroADVISOR{} Well, type arguments for propositions are parametric by
-default, so that says that \texttt{N} is ad-hoc polymorphic -- rules can
-specialize it further. And the reason for that is that we are used to
-type arguments being parametric, and we can catch some errors that way
--- for example this erroneous \texttt{fold} is still well-typed if the
-type arguments are ad-hoc:
+default, so that notation says that \texttt{N} is ad-hoc polymorphic --
+rules can specialize it further. And the reason Makam requires this
+annotation is that we are used to type arguments being parametric, and
+we can catch some errors that way -- for example this erroneous
+\texttt{fold} is still well-typed if the type arguments are ad-hoc:
 
 \begin{verbatim}
 foldl : (B \ensuremath{\to} A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} B \ensuremath{\to} list A \ensuremath{\to} B \ensuremath{\to} prop.
@@ -77,19 +77,19 @@ be second instead of first -- and this definition would only work when
 \heroADVISOR{} Precisely, but we would only find out at runtime, if it was
 called with \texttt{A} and \texttt{B} being different.
 
-\heroSTUDENT{} I see. So type-level unification, is that a standard \foreignlanguage{greek}{λ}Prolog
-feature, or just Makam?
+\heroSTUDENT{} I see. So is type-level unification a standard \foreignlanguage{greek}{λ}Prolog feature,
+or just Makam?
 
-\heroADVISOR{} It's hard to say. I think this was part of the original design
-by \citet{miller1988overview}, but I have not come upon any examples
-that actively use it so far -- for example, the book by
+\heroADVISOR{} It's hard to say. I think it was part of the original design by
+\citet{miller1988overview}, but I have not come upon any examples that
+actively use it so far -- for example, the book by
 \citet{miller2012programming} hardly mentions the feature, and the
-standard \foreignlanguage{greek}{λ}Prolog implementation, Teyjus \citet{nadathur1999system}, has
+standard \foreignlanguage{greek}{λ}Prolog implementation, Teyjus \citep{nadathur1999system}, has
 a few issues related to polymorphic types that have not allowed me to
-test this there.
+test there.
 
-\heroSTUDENT{} Well let's see if it is actually useful for what we were trying
-to do. Maybe we can use this feature for a better encoding of
+\heroSTUDENT{} Well, let's see if it is actually useful for what we were
+trying to do. Maybe we can use this feature for a better encoding of
 \texttt{letrec}? We could do the \texttt{vector} equivalent of
 \texttt{bindmany}, carrying a type argument for the number of binders,
 so that we can reuse that for a \texttt{vector} of definitions:
@@ -102,10 +102,10 @@ letrec : dbind term N (vector N term * term) \ensuremath{\to} term.
 \end{verbatim}
 
 \heroADVISOR{} That looks good, but I do not like this natural number trick --
-if we could define a new \texttt{nat} kind and specify that in the type
-of \texttt{dbind}, it would be fine, but as it stands\ldots{} Well,
-here's an idea. The ``dependent'' index could be the type of
-\texttt{n}-tuples of variables, rather than \texttt{n} itself:
+if we could define a new \texttt{nat} kind and specify it in the type of
+\texttt{dbind}, it would be fine, but as it stands\ldots{}. Well, here's
+an idea. The ``dependent'' index could be the type of \texttt{n}-tuples
+of variables, rather than \texttt{n} itself:
 
 \begin{verbatim}
 dbind : type \ensuremath{\to} type \ensuremath{\to} type \ensuremath{\to} type.
@@ -127,14 +127,14 @@ nil : subst A unit.
 cons : A \ensuremath{\to} subst A T \ensuremath{\to} subst A (A * T).
 \end{verbatim}
 
-\heroSTUDENT{} We are already using \texttt{nil} and \texttt{cons} for lists,
-should we call the constructors something else?
+\heroSTUDENT{} We are already using \texttt{nil} and \texttt{cons} for lists.
+Should we call the constructors something else?
 
 \heroADVISOR{} No, this works fine, and we can reuse the syntactic sugar for
-them. Makam allows overloading for all constants, it takes
-statically-known type information into account for resolving variables
-and disambiguating between them. Sometimes you have to do a type
-ascription, but I find it works nicely in most cases.
+them. Makam allows overloading for all constants. It takes statically
+known type information into account for resolving variables and
+disambiguating between them. Sometimes you have to do a type ascription,
+but I find it works nicely in most cases.
 
 \heroSTUDENT{} I see. So let me try my hand at writing the helper predicates
 that we'll need for \texttt{dbind} and \texttt{subst}. How do these
@@ -153,10 +153,10 @@ map : [T T'] (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} subst
 capture the relationship between \texttt{T} and
 \texttt{T\textquotesingle{}}, which are the same tuples save for
 \texttt{A}s being replaced by \texttt{B}s\ldots{} but we don't have to
-complicate this further, I am sure we could capture that if needed with
+complicate this further; I am sure we could capture that if needed with
 another dependent construction.
 
-\heroSTUDENT{} That's what I was thinking too. Let me see, I think most of
+\heroSTUDENT{} That's what I was thinking too. Let me see; I think most of
 these are almost identical to what we had before.
 
 \begin{verbatim}
@@ -166,8 +166,8 @@ intromany (dbindnext F) P :- (x:A \ensuremath{\to} intromany (F x) (pfun t \ensu
 \end{verbatim}
 
 \begin{scenecomment}
-(Our heroes copy paste the code from before for the rest of the predicates,
-changing `bindbase` to `dbindbase` and `bindnext` to `dbindnext`.)
+(Our heroes copy-paste the code from before for the rest of the predicates,
+changing `\texttt{bindbase}' to `\texttt{dbindbase}' and `\texttt{bindnext}' to `\texttt{dbindnext}'.)
 \end{scenecomment}
 
 \heroADVISOR{} Alright, I think we should be able to do \texttt{letrec} now!
@@ -207,7 +207,7 @@ Since within a pattern we can only refer to a variable once\ldots{} no
 actual binding needs to take place. But we can use the type argument to
 bind the right number of pattern variables into the body of a branch.
 
-\heroADVISOR{} That is true\ldots{} One way I think about binding is that it
+\heroADVISOR{} That is true\ldots{}. One way I think about binding is that it
 is just a way to introduce a notion of sharing into abstract syntax
 trees, so that we can refer to the same thing a number of times. And
 you're right that for patterns, the sharing happens from the side of the
@@ -215,10 +215,10 @@ pattern into the branch body, not within the pattern itself.
 
 \heroSTUDENT{} Though there is some of that in dependent pattern matching,
 where you can reuse a pattern variable and an exact matching takes place
-rather than unification\ldots{}
+rather than unification\ldots{}.
 
-\heroADVISOR{} \ldots{}Right. But let's not worry about that right now, let's
-just do simple patterns. So at the top-level, a pattern will just have a
+\heroADVISOR{} \ldots{}Right. But let's not worry about that right now; let's
+just do simple patterns. So at the top level, a pattern will just have a
 single ``tuple type'' argument with the variables it used. I am thinking
 that for sub-patterns, we will need two arguments. One for all the
 variables that \emph{can} be used, initially matching the type argument
@@ -247,14 +247,14 @@ patt_succ : patt T T' \ensuremath{\to} patt T T'.
 
 \heroSTUDENT{} Hmm. So, you said the first argument is what variables are
 ``available'' when we go into the sub-pattern, second is what we're
-``left with''\ldots{} so the variable case, we ``use up'' one variable,
-in the zero case, we don't use any. And for successors, we just
-propagate the variables.
+``left with''\ldots{} so in the variable case, we ``use up'' one
+variable. In the zero case, we don't use any. And for successors, we
+just propagate the variables.
 
 \heroADVISOR{} Exactly. Could you do tuples?
 
 \heroSTUDENT{} Let me see, I think I'll need a helper type for multiple
-patterns\ldots{}
+patterns\ldots{}.
 
 \begin{verbatim}
 pattlist : type \ensuremath{\to} type \ensuremath{\to} type.
@@ -274,8 +274,8 @@ variables that we can use. So if I understand this correctly, top-level
 patterns should always use up all their variables -- they should end
 with the second argument being \texttt{unit}, right?
 
-\heroADVISOR{} Exactly, so this should be fine for a single-branch pattern
-match construct:
+\heroADVISOR{} Exactly, so this should be fine for a single-branch
+pattern-match construct:
 
 \begin{verbatim}
 case_or_else : term \ensuremath{\to} patt T unit \ensuremath{\to} dbind term T term \ensuremath{\to} term \ensuremath{\to} term.
@@ -298,8 +298,8 @@ typeof (patt_succ P) S' S nat :- typeof P S' S nat.
 \end{verbatim}
 
 \heroSTUDENT{} I see, so given a pattern and the types of the variables
-following the sub-pattern, we produce the types of all the variables,
-and the type of the pattern itself. Makes sense. I'll do tuples:
+following the sub-pattern, we produce the types of all the variables and
+the type of the pattern itself. Makes sense. I'll do tuples:
 
 \begin{verbatim}
 typeof : [T T' Ttyp T'typ]
@@ -322,7 +322,7 @@ typeof (case_or_else Scrutinee Pattern Body Else) T' :-
 \end{verbatim}
 
 \heroADVISOR{} That's great! This was a little tricky, but still, not too bad.
-Actually I know of one thing that is surprisingly simple to do: the
+Actually, I know of one thing that is surprisingly simple to do: the
 evaluation rule. We just have to convert a pattern into a term, where we
 replace the pattern variables with \emph{meta-level} unification
 variables -- then we can just reuse meta-level unification to do the

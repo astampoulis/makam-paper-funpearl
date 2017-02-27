@@ -26,7 +26,7 @@ typeof (appt E T) (TF T) :- typeof E (forall TF).
 \begin{verse}
 ``We are now adding top-level programs, to get into datatype declarations. \\
 We would rather do modules, but those would need quite a bit of deliberation. \\
-And we still got contextual types to do, those will require our full attention.''
+And we still have contextual types to do, those will require our full attention.''
 \end{verse}
 
 ```makam
@@ -126,18 +126,18 @@ datatype :
 ```
 
 ADVISOR. Right, so when declaring a datatype, we introduce a `typeconstructor` variable so
-that we can refer to the type recursive when we declare our constructors. And we also have
-acces to the right number of polymorphic variables, matching the `Arity` of the
-constructor. I like how you split out the declaration of the type itself from the "rest of the program" part, this could become unwieldy otherwise.
+that we can refer to the type recursively when we declare our constructors. And we also have
+access to the right number of polymorphic variables, matching the `Arity` of the
+constructor. I like how you split out the declaration of the type itself from the "rest of the program" part, since this could become unwieldy otherwise.
 
-STUDENT. That's what I thought too. And I see why you made the type constructors carry their arity -- to keep types well-formed by construction. In order to be able to actually refer to the type constructors though, don't we need a type former:
+STUDENT. That's what I thought too. And I see why you made the type constructors carry their arities -- to keep types well-formed by construction. In order to be able to actually refer to the type constructors, though, don't we need a type former:
 ```makam
 tconstr : typeconstructor T -> subst typ T -> typ.
 ```
 
 ADVISOR. We do. Also keep in mind that in a richer type system, we probably would need an
-extra kind checking predicate. But this will do for now. Let's just make sure this is fine --
-I'll write down the declaration of binary terms, to make sure we're not missing anything, and typecheck it with Makam.
+extra kind-checking predicate. But this will do for now. Let's just make sure this is fine --
+I'll write down the declaration of binary trees, to make sure we're not missing anything, and typecheck it with Makam.
 
 ```makam
 %type (datatype_declaration
@@ -148,8 +148,8 @@ I'll write down the declaration of binary terms, to make sure we're not missing 
 ```
 
 STUDENT. Looks good. Should we proceed to the actual well-formedness for datatype
-declarations? I think we will need a predicate to keep track of information about
-constructors -- which datatype it belongs to and what arguments it expects. That way we
+declarations? I think we will need a predicate to keep track of information about a
+constructor -- which datatype it belongs to and what arguments it expects. That way we
 can carry that information in the assumptions context.
 
 ```makam
@@ -222,7 +222,7 @@ We are giving it `TypVars` and `CtorType` as inputs, and then we get `PolyType`,
 the needed binders, as an output. And since the way we're using it, `PolyType` cannot
 capture the `TypVars`, it all works out correctly!
 
-ADVISOR. Excellent! Let's add the term-level former for constructors too.
+ADVISOR. Excellent! Let's add the term-level former for constructors, too.
 
 STUDENT. That is easy, compared to what we just did.
 
@@ -234,7 +234,7 @@ typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
   map typeof Args Typs.
 ```
 
-ADVISOR. You're getting the hang of this. Let's do something actually difficult then. Type synonyms.
+ADVISOR. You're getting the hang of this. Let's do something actually difficult, then; type synonyms.
 
 <!--
 Additional information.
