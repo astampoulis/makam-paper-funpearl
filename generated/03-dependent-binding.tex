@@ -370,10 +370,11 @@ that so far.
 there is at least one way to prove the condition, it proceeds to the
 \texttt{then} branch, otherwise it goes to the \texttt{else} branch.
 Pretty standard really. It is one thing that the Prolog cut statement,
-\texttt{!}, is useful for, but it's better to avoid introducing
-\texttt{!}. \citet{kiselyov05backtracking} is worth reading for
-alternatives to the cut statement and the semantics of if-then-else in
-logic programming.
+\texttt{!}, is useful for, but cut introduces all sorts of trouble.
+\citet{kiselyov05backtracking} is worth reading for alternatives to the
+cut statement and the semantics of
+\texttt{if}-\texttt{then}-\texttt{else} and \texttt{not} in logic
+programming, and Makam follows that closely.
 
 \heroSTUDENT{} Noted in my to-read list. But let us try pattern matching out!
 How about predecessors for natural numbers? I'll write a query that

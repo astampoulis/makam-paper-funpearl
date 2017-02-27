@@ -404,9 +404,9 @@ are using if-then-else? We haven't used that so far.
 ADVISOR. Oh yes, I forgot to mention that. It behaves as follows: when there is at least
 one way to prove the condition, it proceeds to the `then` branch, otherwise it goes to the
 `else` branch. Pretty standard really. It is one thing that the Prolog cut statement, `!`,
-is useful for, but it's better to avoid introducing `!`. \citet{kiselyov05backtracking} is
-worth reading for alternatives to the cut statement and the semantics of if-then-else in
-logic programming.
+is useful for, but cut introduces all sorts of trouble. \citet{kiselyov05backtracking} is
+worth reading for alternatives to the cut statement and the semantics of
+`if`-`then`-`else` and `not` in logic programming, and Makam follows that closely.
 
 STUDENT. Noted in my to-read list. But let us try pattern matching out! How about
 predecessors for natural numbers? I'll write a query that type-checks and evaluates a

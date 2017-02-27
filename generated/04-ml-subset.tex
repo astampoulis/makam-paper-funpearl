@@ -2,7 +2,7 @@
 features}\label{where-our-heroes-break-into-song-and-add-more-ml-features}
 
 \begin{scenecomment}
-(Our heroes need a small break, so they work on a couple of features improvising on the Rast makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)
+(Our heroes need a small break, so they work on a couple of features improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)
 \end{scenecomment}
 
 \begin{verse}
@@ -63,8 +63,7 @@ datatype_declaration :
 
 datatype :
   datatype_declaration Arity Ctors \ensuremath{\to}
-  (typeconstructor Arity \ensuremath{\to} dbind constructor Ctors program) \ensuremath{\to}
-  program.
+  (typeconstructor Arity \ensuremath{\to} dbind constructor Ctors program) \ensuremath{\to} program.
 \end{verbatim}
 
 \heroADVISOR{} Right, so when declaring a datatype, we introduce a

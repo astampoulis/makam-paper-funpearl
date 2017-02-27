@@ -72,6 +72,7 @@
 \newcommand\hero[1]{\textit{#1}.}
 \newcommand\heroSTUDENT[0]{\hero{HAGOP}}
 \newcommand\heroADVISOR[0]{\hero{ROZA}}
+\newcommand\heroAUDIENCE[0]{\hero{AUDIENCE}}
 \newenvironment{scenecomment}{\em\noindent}{}
 
 % =====
@@ -95,7 +96,21 @@
 % =====
 
 \begin{abstract}
-\TODO{} Need to write an abstract.
+We demonstrate how the framework of \emph{higher-order logic programming}, as exemplified
+in the \lamprolog language design, is a prime vehicle for rapid prototyping of
+implementations for programming languages with sophisticated type systems. We present the
+literate development of a type checker for a language with a number of complicated
+features, culminating in a standard ML-style core with polymorphic algebraic datatypes and
+type generalization, extended with dependently typed constructs that are generic over a
+separately defined language of dependent indices. We add each new feature in sequence,
+without requiring changes to existing code; as a result, we are able to extend both the ML
+core and the universe of dependent indices independently from each other. Scaling the
+higher-order logic programming approach to this setting required us to develop novel
+approaches to challenges like complex variable binding patterns in object languages,
+performing generic structural traversals of code, and reusing the unification procedure of
+the metalanguage as much as possible. For our development, we make use of Makam, a new
+implementation of \lamprolog, which we introduce in tutorial style as part of our
+literate development.
 \end{abstract}
 
 %% 2012 ACM Computing Classification System (CSS) concepts
@@ -147,11 +162,9 @@
   
   \section{Hindley-Milner Polymorphism}
   \input{generated/07-hindley-milner}
+
+  \input{generated/08-summary}
 }
-
-\section{Conclusion}
-
-\TODO{} We conclude the paper.
 
 \bibliography{main}
 

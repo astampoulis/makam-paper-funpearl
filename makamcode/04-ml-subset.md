@@ -7,7 +7,7 @@
 -->
 
 \begin{scenecomment}
-(Our heroes need a small break, so they work on a couple of features improvising on the Rast makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)
+(Our heroes need a small break, so they work on a couple of features improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)
 \end{scenecomment}
 
 \begin{verse}
@@ -122,8 +122,7 @@ datatype_declaration :
 
 datatype :
   datatype_declaration Arity Ctors ->
-  (typeconstructor Arity -> dbind constructor Ctors program) ->
-  program.
+  (typeconstructor Arity -> dbind constructor Ctors program) -> program.
 ```
 
 ADVISOR. Right, so when declaring a datatype, we introduce a `typeconstructor` variable so

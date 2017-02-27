@@ -15,13 +15,7 @@ wfprogram (type_synonym Syn Program') :-
 \heroADVISOR{} Sure, that works. How about the typing rule for them, then?
 We'll need something like the conversion rule:
 
-\begin{displaymath}
-\inferrule{
-  \Gamma \vdash e : \tau \\ \tau =_{\delta} \tau'
-}{
-  \Gamma \vdash e : \tau'
-}
-\end{displaymath}
+\begin{center}$\inferrule{\Gamma \vdash e : \tau \\ \tau =_{\delta} \tau'}{\Gamma \vdash e : \tau'}$\end{center}
 
 \heroSTUDENT{} Right, \(=_{\delta}\) is equality up to expanding the type
 synonyms.
@@ -42,7 +36,7 @@ typeof E T :- typeof E T', teq T T'.
 rule gets used.
 
 \heroSTUDENT{} Oh. Oh, right. There is a specific proof-finding strategy in
-logic programming, it can't always work\ldots{} I guess we have to
+logic programming, it can't always work\ldots{}. I guess we have to
 switch our rules to an algorithmic type system instead.
 
 \heroADVISOR{} Precisely. Well, luckily, we can do that to a certain extent,
@@ -87,8 +81,7 @@ once at the end, if typing using the normal rules fails.
 
 \begin{verbatim}
 typeof, typeof_cases, typeof_conversion : term \ensuremath{\to} typ \ensuremath{\to} prop.
-typeof E T :-
-  if (typeof_cases E T) then success else (typeof_conversion E T).
+typeof E T :- if (typeof_cases E T) then success else (typeof_conversion E T).
 typeof_cases (app E1 E2) T' :- typeof E1 (arrow T1 T2), typeof E2 T1.
 ...
 typeof_conversion E T :- not(refl.isunif T), typeof_cases E T', teq T T'.
@@ -114,7 +107,7 @@ patterns, but that's almost identical as for terms. (\ldots{}) I'll do
 teq (tconstr TC Args) T' :- type_synonym_info TC Syn, applymany Syn Args T, teq T T'.
 teq T' (tconstr TC Args) :- type_synonym_info TC Syn, applymany Syn Args T, teq T' T.
 teq (arrow T1 T2) (arrow T1' T2') :- teq T1 T1', teq T2 T2'.
-teq (product TS) (product TS') :- map teq TS TS'.
+teq (arrowmany TS T) (arrowmany TS' T') :- map teq TS TS', teq T T'.
 ...
 \end{verbatim}
 
@@ -126,66 +119,58 @@ structural recursion through. Also, whenever we add a new constructor
 for types, we'll have to remember to add a \texttt{teq} rule for
 it\ldots{}.
 
-\heroADVISOR{} Let us reflect a little bit on that.
-
-\TODO{} From here on.
-
-Only the two last cases are important; the rest is boilerplate that
-performs structural recursion through the type. Can we do better than
-that?
-
-Let us ruminate on a possible solution. We want to handle the case where
-we have a constructor applied to a number of arguments generically, so
-roughly something like:
+\heroADVISOR{} Why don't we reflect a bit on this? Ideally we would only write
+a generic rule, to handle any concrete constructor applied to a number
+of arguments. Something like:
 
 \begin{verbatim}
-teq (Constructor Arguments) (Constructor Arguments') :-
-  map teq Arguments Arguments'.
+teq (Constructor Arguments) (Constructor Arguments') :- map teq Arguments Arguments'.
 \end{verbatim}
 
-What we mean here, taking the \texttt{arrow} rule as an example, is that
-\texttt{Constructor} would match with \texttt{arrow}, and
-\texttt{Arguments} would get instantiated with the list of arguments of
-the constructor. One thing to be careful about, though, is that the
-types of arguments are not all the same. As a result, instead of a
-homogeneous list, we need a heterogeneous list, which is simple to
-represent using the existential type, \texttt{dyn}:
+\heroSTUDENT{} Right, so in the example of the \texttt{arrow} type,
+\texttt{Constructor} would match \texttt{arrow} and arguments would be
+instantiated with \texttt{{[}T1,\ T2{]}}. But we are not really
+guaranteed that all arguments are of \texttt{typ} type, or even that
+they are all of the same type, right? Take \texttt{arrowmany} for
+example! The argument list needs to be heterogeneous.
+
+\heroADVISOR{} Glad you figured that out. We can do that using the existential
+type -- let's call it \texttt{dyn} --, so the arguments can be of
+\texttt{list\ dyn} type. And we'll need to make \texttt{teq}
+polymorphic:
 
 \begin{verbatim}
 dyn : type.
 dyn : A \ensuremath{\to} dyn.
-\end{verbatim}
-
-So the type of \texttt{Arguments} should be \texttt{list\ dyn} rather
-than \texttt{list\ typ}. The type of \texttt{teq} will need to be
-changed, so that we can apply it for any different type, rather than
-just \texttt{typ}:
-
-\begin{verbatim}
 teq : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
 \end{verbatim}
 
-Furthermore, since we have a heterogeneous list, we need a \texttt{map}
-that uses polymorphic recursion: it needs take a polymorphic function as
-an argument, so that it can be used at different types for different
-elements of the list.
+\heroSTUDENT{} We'll also need a \texttt{map} for these heterogeneous lists
+too. I believe it will need a polymorphic function as an argument, so
+that it can be used at different types for different elements of the
+list. So something like this:
 
 \begin{verbatim}
-dyn.map : (forall A. [A] A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} list dyn \ensuremath{\to} list dyn \ensuremath{\to} prop.
+map : (forall A. [A] A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} list dyn \ensuremath{\to} list dyn \ensuremath{\to} prop.
 \end{verbatim}
 
-This type is in contrast to one like
-\texttt{{[}A{]}\ (A\ \ensuremath{\to}\ A\ \ensuremath{\to}\ prop)\ \ensuremath{\to}\ list\ dyn\ \ensuremath{\to}\ list\ dyn\ \ensuremath{\to}\ prop},
-which would instantiate the type \texttt{A} to the type of the first
-element of the list, making further applications to different types
-impossible.
+\heroADVISOR{} Right, we'd need higher-rank types here. There's a problem with
 
-Makam currently does not provide higher-rank types as the above type
-suggests -- nor do any \foreignlanguage{greek}{λ}Prolog implementations that we are aware of.
-Instead, it provides a way to side-step this issue, through a predicate
-that replaces polymorphic type variables with fresh variables, allowing
-it to be instantiated with new types. This is called \texttt{dyn.call},
-and \texttt{dyn.map} can be defined in terms of it:
+\begin{verbatim}
+map : [A] (A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} list dyn \ensuremath{\to} list dyn \ensuremath{\to} prop
+\end{verbatim}
+
+In the first \texttt{cons} cell, this would instantiate the type
+\texttt{A} to the type of the first element of the list, making further
+applications to different types impossible.
+
+\heroSTUDENT{} Exactly. Does Makam support higher-rank polymorphism?
+
+\heroADVISOR{} Unfortunately it does not right now, but it should. Nor do any
+other \foreignlanguage{greek}{λ}Prolog implementations that I know of though. Also there is no
+way to refer to a polymorphic constant without implicitly instantiating
+it with new type variables. So we have to use a helper predicate right
+now, called \texttt{dyn.call}, to avoid that issue:
 
 \begin{verbatim}
 dyn.call : [B] (A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} B \ensuremath{\to} B \ensuremath{\to} prop.
@@ -194,144 +179,98 @@ dyn.map P [] [].
 dyn.map P (HD :: TL) (HD' :: TL') :- dyn.call P HD HD', dyn.map P TL TL'.
 \end{verbatim}
 
-(\texttt{dyn.call} is itself defined in terms of a more fundamental
-predicate \texttt{dyn.duphead} that creates a fresh version of a single
-polymorphic constructor with fresh type variables.)
+\heroSTUDENT{} Fair enough. So, going back to our generic rule -- is there a
+way to actually write it? Maybe there's another reflective predicate we
+can use?
 
-Based on these, the only thing missing is a way to actually check
-whether a term is a ground term that can be decomposed into a
-constructor and a list of arguments. Makam provides that functionality
-in the form of the \texttt{refl.headargs} predicate:
+\heroADVISOR{} Exactly -- there is \texttt{refl.headargs}. If a term is
+concrete, it decomposes it into a constructor and a list of
+arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `compound\_{}name\_{}arguments`, which is quite similar.}.
+This isn't a hack though: we could define \texttt{refl.headargs} without
+any special support, save for \texttt{refl.isunif}, if we maintained a
+discipline whenever we add a new constructor:
+
+\begin{verbatim}
+arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
+refl.headargs Term Head Args :- not(refl.isunif Term), eq Term (arrowmany TS T),
+                                eq Head arrowmany, eq Args [TS, T].
+\end{verbatim}
+
+\heroSTUDENT{} So \texttt{refl.headargs} has this type:
 
 \begin{verbatim}
 refl.headargs : B \ensuremath{\to} A \ensuremath{\to} list dyn \ensuremath{\to} prop.
 \end{verbatim}
 
-(Other Prolog implementations also provide predicates towards the same
-effect; for example, SWI-Prolog provides
-\texttt{compound\_name\_arguments}, which is quite similar. Though such
-predicates are not typical in other \foreignlanguage{greek}{λ}Prolog implementations, they should
-not be viewed as a hack: we could always define these within the
-language if we maintained a discipline, where we added a rule to
-\texttt{refl.headargs} for every constructor that we introduce. For
-example:
+\heroADVISOR{} Correct. We should now be able to proceed to defining the
+boilerplate generically. Let's do this as a reusable higher-order
+predicate for structural recursion. I'll give you the type, you fill in
+the first case:
 
 \begin{verbatim}
-arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
-refl.headargs (arrowmany TS T) [arrowmany, [dyn TS, dyn T]].
+structural_recursion : [A B] (A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} B \ensuremath{\to} B \ensuremath{\to} prop.
 \end{verbatim}
 
-The only other wrinkle would be to check via \texttt{refl.isunif} that
-we are not instantiating a unification variable.)
-
-We are now ready to proceed to defining the boilerplate generically. We
-will do this as a reusable higher-order predicate for structural
-recursion, which we will use to implement \texttt{teq}. We will define
-it in open-recursion style, providing the predicate to use on recursive
-calls as an argument:
+\heroSTUDENT{} Let me see. Oh, so, the first argument -- are we doing this in
+open recursion style? Maybe that's the predicate for recursive calls. I
+need to deconstruct a term, apply the recursive call\ldots{}. How is
+this?
 
 \begin{verbatim}
-structural_recursion : [B] (A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} B \ensuremath{\to} B \ensuremath{\to} prop.
-
 structural_recursion Rec X Y :-
   refl.headargs X Constructor Arguments,
   dyn.map Rec Arguments Arguments',
   refl.headargs Y Constructor Arguments'.
 \end{verbatim}
 
-We also need to handle built-in types, such as the meta-level
-\texttt{int} and \texttt{string} types, in case they are used as
-arguments with other constructors:
+\heroAUDIENCE{} I'm sure this was not your first attempt in the unabridged
+version of this story!
 
-\begin{verbatim}
-structural_recursion Rec (X : string) (X : string).
-structural_recursion Rec (X : int) (X : int).
-\end{verbatim}
+\heroADVISOR{} Wait, who said that? Anyway. That looks great! And you're right
+about using \texttt{refl.headargs} in the other direction, to
+reconstruct a new term with the same constructor and different
+arguments.
 
-And last, we need to handle the case of the meta-level function type as
-well:
+\heroSTUDENT{} Are we done?
+
+\heroADVISOR{} Almost there! We just need to handle the case of the meta-level
+function type. We cannot destructure functions using
+\texttt{refl.headargs}, so we have to treat them specially:
 
 \begin{verbatim}
 structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) :-
   (x:A \ensuremath{\to} structural_recursion Rec x x \ensuremath{\to} structural_recursion Rec (X x) (Y x)).
 \end{verbatim}
 
-We are done! Now we can define \texttt{teq} using
-\texttt{structural\_recursion}, through an auxiliary predicate called
-\texttt{teq\_aux}. We only need to define the non-trivial cases for it,
-using \texttt{structural\_recursion} for the rest, while tying the open
-recursion knot at the same time:
+\heroSTUDENT{} This is exciting, I hope this is part of the standard library
+of Makam. I can do \texttt{teq} in a few lines now!
 
 \begin{verbatim}
-teq_aux : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
+teq' : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
+teq T T' :- teq' T T'.
 
-teq T T' :- teq_aux T T'.
-
-teq_aux T T' :-
-  structural_recursion teq_aux T T'.
-
-teq_aux (tconstr TC Args) T' :-
-  type_synonym_info TC Synonym,
-  applymany Synonym Args T,
-  teq_aux T T'.
-
-teq_aux T' (tconstr TC Args) :-
-  type_synonym_info TC Synonym,
-  applymany Synonym Args T,
-  teq_aux T' T.
+teq' (tconstr TC Args) T' :-
+  type_synonym_info TC Synonym, applymany Synonym Args T, teq' T T'.
+teq' T' (tconstr TC Args) :-
+  type_synonym_info TC Synonym, applymany Synonym Args T, teq' T' T.
+teq' T T' :- structural_recursion teq' T T'.
 \end{verbatim}
 
-Other than minimizing the boilerplate, the great thing about using
-\texttt{structural\_recursion} is that no adaptation needs to be done
-when we add any new constructor to our \texttt{typ} datatype -- even if
-it uses new types that we have not defined before. For example, we did
-not have to take any special provision to handle types we defined
-earlier such as \texttt{dbind} -- everything works out thanks to the
-reflective predicates we are using. (Mention something about the
-expression problem?)
+\heroADVISOR{} That is exactly right! So, we've minimized the boilerplate, and
+we won't need any adaptation when we add a new constructor -- even if we
+make use of all sorts of new and complicated types.
 
-The one form of terms that \texttt{structural\_recursion} does not
-handle are uninstantiated unification variables. We have found that it
-works well to define special handling of unification variables for each
-new generically recursive predicate. In this case, \texttt{teq} is only
-supposed to be used with ground terms, so it is fine if we fail when we
+\heroSTUDENT{} That's right, we did not do anything special for the binding
+forms we defined\ldots{}. This is great. But, wait, isn't
+\texttt{structural\_recursion} missing a case? That of uninstantiated
+unification variables?
+
+\heroADVISOR{} It is, but in my experience, it's better to define how to
+handle unification variables as needed, in each new structurally
+recursive predicate. In this case, we're only supposed to use
+\texttt{teq} with ground terms, so it's fine if we fail when we
 encounter a unification variable.
 
-Let us try out an example:
-
-\begin{verbatim}
-ascribe : term \ensuremath{\to} typ \ensuremath{\to} term.
-typeof (ascribe E T) T :- typeof E T.
-
-wfprogram (
-  (type_synonym (dbindnext (fun a \ensuremath{\Rightarrow} dbindbase (product [a, a])))
-  (fun bintuple \ensuremath{\Rightarrow} 
-  
-  main (lam (tconstr bintuple [product [nat, nat]])
-            (fun x \ensuremath{\Rightarrow} 
-    case_or_else x
-    (patt_tuple [patt_tuple [patt_wild, patt_wild], patt_tuple [patt_wild, patt_wild]])
-    (dbindbase (tuple []))
-    (tuple [])
-  ))
-))) ?
->> Yes.
-\end{verbatim}
-
-Let us make sure we do not diverge on type error:
-
-\begin{verbatim}
-wfprogram (
-  (type_synonym (dbindnext (fun a \ensuremath{\Rightarrow} dbindbase (product [a, a])))
-  (fun bintuple \ensuremath{\Rightarrow} 
-  
-  main (lam (tconstr bintuple [product [nat, nat]])
-            (fun x \ensuremath{\Rightarrow} 
-    case_or_else x
-    (patt_tuple [patt_tuple [patt_wild], patt_tuple [patt_wild, patt_wild]])
-    (dbindbase (tuple []))
-    (tuple [])
-  ))
-))) ?
->> Impossible.
-\end{verbatim}
+\begin{scenecomment}
+(Our heroes try out a few examples and convince themselves that this works OK and no endless loops happen when things don't typecheck correctly.)
+\end{scenecomment}

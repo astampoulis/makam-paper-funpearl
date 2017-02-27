@@ -1,4 +1,4 @@
-# Where our heroes set on a road to prototype a type system
+# Where our heroes set out on a road to prototype a type system
 
 \hero{HAGOP (Student)} (...) So yes, I think my next step should be writing a toy implementation of the
 type system we have in mind, so that we can try out some examples and see what works
