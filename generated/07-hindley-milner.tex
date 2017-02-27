@@ -14,12 +14,11 @@ polymorphic \texttt{let} in the style of
 \citet{damas1984type,hindley1969principal,milner1978theory}. I remember
 the typing rule looks like this:
 
-\vspace{-1em}\begin{mathpar}
-\small
+\vspace{-1.2em}\begin{mathpar}
 \inferrule{\Gamma \vdash e : \tau \\ \vec{a} = \text{fv}(\tau) - \text{fv}(\Gamma) \\ \Gamma, x : \forall \vec{a}.\tau \vdash e' : \tau'}{\Gamma \vdash \text{let} \; x = e \; \text{in} \; e' : \tau'}
 \end{mathpar}
 
-\heroADVISOR{} Right, and we don't have any side-effectful operations, so no
+\heroADVISOR{} Right, and we don't have any side-effectful operations, so, no
 need for a value restriction. Let's assume a predicate for generalizing
 the type, for now; the rest are easy:
 
@@ -49,10 +48,10 @@ the following ingredients:
 soon, so bear with me for a bit. There's this generic operation in the
 Makam standard library, called \texttt{generic.fold}. It is quite
 similar to \texttt{structural\_recursion}, but it does a fold through a
-term, updating an accumulator. Pretty standard, really, and its code is
-similar to what we've seen already. I'll use it to define a predicate
-that returns \emph{one} unification variable of the right type from a
-term, if at least one exists.
+term, carrying an accumulator through. Pretty standard, really, and its
+code is similar to what we've seen already. I'll use it to define a
+predicate that returns \emph{one} unification variable of the right type
+from a term, if at least one exists.
 
 \begin{verbatim}
 findunif : [A B] option B \ensuremath{\to} A \ensuremath{\to} option B \ensuremath{\to} prop.
@@ -64,7 +63,7 @@ findunif : [A B] A \ensuremath{\to} B \ensuremath{\to} prop.  findunif T X :- fi
 
 \heroSTUDENT{} Oh, the second rule is the important one -- it will only match
 when we encounter a unification variable of the same type as the one we
-require.
+require, thanks to type specialization.
 
 \heroADVISOR{} Exactly. Now we add a predicate that, given a specific
 unification variable and a specific term, replaces its occurrences with

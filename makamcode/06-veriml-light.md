@@ -48,9 +48,8 @@ STUDENT. Right, we might need to treat variables specially, so it's good that th
 
 ADVISOR. Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to signify things that have to do with the dependent indices.
 
-\vspace{-1em}
+\vspace{-1.5em}
 \begin{mathpar}
-\small
 \inferrule{\dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
           {\Gamma; \dep{\Psi} \vdash \lift{\dep{i}} : \lift{\dep{c}}}
 
@@ -166,7 +165,7 @@ depsubst_aux Var Replace Where Result :-
         structural_recursion (depsubst_aux Var Replace) Where Result).
 ```
 
-ADVISOR. Great! We only have one thing missing: we need to close the loop, being able to refer to dependent variables from within object-level terms and types. By the way, we are very much following the construction of \textit{(reference elided for blind submission)}.
+ADVISOR. Great! We only have one thing missing: we need to close the loop, being able to refer to a dependent variable from within an object-level term or type. 
 
 STUDENT. I got this.
 

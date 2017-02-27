@@ -64,8 +64,7 @@ classifiers are well-formed.
 ``\(\dep{\cdot}\)'' to signify things that have to do with the dependent
 indices.
 
-\vspace{-1em}\begin{mathpar}
-\small
+\vspace{-1.5em}\begin{mathpar}
 \inferrule{\dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
           {\Gamma; \dep{\Psi} \vdash \lift{\dep{i}} : \lift{\dep{c}}}
 
@@ -156,9 +155,8 @@ depsubst_aux Var Replace Where Result :-
 \end{verbatim}
 
 \heroADVISOR{} Great! We only have one thing missing: we need to close the
-loop, being able to refer to dependent variables from within
-object-level terms and types. By the way, we are very much following the
-construction of \textit{(reference elided for blind submission)}.
+loop, being able to refer to a dependent variable from within an
+object-level term or type.
 
 \heroSTUDENT{} I got this.
 

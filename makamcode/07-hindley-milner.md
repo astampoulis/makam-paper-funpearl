@@ -17,13 +17,12 @@ And if you haven't guessed it yet, we'll use some term reflection.''
 STUDENT. I got an idea for implementing type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}.
 I remember the typing rule looks like this:
 
-\vspace{-1em}
+\vspace{-1.2em}
 \begin{mathpar}
-\small
 \inferrule{\Gamma \vdash e : \tau \\ \vec{a} = \text{fv}(\tau) - \text{fv}(\Gamma) \\ \Gamma, x : \forall \vec{a}.\tau \vdash e' : \tau'}{\Gamma \vdash \text{let} \; x = e \; \text{in} \; e' : \tau'}
 \end{mathpar}
 
-ADVISOR. Right, and we don't have any side-effectful operations, so no need for a value
+ADVISOR. Right, and we don't have any side-effectful operations, so, no need for a value
 restriction. Let's assume a predicate for generalizing the type, for now; the rest are easy:
 
 ```makam
@@ -42,7 +41,7 @@ STUDENT. Right, so for generalization, based on the typing rule, we need the fol
 ADVISOR. OK. So, I've done this before, and I need to leave for home soon, so bear with me
 for a bit. There's this generic operation in the Makam standard library, called
 `generic.fold`. It is quite similar to `structural_recursion`, but it does a fold through
-a term, updating an accumulator. Pretty standard, really, and its code is similar to what
+a term, carrying an accumulator through. Pretty standard, really, and its code is similar to what
 we've seen already. I'll use it to define a predicate that returns *one* unification
 variable of the right type from a term, if at least one exists.
 
@@ -55,7 +54,7 @@ findunif : [A B] A -> B -> prop.  findunif T X :- findunif none T (some X).
 ```
 
 STUDENT. Oh, the second rule is the important one -- it will only match when we encounter a unification
-variable of the same type as the one we require.
+variable of the same type as the one we require, thanks to type specialization.
 
 ADVISOR. Exactly. Now we add a predicate that, given a specific unification variable and a
 specific term, replaces its occurrences with the term. I'll show you later why this
