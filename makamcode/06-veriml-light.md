@@ -37,13 +37,14 @@ ADVISOR. It's a plan. So, let's get to it. Let's first add distinguished sorts f
 depindex, depclassifier, depvar : type.
 depclassify : depindex -> depclassifier -> prop.
 depclassify : depvar -> depclassifier -> prop.
+depwf : depclassifier -> prop.
 depsubst : [A] (depvar -> A) -> depindex -> A -> prop.
 ```
 
 \newcommand\dep[1]{\ensuremath{#1_{\text{d}}}}
 \newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
 
-STUDENT. Right, we might need to treat variables specially, so it's good that they're a different type. And let's assume that classifiers are well-formed by construction. 
+STUDENT. Right, we might need to treat variables specially, so it's good that they're a different type. And we might need to check that are well-formed.
 
 ADVISOR. Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to signify things that have to do with the dependent indices.
 
@@ -53,7 +54,7 @@ ADVISOR. Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to s
 \inferrule{\dep{\Psi} \dep{\vdash} \dep{c} : \dep{i}}
           {\Gamma; \dep{\Psi} \vdash \lift{\dep{c}} : \lift{\dep{i}}}
 
-\inferrule{\Gamma; \dep{\Psi}, \; \dep{v} : \dep{c} \vdash e : \tau}
+\inferrule{\Gamma; \dep{\Psi}, \; \dep{v} : \dep{c} \vdash e : \tau \\ \dep{\Psi} \dep{\vdash} \dep{c} \; \text{wf}}
           {\Gamma; \dep{\Psi} \vdash \Lambda \dep{v} : \dep{c}.e : \Pi \dep{v} : \dep{c}.\tau}
 
 \inferrule{\Gamma; \dep{\Psi} \vdash e : \Pi \dep{v} : \dep{c}.\tau \\ \dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
@@ -69,7 +70,7 @@ liftdep : depindex -> term. liftdep : depclassifier -> typ.
 pidep : depclassifier -> (depvar -> typ) -> typ.
 
 typeof (lamdep C EF) (pidep C TF) :-
-  (v:depvar -> depclassify v C -> typeof (EF v) (TF v)).
+  (v:depvar -> depclassify v C -> typeof (EF v) (TF v)), depwf C.
 typeof (appdep E I) T' :- typeof E (pidep C TF), depclassify I C, depsubst TF I T'.
 typeof (liftdep I) (liftdep C) :- depclassify I C.
 ```
@@ -101,7 +102,7 @@ eval (succ E) (succ V) :- eval E V.
 <!-- flipped order in the narrative, we need to declare `wftyp` first.
 ```makam
 %extend object.
-wftyp : typ -> prop. wftyp_cases, wftyp_aux : [A] A -> A -> prop.
+wftyp : typ -> prop.
 %end.
 ```
 -->
@@ -114,28 +115,55 @@ ctyp : object.typ -> depclassifier.  cext : depclassifier.
 
 depclassify (iterm E) (ctyp T) :- object.typeof E T.
 depclassify (ityp T) cext :- object.wftyp T.
+depwf (ctyp T) :- object.wftyp T.
+depwf cext.
 ```
 
-ADVISOR. Right, we'll need to check that types are well-formed, too. Right now, they are all well-formed by construction, but let's prepare for any additions, by setting up a structurally recursive predicate:
+ADVISOR. Right, we'll need to check that types are well-formed, too. Right now, they are all well-formed by construction, but let's prepare for any additions, by setting up a structurally recursive predicate. The `wftyp_cases` predicate will hold the important type-checking cases, and it will have an extra argument to say whether
+it applies or not.
 
-```makam
+```
 %extend object.
-wftyp : typ -> prop. wftyp_cases, wftyp_aux : [A] A -> A -> prop.
+wftyp : typ -> prop. wftyp_aux : [A] A -> A -> prop.
+wftyp_cases : [A] A -> A -> bool -> prop.
 wftyp T :- wftyp_aux T T.
 wftyp_aux T T :-
-  if (wftyp_cases T T) then success else (structural_recursion wftyp_aux T T).
+  if (wftyp_cases T T Applies)
+  then (eq Applies true)
+  else (eq Applies false, structural_recursion wftyp_aux T T).
 %end.
 ```
 
-STUDENT. I see -- your structural recursion just needs to do a visit, it does not need to produce an output; hence the repeat of the same `typ` argument. Let's prepare for substitutions too.
+<!-- warning: don't redeclare wftyp from above.
 
 ```makam
-depsubst_aux, depsubst_cases : [A] depvar -> depindex -> A -> A -> prop.
+%extend object.
+wftyp_aux : [A] A -> A -> prop.
+wftyp_cases : [A] A -> A -> bool -> prop.
+wftyp T :- wftyp_aux T T.
+wftyp_aux T T :-
+  if (wftyp_cases T T Applies)
+  then (eq Applies true)
+  else (eq Applies false, structural_recursion wftyp_aux T T).
+%end.
+```
+
+-->
+
+STUDENT. I see -- if a type-checking rule applies, but fails, we don't want to proceed to
+do structural recursion; it would defeat the purpose. I also see that your structural
+recursion just needs to do a simple visit, it does not need to produce an output; hence
+the repeat of the same `typ` argument. Let's prepare for substitutions too, in the same way.
+
+```makam
+depsubst_aux : [A] depvar -> depindex -> A -> A -> prop.
+depsubst_cases : [A] depvar -> depindex -> A -> A -> bool -> prop.
 depsubst F I Res :- (v:depvar -> depsubst_aux v I (F v) Res).
 depsubst_aux Var Replace Where Result :-
-  if (depsubst_cases Var Replace Where Result)
-  then (success)
-  else (structural_recursion (depsubst_aux Var Replace) Where Result).
+  if (depsubst_cases Var Replace Where Result Applies)
+  then (eq Applies true)
+  else (eq Applies false,
+        structural_recursion (depsubst_aux Var Replace) Where Result).
 ```
 
 ADVISOR. Great! We only have one thing missing: we need to close the loop, being able to refer to dependent variables from within object-level terms and types. By the way, we are very much following the construction in \citet{stampoulis2013veriml}.
@@ -147,11 +175,11 @@ STUDENT. I got this.
 varterm : depvar -> term.  vartyp : depvar -> typ.
 
 typeof (varterm V) T :- depclassify V (ctyp T).
-wftyp_cases (vartyp V) (vartyp V) :- depclassify T cext.
+wftyp_cases (vartyp V) (vartyp V) true :- depclassify V cext.
 %end.
 
-depsubst_cases Var (iterm Replace) (object.varterm Var) Replace.
-depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace.
+depsubst_cases Var (iterm Replace) (object.varterm Var) Replace true.
+depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace true.
 ```
 
 ADVISOR. This is exciting, let me try this out! I'll do a function that takes an
@@ -165,7 +193,7 @@ typeof (lamdep cext (fun t =>
 >>        liftdep (ctyp (object.arrow (object.vartyp t) (object.vartyp t))))
 ```
 
-STUDENT. Wow, even the Makam REPL is excited!
+STUDENT. Look, even the Makam REPL is excited!
 
 ADVISOR. Wait until it sees what we have in store for it next: open STLC terms in our
 indices!
@@ -176,108 +204,81 @@ to record at the type level, the context that open terms depend on. So let's say
 `object.term` of type $\tau$ that mentions variables of a $\Phi$ context would have a
 contextual type of the form $[\Phi] \tau$. This is some sort of modal typing, with a precise context.
 
-ADVISOR. 
+ADVISOR. Right. So in our case, open STLC terms depend on a number of variables, and we will need to keep track of the STLC types of those variables, in order to maintain type safety. So, let's add a new dependent index for open STLC terms; and, a dependent classifier for their contextual type, which records the types of the variables that the term depends on, as well as the actual type of the term itself.
 
-We can also handle the case of non-closed terms, using contextual types:
-```makam
-%extend object.
-subst : type -> type.
-subst : list A -> subst A.
-
-ctx : type -> type.
-ctx : subst typ -> bindmany term A -> ctx A.
-
-openctx : ctx A -> (subst term -> subst typ -> A -> prop) -> prop.
-applyctx : ctx A -> subst term -> A -> prop.
-
-openctx (ctx Types Binds) P :-
-  openmany Binds (pfun vars body =>
-    P (subst vars) Types body
-  ).
-
-applyctx (ctx _ Binds) (subst Args) Result :-
-  applymany Binds Args Result.
-
-map : (A -> B -> prop) -> subst A -> subst B -> prop.
-map P (subst L) (subst L') :- map P L L'.
-%end.
-
-openterm : object.ctx object.term -> depindex.
-ctxtyp : object.subst object.typ -> object.typ -> depclassifier.
-
-depclassify (openterm CtxE) (ctxtyp Typs T) :-
-  object.openctx CtxE (pfun vars typs e => [Units]
-    object.map (pfun t u => object.wftyp t) typs (Units : object.subst unit),
-    object.map eq typs Typs,
-    object.typeof e T).
-```
-
-And one last step: reify open terms back into the language:
+STUDENT. Let me see. I think something like this is what we want:
 
 ```makam
-%extend object.
-metaterm : depindex -> subst term -> term.
-
-typeof (metaterm E ES) T :-
-  refl.isnvar E,
-  depclassify E (ctxtyp Typs T),
-  object.map object.typeof ES Typs.
-%end.
-
-depsubst_cases Var (openterm CtxE) (object.metaterm Var Subst) Result :-
-  object.applyctx CtxE Subst E,
-  depsubst_aux Var (openterm CtxE) E Result.
+iopen_term : bindmany object.term object.term -> depindex.
+cctx_typ : list object.typ -> object.typ -> depclassifier.
 ```
+
+ADVISOR. That looks right to me. I can write the classification and well-formedness rules for those.
 
 <!--
-
-Here is the final example program.
+```makam
+foreach : [A] (A -> prop) -> list A -> prop.
+foreach P [].
+foreach P (HD :: TL) :- P HD, foreach P TL.
+```
+-->
 
 ```makam
-(eq _FUNCTION
-  (lamdep ext (fun t1 =>
-    (lamdep ext (fun t2 =>
-    (lamdep (ctxtyp (object.subst [object.metatyp t1]) (object.metatyp t2)) (fun x_e =>
-    (packdep (openterm (object.ctx (object.subst []) (bindbase (object.lam _ (fun x =>
-      object.tuple [object.metaterm x_e #SUBST, object.intconst 5]
-    ))))) (tuple []) (fun _ => product [])))))))),
- typeof _FUNCTION FUNCTION_TYPE,
-
- typeof 
-  (appdep (appdep 
-    _FUNCTION 
-    (typ object.tint)) 
-    (typ (object.product [object.tint])))
- APPLIED_TYPE) ?
->> Yes:
->> SUBST := fun t1 t2 x_e x => subst (cons x nil),
->> FUNCTION_TYPE :=
->>  pidep ext (fun t1 =>
->>  pidep ext (fun t2 =>
->>  pidep (ctxtyp (object.subst (cons (object.metatyp t1) nil)) (object.metatyp t2))
->>  (fun x_e =>
->>    sigdep 
->>      (ctxtyp (subst nil) 
->>       (arrow
->>         (object.metatyp t1)
->>         (product (cons (object.metatyp t2) (cons tint nil)))))
->>     (fun _ => product nil)))),
->> APPLIED_TYPE :=
->>  pidep (ctxtyp
->>    (object.subst (cons object.tint nil))
->>    (object.product (cons object.tint nil)))
->>  (fun x_e =>
->>    sigdep (ctxtyp
->>      (subst nil)
->>      (arrow
->>        object.tint
->>        (product (cons (object.product (cons object.tint nil)) (cons tint nil)))))
->>    (fun _ => product nil))
+depclassify (iopen_term XS_E) (cctx_typ TS T) :-
+  openmany XS_E (pfun xs e =>
+    assumemany object.typeof xs TS (object.typeof e T),
+    foreach object.wftyp TS).
+depwf (cctx_typ TS T) :- foreach object.wftyp TS, object.wftyp T.
 ```
 
-Note that we can infer both the type of the lambda abstraction and the substitution
-itself. Getting to that point in the VeriML implementation took months!
+STUDENT. That makes a lot of sense. I see you are also checking well-formedness for the
+types that the context introduces; and `foreach` is exactly like `map`, but there's no
+output, so it applies a single-argument predicate to each element of the list.
 
-Mention that adding polymorphic contexts and dependent pattern matching as in VeriML is
-also possible, but we won't show it here.
--->
+ADVISOR. Right. We now get to the tricky part: referring to variables that stand for open
+terms within other terms! You know what those are, right? Those are Object-level
+Object-level Meta-variables.
+
+STUDENT. My head hurts, I'm getting [OOM](https://en.wikipedia.org/wiki/Out_of_memory) errors. Maybe this is easier to implement in Makam than to talk about.
+
+ADVISOR. Might be so. Well, let me just say this: those variables will stand for open terms that depend on a specific context $\Phi$, but we might use them at a different context $\Phi'$. We need a *substitution* $\sigma$ to go from the context they were defined, to the current context.
+
+STUDENT. OK, and then we need to apply that substitution $\sigma$ when we substitute an
+actual open term for the metavariable. I know what to do:
+
+```makam
+%extend object.
+varmeta : depvar -> list term -> term.
+typeof (varmeta V ES) T :- depclassify E (cctx_typ TS T), map object.typeof ES TS.
+%end.
+depsubst_cases Var (iopen_term XS_E) (object.varmeta Var ES) Result true :-
+  applymany XS_E ES E', depsubst_aux Var (iopen_term XS_E) E' Result.
+```
+
+ADVISOR. That should be it, let's try this out! Let's do meta-level application, maybe?
+So, take a "function" body that needs a single argument, and an instantiation for that
+argument, and do the substitution at the meta-level. This will be sort-of like inlining. And let's use unification variables wherever it makes sense, to push our rules to infer what they can for themselves!
+
+```makam
+typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
+       (lamdep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
+       (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
+         (object.varmeta f [object.varterm a]))))))))))))) T ?
+>> Yes:
+>> T := (pidep (cext (fun t1 => pidep (cext (fun t2 =>
+>>      (pidep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
+>>      (pidep (ctyp (object.vartyp t1)) (fun a =>
+>>      (liftdep (cctx_typ [] (object.vartyp t2))))))))))))
+```
+
+STUDENT. That's it! That's it! I cannot believe how easy this was!
+
+AUDIENCE. Neither can we believe that you thought this was easy!
+
+AUTHOR. Trust me, you should have seen how many weeks it took me to implement something
+like this in OCaml.... it was enough to make me start working on Makam. That took two years,
+but now we can at least show it in 24 pages of a single-column PDF!
+
+ADVISOR. Where are all these voices coming from?
+
+STUDENT. They might be the ghosts of people who left academia for industry.
