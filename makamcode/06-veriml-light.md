@@ -1,4 +1,4 @@
-# Where our heroes add dependent types and contextual types
+# Where our heroes tackle dependencies, contexts, and a new level of meta
 
 <!--
 ```makam
@@ -6,12 +6,34 @@
 ```
 -->
 
-Let us now add one more meta level: make our object language a meta-language as well!
-That is, we will add the ability to our object language to manipulate terms of a different
-object language, in a type-safe manner. This is similar, for example, to heterogeneous
-meta-programming in MetaHaskell; however, the setting we have in mind is closer to
-metalanguages where the object language is a logic, similar to Beluga (where the object
-language is LF) and VeriML (where the object language is the $\lambda\text{HOL}$ logic).
+STUDENT. I'm fairly confident by now that Makam should be able to handle the research idea
+we want to try out. Shall we get to it?
+
+ADVISOR. Yes, it is time. So, what we are aiming to do, is add a facility for type-safe, heterogeneous meta-programming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a separate object language in a type-safe manner.
+
+STUDENT. Exactly. We'd like our object language to be a formal logic, so our language will
+be similar to Beluga \citep{pientka2010beluga} or VeriML
+\citep{stampoulis2013veriml}. We'll have to be able to pattern match over the terms of the
+object language, too.... But we don't need to do all of that, let's just do a basic
+version for now, and I can do the rest on my own.
+
+ADVISOR. Sounds good. So, I think the fragment we should do is this: we will have
+dependent functions over a distinguished language of *dependent indices*. We need the
+dependency so that, for example, we can take an object-level type as an argument, and
+return an object-level term that uses that type.
+
+STUDENT. Exactly. Dependent products should be similar, but we can skip them for now, and just add a way to return an object-level term from the meta-level terms.
+
+ADVISOR. Good idea. We are getting into many levels of meta -- there's the meta-language
+we're using, Makam; there's the object language we are encoding, which is a meta-language
+in itself, let's call that Heterogeneous Meta ML Light (HMML?); and there's the
+"object-object" language that HMML is manipulating. And let's keep that last one simple: the simply typed lambda calculus (STLC).
+
+STUDENT. Great. So our dependent indices will be the types and terms of STLC.
+
+ADVISOR. It's a plan. 
+
+\TODO{} From here on.
 
 We will follow the construction of (cite my dissertation), but using a simpler object
 language. We will first define the notion of *dependent objects*. These are objects
@@ -52,14 +74,10 @@ typeof (lamdep DC EF) (pidep DC TF) :-
   (x:depobject -> depclassify x DC -> typeof (EF x) (TF x)).
 
 typeof (appdep E DO) T' :-
-  typeof E (pidep DC TF),
-  depclassify DO DC,
-  depsubst TF DO T'.
+  typeof E (pidep DC TF), depclassify DO DC, depsubst TF DO T'.
 
 typeof (packdep DO E TYPF) (sigdep DC TYPF) :-
-  depclassify DO DC,
-  depsubst TYPF DO T',
-  typeof E T'.
+  depclassify DO DC, depsubst TYPF DO T', typeof E T'.
 
 typeof (unpackdep E F) T' :-
   typeof E (sigdep DC TYPF),
@@ -77,9 +95,7 @@ already defined in a separate namespace:
 %extend object.
 intconst : int -> term.
 intplus : term -> term -> term.
-
 tint : typ.
-
 typeof (intconst _) tint.
 typeof (intplus E1 E2) tint :- typeof E1 tint, typeof E2 tint.
 %end.

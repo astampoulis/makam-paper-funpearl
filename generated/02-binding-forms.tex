@@ -158,8 +158,7 @@ a type for multiple-argument functions. Would this work?
 arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
 typeof (lammany F) (arrowmany TS T') :-
   intromany F (fun xs \ensuremath{\Rightarrow}
-    applymany F xs Body,
-    assumemany typeof xs TS (typeof Body T')).
+    applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
 \end{verbatim}
 
 \heroADVISOR{} Almost. There is an issue here: the unification variable
@@ -178,10 +177,8 @@ to \texttt{fun}. So:
 
 \begin{verbatim}
 typeof (lammany F) (arrowmany TS T') :-
-  intromany F (pfun xs \ensuremath{\Rightarrow} (
-    [Body]
-      applymany F xs Body,
-      assumemany typeof xs TS (typeof Body T'))).
+  intromany F (pfun xs \ensuremath{\Rightarrow} ([Body]
+    applymany F xs Body, assumemany typeof xs TS (typeof Body T'))).
 \end{verbatim}
 
 \heroSTUDENT{} Oh, so \texttt{{[}Body{]}} is like existential quantification.
@@ -191,8 +188,7 @@ always need both the variables and the body of a \texttt{bindmany}?
 
 \begin{verbatim}
 openmany : bindmany A B \ensuremath{\to} (list A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} prop.
-openmany F P :-
-  intromany F (pfun xs \ensuremath{\Rightarrow} [Body] applymany F xs Body, P xs Body).
+openmany F P :- intromany F (pfun xs \ensuremath{\Rightarrow} [Body] applymany F xs Body, P xs Body).
 \end{verbatim}
 
 \heroADVISOR{} Yes, that predicate turns out to be quite useful. Let's try out

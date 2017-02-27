@@ -157,8 +157,7 @@ arrowmany : list typ -> typ -> typ.
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T') :-
   intromany F (fun xs =>
-    applymany F xs Body,
-    assumemany typeof xs TS (typeof Body T')).
+    applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
 ```
 
 ADVISOR. Almost. There is an issue here: the unification variable `Body` cannot capture
@@ -174,10 +173,8 @@ anonymous predicates; save for predicate syntax, it's entirely identical to `fun
 *)
 
 typeof (lammany F) (arrowmany TS T') :-
-  intromany F (pfun xs => (
-    [Body]
-      applymany F xs Body,
-      assumemany typeof xs TS (typeof Body T'))).
+  intromany F (pfun xs => ([Body]
+    applymany F xs Body, assumemany typeof xs TS (typeof Body T'))).
 
 (*
 
@@ -188,8 +185,7 @@ always need both the variables and the body of a `bindmany`?
 *)
 
 openmany : bindmany A B -> (list A -> B -> prop) -> prop.
-openmany F P :-
-  intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
+openmany F P :- intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
 
 (*
 

@@ -30,10 +30,8 @@ The rule is easy to transcribe in Makam, assuming a predicate for generalizing a
 ```makam
 generalize : typ -> typ -> prop.
 
-typeof (let E F) T' :-
-  typeof E T,
-  generalize T Tgen,
-  (x:term -> typeof x Tgen -> typeof (F x) T').
+typeof (let E F) T' :- typeof E T, generalize T Tgen,
+                       (x:term -> typeof x Tgen -> typeof (F x) T').
 ```
 
 So we need the following ingredients:
@@ -66,13 +64,10 @@ metavariable, to avoid the undesired side effect of unifying distinct metavariab
 
 ```makam
 replaceunif : [A B] A -> A -> B -> B -> prop.
-replaceunif Which ToWhat Where Result :-
-  refl.isunif Where,
-  if (refl.sameunif Which Where)
-  then (eq (dyn Result) (dyn ToWhat))
+replaceunif Which ToWhat Where Result :- refl.isunif Where,
+  if (refl.sameunif Which Where) then (eq (dyn Result) (dyn ToWhat))
   else (eq Result Where).
-replaceunif Which ToWhat Where Result :-
-  not(refl.isunif Where),
+replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
   structural_recursion (replaceunif Which ToWhat) Where Result.
 ```
 
@@ -92,8 +87,7 @@ hasunif Term Var :- hasunif Var false Term true.
 We are now ready to implement `generalize`. Base case: there exist no unification variables
 within a type:
 ```makam
-generalize T T :- 
-  not(findunif T X).
+generalize T T :- not(findunif T X).
 ```
 
 Recursive case: there exists at least one unification variable. We will pick out that unification
@@ -111,9 +105,7 @@ generalize T Res :-
   findunif T X,
   (x:typ -> (replaceunif X x T (T' x), generalize (T' x) (T'' x))),
   get_types_in_environment Types,
-  if (hasunif Types X)
-  then (eq Res (T'' X))
-  else (eq Res (forall T'')).
+  if (hasunif Types X) then (eq Res (T'' X)) else (eq Res (forall T'')).
 ```
 
 What can `get_types_in_environment` be? We could change all our typing rules to add a list argument
@@ -135,7 +127,7 @@ typeof (let (lam _ (fun x => x)) (fun id => id)) T ?
 >> T := forall (fun a => arrow a a)
 ```
 
-Another example, where the problem of naive generalization shows up:
+Another example, where the problem with naive generalization would show up:
 
 ```makam
 typeof (let (lam _ (fun x => let x (fun y => y)))
@@ -143,7 +135,7 @@ typeof (let (lam _ (fun x => let x (fun y => y)))
 >> Yes:
 >> T := forall (fun a => arrow a a)
 ```
-
+<!--
 (Just checking the issue where we don't remove all unification variables in the context -- this
 is a hack, if we need to do this we can show the above in two steps instead:)
 
@@ -154,3 +146,4 @@ is a hack, if we need to do this we can show the above in two steps instead:)
 >> Yes:
 >> T := forall (fun a => arrow a (forall (fun b => b)))
 ```
+-->

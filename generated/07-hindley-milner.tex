@@ -27,10 +27,8 @@ generalizing a type:
 \begin{verbatim}
 generalize : typ \ensuremath{\to} typ \ensuremath{\to} prop.
 
-typeof (let E F) T' :-
-  typeof E T,
-  generalize T Tgen,
-  (x:term \ensuremath{\to} typeof x Tgen \ensuremath{\to} typeof (F x) T').
+typeof (let E F) T' :- typeof E T, generalize T Tgen,
+                       (x:term \ensuremath{\to} typeof x Tgen \ensuremath{\to} typeof (F x) T').
 \end{verbatim}
 
 So we need the following ingredients:
@@ -75,13 +73,10 @@ effect of unifying distinct metavariables.
 
 \begin{verbatim}
 replaceunif : [A B] A \ensuremath{\to} A \ensuremath{\to} B \ensuremath{\to} B \ensuremath{\to} prop.
-replaceunif Which ToWhat Where Result :-
-  refl.isunif Where,
-  if (refl.sameunif Which Where)
-  then (eq (dyn Result) (dyn ToWhat))
+replaceunif Which ToWhat Where Result :- refl.isunif Where,
+  if (refl.sameunif Which Where) then (eq (dyn Result) (dyn ToWhat))
   else (eq Result Where).
-replaceunif Which ToWhat Where Result :-
-  not(refl.isunif Where),
+replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
   structural_recursion (replaceunif Which ToWhat) Where Result.
 \end{verbatim}
 
@@ -102,8 +97,7 @@ We are now ready to implement \texttt{generalize}. Base case: there
 exist no unification variables within a type:
 
 \begin{verbatim}
-generalize T T :- 
-  not(findunif T X).
+generalize T T :- not(findunif T X).
 \end{verbatim}
 
 Recursive case: there exists at least one unification variable. We will
@@ -124,9 +118,7 @@ generalize T Res :-
   findunif T X,
   (x:typ \ensuremath{\to} (replaceunif X x T (T' x), generalize (T' x) (T'' x))),
   get_types_in_environment Types,
-  if (hasunif Types X)
-  then (eq Res (T'' X))
-  else (eq Res (forall T'')).
+  if (hasunif Types X) then (eq Res (T'' X)) else (eq Res (forall T'')).
 \end{verbatim}
 
 What can \texttt{get\_types\_in\_environment} be? We could change all
@@ -151,23 +143,12 @@ typeof (let (lam _ (fun x \ensuremath{\Rightarrow} x)) (fun id \ensuremath{\Righ
 >> T := forall (fun a \ensuremath{\Rightarrow} arrow a a)
 \end{verbatim}
 
-Another example, where the problem of naive generalization shows up:
+Another example, where the problem with naive generalization would show
+up:
 
 \begin{verbatim}
 typeof (let (lam _ (fun x \ensuremath{\Rightarrow} let x (fun y \ensuremath{\Rightarrow} y)))
             (fun z \ensuremath{\Rightarrow} z)) T ?
 >> Yes:
 >> T := forall (fun a \ensuremath{\Rightarrow} arrow a a)
-\end{verbatim}
-
-(Just checking the issue where we don't remove all unification variables
-in the context -- this is a hack, if we need to do this we can show the
-above in two steps instead:)
-
-\begin{verbatim}
-(get_types_in_environment [] \ensuremath{\to}
-  typeof (let (lam _ (fun x \ensuremath{\Rightarrow} let x (fun y \ensuremath{\Rightarrow} y)))
-            (fun z \ensuremath{\Rightarrow} z)) T) ?
->> Yes:
->> T := forall (fun a \ensuremath{\Rightarrow} arrow a (forall (fun b \ensuremath{\Rightarrow} b)))
 \end{verbatim}

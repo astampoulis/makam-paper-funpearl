@@ -143,8 +143,7 @@ arrowmany : list typ -> typ -> typ.
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T') :-
   intromany F (fun xs =>
-    applymany F xs Body,
-    assumemany typeof xs TS (typeof Body T')).
+    applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
 ```
 
 ADVISOR. Almost. There is an issue here: the unification variable `Body` cannot capture
@@ -159,10 +158,8 @@ anonymous predicates; save for predicate syntax, it's entirely identical to `fun
 
 ```makam
 typeof (lammany F) (arrowmany TS T') :-
-  intromany F (pfun xs => (
-    [Body]
-      applymany F xs Body,
-      assumemany typeof xs TS (typeof Body T'))).
+  intromany F (pfun xs => ([Body]
+    applymany F xs Body, assumemany typeof xs TS (typeof Body T'))).
 ```
 
 STUDENT. Oh, so `[Body]` is like existential quantification. I wonder, would it make sense
@@ -171,8 +168,7 @@ always need both the variables and the body of a `bindmany`?
 
 ```makam
 openmany : bindmany A B -> (list A -> B -> prop) -> prop.
-openmany F P :-
-  intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
+openmany F P :- intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
 ```
 
 ADVISOR. Yes, that predicate turns out to be quite useful. Let's try out a query now!
