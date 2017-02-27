@@ -139,10 +139,10 @@ wftyp_aux T T :-
 
 \heroSTUDENT{} I see -- if a type-checking rule applies, but fails, we don't
 want to proceed to do structural recursion; it would defeat the purpose.
-I also see that your structural recursion just needs to do a simple
-visit, it does not need to produce an output; hence the repeat of the
-same \texttt{typ} argument. Let's prepare for substitutions too, in the
-same way.
+Neat trick. I also see that your structural recursion just needs to do a
+simple visit, it does not need to produce an output; hence the repeat of
+the same \texttt{typ} argument. Let's prepare for substitutions too, in
+the same way.
 
 \begin{verbatim}
 depsubst_aux : [A] depvar \ensuremath{\to} depindex \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} prop.
@@ -165,7 +165,6 @@ construction in \citet{stampoulis2013veriml}.
 \begin{verbatim}
 %extend object.
 varterm : depvar \ensuremath{\to} term.  vartyp : depvar \ensuremath{\to} typ.
-
 typeof (varterm V) T :- depclassify V (ctyp T).
 wftyp_cases (vartyp V) (vartyp V) true :- depclassify V cext.
 %end.
@@ -286,5 +285,5 @@ show it in 24 pages of a single-column PDF!
 
 \heroADVISOR{} Where are all these voices coming from?
 
-\heroSTUDENT{} They might be the ghosts of people who left academia for
-industry.
+\heroSTUDENT{}
+\textit{(Joke elided to avoid issues with double-blind submission.)}
