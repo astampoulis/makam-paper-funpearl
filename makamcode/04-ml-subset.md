@@ -119,7 +119,6 @@ datatype_declaration : type -> type -> type.
 datatype_declaration : 
   (typeconstructor Arity -> dbind typ Arity (ctor_declaration Ctors)) ->
   datatype_declaration Arity Ctors.
-
 datatype :
   datatype_declaration Arity Ctors ->
   (typeconstructor Arity -> dbind constructor Ctors program) -> program.
@@ -184,7 +183,7 @@ wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
       (wfprogram program')))).
 ```
 
-STUDENT. This is a tricky piece of code. Let me stare at it for a while. (...) What is this predicate, `constructor_polytypes`?
+STUDENT. This is a tricky piece of code. Let me stare at it for a while. (...) What is this new `constructor_polytypes` predicate?
 
 ADVISOR. I'm using that in order to re-abstract over the type variables.... See, in the
 constructor declaration, we've introduced a number of type variables. We need to abstract
@@ -230,8 +229,7 @@ STUDENT. That is easy, compared to what we just did.
 constr : constructor -> list term -> term.
 typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
   constructor_info TypConstr Constructor PolyType,
-  applymany PolyType TypArgs Typs,
-  map typeof Args Typs.
+  applymany PolyType TypArgs Typs, map typeof Args Typs.
 ```
 
 ADVISOR. You're getting the hang of this. Let's do something actually difficult, then; type synonyms.

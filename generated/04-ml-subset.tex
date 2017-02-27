@@ -60,7 +60,6 @@ datatype_declaration : type \ensuremath{\to} type \ensuremath{\to} type.
 datatype_declaration : 
   (typeconstructor Arity \ensuremath{\to} dbind typ Arity (ctor_declaration Ctors)) \ensuremath{\to}
   datatype_declaration Arity Ctors.
-
 datatype :
   datatype_declaration Arity Ctors \ensuremath{\to}
   (typeconstructor Arity \ensuremath{\to} dbind constructor Ctors program) \ensuremath{\to} program.
@@ -121,7 +120,7 @@ wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
 \end{verbatim}
 
 \heroSTUDENT{} This is a tricky piece of code. Let me stare at it for a while.
-(\ldots{}) What is this predicate, \texttt{constructor\_polytypes}?
+(\ldots{}) What is this new \texttt{constructor\_polytypes} predicate?
 
 \heroADVISOR{} I'm using that in order to re-abstract over the type
 variables\ldots{}. See, in the constructor declaration, we've introduced
@@ -172,8 +171,7 @@ too.
 constr : constructor \ensuremath{\to} list term \ensuremath{\to} term.
 typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
   constructor_info TypConstr Constructor PolyType,
-  applymany PolyType TypArgs Typs,
-  map typeof Args Typs.
+  applymany PolyType TypArgs Typs, map typeof Args Typs.
 \end{verbatim}
 
 \heroADVISOR{} You're getting the hang of this. Let's do something actually
