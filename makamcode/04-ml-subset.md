@@ -1,4 +1,4 @@
-# Where our heroes add more ML features and reflect on structural recursion
+# Where our heroes break into song and add more ML features
 
 <!--
 ```makam
@@ -148,7 +148,7 @@ I'll write down the declaration of binary terms, to make sure we're not missing 
 >> (...) : datatype_declaration (typ * unit) (constructor * constructor * unit)
 ```
 
-STUDENT. Looks good. Should we proceed to actual well-formedness for datatype
+STUDENT. Looks good. Should we proceed to the actual well-formedness for datatype
 declarations? I think we will need a predicate to keep track of information about
 constructors -- which datatype it belongs to and what arguments it expects. That way we
 can carry that information in the assumptions context.
@@ -158,45 +158,84 @@ constructor_info :
   typeconstructor Arity -> constructor -> dbind typ Arity (list typ) -> prop.
 ```
 
-\TODO{} from here on.
+<!--
+The order of this is wrong in the narrative, but we need the declaration here for Makam.
 
 ```makam
 constructor_polytypes : [Arity Ctors PolyTypes]
-  subst typ Arity ->
-  ctor_declaration Ctors -> subst (dbind typ Arity (list typ)) PolyTypes -> prop.
+  ctor_declaration Ctors -> subst typ Arity ->
+  subst (dbind typ Arity (list typ)) PolyTypes -> prop.
 
-constructor_polytypes _ [] [].
-constructor_polytypes TypVars (CtorType :: CtorTypes) (PolyType :: PolyTypes) :-
+constructor_polytypes [] _ [].
+constructor_polytypes (CtorType :: CtorTypes) TypVars (PolyType :: PolyTypes) :-
   applymany PolyType TypVars CtorType,
-  constructor_polytypes TypVars CtorTypes PolyTypes.
+  constructor_polytypes CtorTypes TypVars PolyTypes.
 ```
+-->
 
-One interesting part intereaction is in the two `applymany` calls: these are used in the opposite
-direction than what we have used it so far, getting `TypVars` and `CtorType` as inputs
-and producing `PolyType` as an output. We need to be careful, though, to make sure that `PolyType`
-cannot capture the `TypVars` variables:
+ADVISOR. Yes, and we are mostly ready otherwise:
 
 ```makam
 wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
   (dt:(typeconstructor T) -> ([PolyTypes]
     openmany (ConstructorDecls dt) (pfun tvars constructor_decls => (
-      constructor_polytypes tvars constructor_decls PolyTypes)),
+      constructor_polytypes constructor_decls tvars PolyTypes)),
     openmany (Program' dt) (pfun constructors program' =>
       assumemany (constructor_info dt) constructors PolyTypes
       (wfprogram program')))).
 ```
 
-In order to be able to refer to datatypes and constructors, we will need type- and term-level
-formers.
+STUDENT. This is a tricky piece of code. Let me stare at it for a while. (...) What is this predicate, `constructor_polytypes`?
+
+ADVISOR. I'm using that in order to re-abstract over the type variables.... See, in the
+constructor declaration, we've introduced a number of type variables. We need to abstract
+over them, in order to get the polymorphic type of each constructor for the rest of the
+program. Note that `PolyTypes` can't capture the type variables `tvars` we
+introduce.
+
+STUDENT. I think I got it. Let me try to implement it.
+
+ADVISOR. Here's a hint.
+```makam
+(x:typ -> y:typ -> applymany PolyType [x, y] (arrow y x)) ?
+>> Yes:
+>> PolyType = dbindnext (fun x => dbindnext (fun y => dbindbase (arrow y x)))
+```
+
+\begin{scenecomment}
+(After a few attempts, Hagop comes up with the following definition.)
+\end{scenecomment}
+
+```
+constructor_polytypes : [Arity Ctors PolyTypes]
+  ctor_declaration Ctors -> subst typ Arity ->
+  subst (dbind typ Arity (list typ)) PolyTypes -> prop.
+
+constructor_polytypes [] _ [].
+constructor_polytypes (CtorType :: CtorTypes) TypVars (PolyType :: PolyTypes) :-
+  applymany PolyType TypVars CtorType,
+  constructor_polytypes CtorTypes TypVars PolyTypes.
+```
+
+STUDENT. I see what you were getting at. I think this is an interesting use of
+`applymany`: we are using it in the opposite direction than what we have used it so far.
+We are giving it `TypVars` and `CtorType` as inputs, and then we get `PolyType`, with all
+the needed binders, as an output. And since the way we're using it, `PolyType` cannot
+capture the `TypVars`, it all works out correctly!
+
+ADVISOR. Excellent! Let's add the term-level former for constructors too.
+
+STUDENT. That is easy, compared to what we just did.
 
 ```makam
 constr : constructor -> list term -> term.
-
 typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
   constructor_info TypConstr Constructor PolyType,
   applymany PolyType TypArgs Typs,
   map typeof Args Typs.
 ```
+
+ADVISOR. You're getting the hang of this. Let's do something actually difficult then. Type synonyms.
 
 <!--
 Additional information.

@@ -1,5 +1,5 @@
-\section{Where our heroes add more ML features and reflect on structural
-recursion}\label{where-our-heroes-add-more-ml-features-and-reflect-on-structural-recursion}
+\section{Where our heroes break into song and add more ML
+features}\label{where-our-heroes-break-into-song-and-add-more-ml-features}
 
 \begin{scenecomment}
 (Our heroes need a small break, so they work on a couple of features improvising on the Rast makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)
@@ -98,7 +98,7 @@ and typecheck it with Makam.
 >> (...) : datatype_declaration (typ * unit) (constructor * constructor * unit)
 \end{verbatim}
 
-\heroSTUDENT{} Looks good. Should we proceed to actual well-formedness for
+\heroSTUDENT{} Looks good. Should we proceed to the actual well-formedness for
 datatype declarations? I think we will need a predicate to keep track of
 information about constructors -- which datatype it belongs to and what
 arguments it expects. That way we can carry that information in the
@@ -109,44 +109,73 @@ constructor_info :
   typeconstructor Arity \ensuremath{\to} constructor \ensuremath{\to} dbind typ Arity (list typ) \ensuremath{\to} prop.
 \end{verbatim}
 
-\TODO{} from here on.
-
-\begin{verbatim}
-constructor_polytypes : [Arity Ctors PolyTypes]
-  subst typ Arity \ensuremath{\to}
-  ctor_declaration Ctors \ensuremath{\to} subst (dbind typ Arity (list typ)) PolyTypes \ensuremath{\to} prop.
-
-constructor_polytypes _ [] [].
-constructor_polytypes TypVars (CtorType :: CtorTypes) (PolyType :: PolyTypes) :-
-  applymany PolyType TypVars CtorType,
-  constructor_polytypes TypVars CtorTypes PolyTypes.
-\end{verbatim}
-
-One interesting part intereaction is in the two \texttt{applymany}
-calls: these are used in the opposite direction than what we have used
-it so far, getting \texttt{TypVars} and \texttt{CtorType} as inputs and
-producing \texttt{PolyType} as an output. We need to be careful, though,
-to make sure that \texttt{PolyType} cannot capture the \texttt{TypVars}
-variables:
+\heroADVISOR{} Yes, and we are mostly ready otherwise:
 
 \begin{verbatim}
 wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
   (dt:(typeconstructor T) \ensuremath{\to} ([PolyTypes]
     openmany (ConstructorDecls dt) (pfun tvars constructor_decls \ensuremath{\Rightarrow} (
-      constructor_polytypes tvars constructor_decls PolyTypes)),
+      constructor_polytypes constructor_decls tvars PolyTypes)),
     openmany (Program' dt) (pfun constructors program' \ensuremath{\Rightarrow}
       assumemany (constructor_info dt) constructors PolyTypes
       (wfprogram program')))).
 \end{verbatim}
 
-In order to be able to refer to datatypes and constructors, we will need
-type- and term-level formers.
+\heroSTUDENT{} This is a tricky piece of code. Let me stare at it for a while.
+(\ldots{}) What is this predicate, \texttt{constructor\_polytypes}?
+
+\heroADVISOR{} I'm using that in order to re-abstract over the type
+variables\ldots{}. See, in the constructor declaration, we've introduced
+a number of type variables. We need to abstract over them, in order to
+get the polymorphic type of each constructor for the rest of the
+program. Note that \texttt{PolyTypes} can't capture the type variables
+\texttt{tvars} we introduce.
+
+\heroSTUDENT{} I think I got it. Let me try to implement it.
+
+\heroADVISOR{} Here's a hint.
+
+\begin{verbatim}
+(x:typ \ensuremath{\to} y:typ \ensuremath{\to} applymany PolyType [x, y] (arrow y x)) ?
+>> Yes:
+>> PolyType = dbindnext (fun x \ensuremath{\Rightarrow} dbindnext (fun y \ensuremath{\Rightarrow} dbindbase (arrow y x)))
+\end{verbatim}
+
+\begin{scenecomment}
+(After a few attempts, Hagop comes up with the following definition.)
+\end{scenecomment}
+
+\begin{verbatim}
+constructor_polytypes : [Arity Ctors PolyTypes]
+  ctor_declaration Ctors \ensuremath{\to} subst typ Arity \ensuremath{\to}
+  subst (dbind typ Arity (list typ)) PolyTypes \ensuremath{\to} prop.
+
+constructor_polytypes [] _ [].
+constructor_polytypes (CtorType :: CtorTypes) TypVars (PolyType :: PolyTypes) :-
+  applymany PolyType TypVars CtorType,
+  constructor_polytypes CtorTypes TypVars PolyTypes.
+\end{verbatim}
+
+\heroSTUDENT{} I see what you were getting at. I think this is an interesting
+use of \texttt{applymany}: we are using it in the opposite direction
+than what we have used it so far. We are giving it \texttt{TypVars} and
+\texttt{CtorType} as inputs, and then we get \texttt{PolyType}, with all
+the needed binders, as an output. And since the way we're using it,
+\texttt{PolyType} cannot capture the \texttt{TypVars}, it all works out
+correctly!
+
+\heroADVISOR{} Excellent! Let's add the term-level former for constructors
+too.
+
+\heroSTUDENT{} That is easy, compared to what we just did.
 
 \begin{verbatim}
 constr : constructor \ensuremath{\to} list term \ensuremath{\to} term.
-
 typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
   constructor_info TypConstr Constructor PolyType,
   applymany PolyType TypArgs Typs,
   map typeof Args Typs.
 \end{verbatim}
+
+\heroADVISOR{} You're getting the hang of this. Let's do something actually
+difficult then. Type synonyms.
