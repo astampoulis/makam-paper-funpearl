@@ -14,7 +14,7 @@ We'll gather all unification variables, using structural recursion. \\
 And if you haven't guessed it yet, we'll use some term reflection.''
 \end{verse}
 
-STUDENT. I got an idea for implementing type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}.
+STUDENT. I have an idea for implementing type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}.
 I remember the typing rule looks like this:
 
 \vspace{-1.2em}
@@ -23,7 +23,7 @@ I remember the typing rule looks like this:
 \end{mathpar}
 
 ADVISOR. Right, and we don't have any side-effectful operations, so, no need for a value
-restriction. Let's assume a predicate for generalizing the type, for now; the rest are easy:
+restriction. Let's assume a predicate for generalizing the type, for now; the rest of the rule is easy:
 
 ```makam
 generalize : typ -> typ -> prop.
@@ -38,11 +38,15 @@ STUDENT. Right, so for generalization, based on the typing rule, we need the fol
 - something that picks out free variables from the local context
 - a way to turn something that includes meta-variables into a `forall` type
 
-ADVISOR. OK. So, I've done this before, and I need to leave for home soon, so bear with me
+\noindent
+Those look like things that we should be able to do with our generic recursion and with the
+reflective predicates we've been using!
+
+ADVISOR. Indeed! So, I've done this before, and I need to leave for home soon, so bear with me
 for a bit. There's this generic operation in the Makam standard library, called
 `generic.fold`. It is quite similar to `structural_recursion`, but it does a fold through
 a term, carrying an accumulator through. Pretty standard, really, and its code is similar to what
-we've seen already. I'll use it to define a predicate that returns *one* unification
+we did already. I'll use it to define a predicate that returns *one* unification
 variable of the right type from a term, if at least one exists.
 
 ```makam

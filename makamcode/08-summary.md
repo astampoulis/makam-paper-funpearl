@@ -18,19 +18,20 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   an essential predicate\footnote{\texttt{assumemany} uses what is technically referred to
   as a strong-hereditary Harrop formula, whereas Teyjus only supports weak-hereditary
   Harrop formulas \citep{nadathur1999system}.}. As a result, we have not been able to
-  replicate these in the standard λProlog implementation, though all the features we need
-  are part of the original λProlog language design.
+  replicate these in the standard λProlog/Teyjus implementation
+  \citep{nadathur1999system}, though all the features we need are part of the original
+  λProlog language design \citep{miller1988overview}.
 
-- We defined a generic predicate to perform structural recursion, allowing us to define
-  structurally recursive predicates that only explicitly list out the important cases, in
-  what we believe is a novel encoding for the λProlog setting. Any new definitions, such
-  as constructors or datatypes we introduce later, do not need any special provision to be
-  covered by the same predicates. Our generic definitions depend on a number of reflective
-  predicates, which are available in other Prolog dialects; however, we are not aware of a
-  published example that makes use of them in the λProlog setting. These predicates are
-  used to reflect on the structure of Makam terms, and to get the list of local
-  assumptions; for the most part, their use is limited to predicates that would be part of
-  the standard library, not in user code.
+- We defined a generic predicate to perform structural recursion using a very concise
+  definition. It allows us to define structurally recursive predicates that only explicitly
+  list out the important cases, in what we believe is a novel encoding for the λProlog
+  setting. Any new definitions, such as constructors or datatypes we introduce later, do
+  not need any special provision to be covered by the same predicates. They depend on a
+  number of reflective predicates, which are available in other Prolog dialects; however,
+  we are not aware of a published example that makes use of them in the λProlog
+  setting. These predicates are used to reflect on the structure of Makam terms, and to
+  get the list of local assumptions; for the most part, their use is limited to predicates
+  that would be part of the standard library, not in user code.
 
 - The above encodings are reusable and can be made part of the Makam standard library. As
   a result, we were able to develop the type checker for quite an advanced type system, in
@@ -39,12 +40,12 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   includes mutually recursive definitions, polymorphism, polymorphic datatypes,
   pattern-matching, a conversion rule, Hindley-Milner type generalization, constructs for
   dependent types over a separately specified language of dependent indices, and an
-  example of such indices that use contextual types.  We are not aware of another
-  metalinguistic framework that allows this level of expressivity and has been used to
-  encode such type-system features.
+  example of such indices that use contextually typed open terms of the simply typed
+  lambda calculus.  We are not aware of another metalinguistic framework that allows this
+  level of expressivity and has been used to encode such type-system features.
 
 - We have also shown that higher-order logic programming allows not just meta-level
-  functions to be reused for encoding object-level binding: there are also cases where
+  functions to be reused for encoding object-level binding; there are also cases where
   meta-level unification can also be reused to encode certain object-level features:
   matching a pattern against a scrutinee and doing type generalization as in Algorithm W.
 
