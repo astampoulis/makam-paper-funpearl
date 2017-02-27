@@ -1,4 +1,4 @@
-(Text is very much WIP.)
+# Where our heroes implement type generalization, tying loose ends
 
 <!--
 ```makam
@@ -6,61 +6,62 @@
 ```
 -->
 
-Next we extend with Hindley-Milner let-polymorphism:
+\begin{verse}
+``We promised we'll do Hindley-Milner, we don't want you to be sad. \\
+This paper is coming to an end soon, and it wasn't all that bad. \\
+\hspace{1em}\vspace{-0.5em} \\
+We'll gather all unification variables, using structural recursion. \\
+And if you haven't guessed it yet, we'll use some term reflection.''
+\end{verse}
 
-```makam
-let : term -> (term -> term) -> term.
-```
+STUDENT. I got an idea for implementing type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}.
+I remember the typing rule looks like this:
 
-The inference rule looks like this:
-\begin{displaymath}
-\inferrule{
-  \Gamma \vdash e : \tau \\
-  \vec{a} = \text{fv}(\tau) - \text{fv}(\Gamma) \\
-  \Gamma, x : \forall \vec{a}.\tau \vdash e' : \tau'
-}{
-  \Gamma \vdash \text{let} \; x = e \; \text{in} \; e' : \tau'
-}
-\end{displaymath}
+\vspace{-1em}
+\begin{mathpar}
+\small
+\inferrule{\Gamma \vdash e : \tau \\ \vec{a} = \text{fv}(\tau) - \text{fv}(\Gamma) \\ \Gamma, x : \forall \vec{a}.\tau \vdash e' : \tau'}{\Gamma \vdash \text{let} \; x = e \; \text{in} \; e' : \tau'}
+\end{mathpar}
 
-(We have not added any side-effectful operations, so no need to add a value restriction.)
-
-The rule is easy to transcribe in Makam, assuming a predicate for generalizing a type:
+ADVISOR. Right, and we don't have any side-effectful operations, so no need for a value
+restriction. Let's assume a predicate for generalizing the type, for now; the rest are easy:
 
 ```makam
 generalize : typ -> typ -> prop.
-
-typeof (let E F) T' :- typeof E T, generalize T Tgen,
-                       (x:term -> typeof x Tgen -> typeof (F x) T').
+let : term -> (term -> term) -> term.
+typeof (let E F) T' :-
+  typeof E T, generalize T Tgen, (x:term -> typeof x Tgen -> typeof (F x) T').
 ```
 
-So we need the following ingredients:
+STUDENT. Right, so for generalization, based on the typing rule, we need the following ingredients:
 
-- something that picks out free variables from a term -- or, in our setting, uninstantiated meta-variables
+- something that picks out free variables from a term -- or, in our setting, uninstantiated unification variables
 - something that picks out free variables from the local context
 - a way to turn something that includes meta-variables into a `forall` type
 
-This predicate picks out the first metavariable of a certain type it finds. It uses `generic.fold`,
-which is another generic operation, defined similarly to `structural_recursion`, but which performs
-a fold over arbitrary types.
+ADVISOR. OK. So, I've done this before, and I need to leave for home soon, so bear with me
+for a bit. There's this generic operation in the Makam standard library, called
+`generic.fold`. It is quite similar to `structural_recursion`, but it does a fold through
+a term, updating an accumulator. Pretty standard, really, and its code is similar to what
+we've seen already. I'll use it to define a predicate that returns *one* unification
+variable of the right type from a term, if at least one exists.
 
 ```makam
 findunif : [A B] option B -> A -> option B -> prop.
 findunif (some X) _ (some X).
 findunif none (X : A) (some (X : A)) :- refl.isunif X.
 findunif In X Out :- generic.fold findunif In X Out.
-
-findunif : [A B] A -> B -> prop.
-findunif T X :- findunif none T (some X).
+findunif : [A B] A -> B -> prop.  findunif T X :- findunif none T (some X).
 ```
 
-Note that the second rule, the important one, will only match when we encounter a metavariable
-of the same type as the one we require, as we do type specialization.
+STUDENT. Oh, the second rule is the important one -- it will only match when we encounter a unification
+variable of the same type as the one we require.
 
-Now we add an operation that, given a specific meta-variable and a specific term, replaces the
-meta-variable with the term. We will see later why this operation is necessary. Here we will need another
-reflective predicate, `refl.sameunif`, that succeeds when its two arguments are the same exact
-metavariable, to avoid the undesired side effect of unifying distinct metavariables.
+ADVISOR. Exactly. Now we add a predicate that, given a specific unification variable and a
+specific term, replaces its occurrences with the term. I'll show you later why this
+operation is necessary. Here I'll need another reflective predicate, `refl.sameunif`, that
+succeeds when its two arguments are the same exact unification variable; `eq` would just
+unify them, which is not what we want.
 
 ```makam
 replaceunif : [A B] A -> A -> B -> B -> prop.
@@ -71,70 +72,71 @@ replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
   structural_recursion (replaceunif Which ToWhat) Where Result.
 ```
 
-A last auxiliary predicate will allow us to check whether a specific metavariable exists
-within a term:
+ADVISOR. And last, we'll need an auxiliary predicate that tells us whether a unification
+variable exists within a term. You can do that yourself, it's similar to the above.
 
+STUDENT. Yes, I think I know how to do that.
 ```makam
 hasunif : [A B] B -> bool -> A -> bool -> prop.
-hasunif _ true _ true.
-hasunif X false Y true :- refl.sameunif X Y.
-hasunif X In Y Out :- generic.fold (hasunif X) In Y Out.
-
+... (3 cases for hasunif)
 hasunif : [A B] A -> B -> prop.
 hasunif Term Var :- hasunif Var false Term true.
 ```
+<!--
+```makam
+hasunif _ true _ true.
+hasunif X false Y true :- refl.sameunif X Y.
+hasunif X In Y Out :- generic.fold (hasunif X) In Y Out.
+```
+-->
 
-We are now ready to implement `generalize`. Base case: there exist no unification variables
-within a type:
+ADVISOR. OK, we are now mostly ready to implement `generalize`. We'll do this recursively. The
+base case is when there are no unification variables within a type left:
 ```makam
 generalize T T :- not(findunif T X).
 ```
 
-Recursive case: there exists at least one unification variable. We will pick out that unification
-variable, abstract over it, and repeat the process to pick out any remaining ones.  We will check
-whether we are allowed to generalize by computing a summary of all `typ`s in the current
-variable environment -- that is, all `T`s for any `typeof x T` local assumptions -- and making sure
-that the current unification variable does not occur in that.  Getting the types in the environment
-is done through the `get_types_in_environment` predicate, and we will leave the type of its result
-abstract for the time being.
+STUDENT. Ah, I see what you are getting at. For the recursive case, we will pick out the first
+unification variable that we come upon using `findunif`. We will generalize over it using `replaceunif`,
+and then proceed to the rest. But don't we have to skip over the unification variables that are in
+the $\Gamma$ environment? How do we do that?
+
+ADVISOR. Well, that's the last hurdle. Let's assume a predicate that gives us all the types in
+the environment, and write the recursive case down:
 
 ```makam
 get_types_in_environment : [A] A -> prop.
-
-generalize T Res :-
-  findunif T X,
-  (x:typ -> (replaceunif X x T (T' x), generalize (T' x) (T'' x))),
-  get_types_in_environment Types,
-  if (hasunif Types X) then (eq Res (T'' X)) else (eq Res (forall T'')).
+generalize T Res :- 
+  findunif T Var, get_types_in_environment GammaTypes,
+  (x:typ -> (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
+  if (hasunif GammaTypes Var) then (eq Res (T'' Var)) else (eq Res (forall T'')).
 ```
 
-What can `get_types_in_environment` be? We could change all our typing rules to add a list argument
-that holds all the types that we put in the context, threading it through all our predicates.
-However, again using reflective predicates, there is an easier way to do that: we can simply get
-all the local assumptions for the `typeof` predicate for terms, which will exactly correspond
-to the local assumptions for the current set of free variables:
+STUDENT. Oh, clever. But what should `get_types_in_environment` be? Don't we have to go
+back and thread a list of types through our `typeof` predicate, every time we introduce a
+new `typeof x T ->` assumption?
+
+ADVISOR. Well, we came this far without rewriting our rules, it's a shame to do that now!
+Maybe we'll be excused to use yet another reflective predicate that does what we
+want? There is a way to get a list of all the local assumptions for the `typeof` predicate; it
+turns out that all the rules and connectives are normal Makam terms like any other,
+so there's not really much magic to it. And those assumptions will include all the
+types in $\Gamma$....
 
 ```makam
 get_types_in_environment Assumptions :-
   refl.assume_get (typeof : term -> typ -> prop) Assumptions.
 ```
 
-That is the end of our extension to Hindley-Milner inference, and here is a first easy example query.
-
+STUDENT. Wait. It can't be.
 ```makam
-typeof (let (lam _ (fun x => x)) (fun id => id)) T ?
+typeof (let (lam _ (fun x => let x (fun y => y))) (fun id => id)) T ?
 >> Yes:
 >> T := forall (fun a => arrow a a)
 ```
 
-Another example, where the problem with naive generalization would show up:
+ADVISOR. And yet, it can.
 
-```makam
-typeof (let (lam _ (fun x => let x (fun y => y)))
-            (fun z => z)) T ?
->> Yes:
->> T := forall (fun a => arrow a a)
-```
 <!--
 (Just checking the issue where we don't remove all unification variables in the context -- this
 is a hack, if we need to do this we can show the above in two steps instead:)

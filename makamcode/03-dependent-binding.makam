@@ -196,8 +196,7 @@ typeof (letrec XS_DefsBody) T' :-
   openmany XS_DefsBody (pfun xs defsbody => [Defs Body]
     eq defsbody (Defs, Body),
     assumemany typeof xs TS (map typeof Defs TS),
-    assumemany typeof xs TS (typeof Body T')
-  ).
+    assumemany typeof xs TS (typeof Body T')).
 
 (*
 
@@ -207,8 +206,7 @@ ADVISOR. Oh, that's just to force unification with `(Defs, Body)` and get the el
 the tuple -- there's no destructuring `pfun`. `eq` is just defined as:
 
 ```
-eq : A -> A -> prop.
-eq X X.
+eq : A -> A -> prop.  eq X X.
 ```
 
 STUDENT. I see. Say, can we use the same trick to do patterns?
