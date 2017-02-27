@@ -61,7 +61,7 @@ ADVISOR. Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to s
           {\Gamma; \dep{\Psi} \vdash \Lambda \dep{v} : \dep{c}.e : \Pi \dep{v} : \dep{c}.\tau}
 
 \inferrule{\Gamma; \dep{\Psi} \vdash e : \Pi \dep{v} : \dep{c}.\tau \\ \dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
-          {\Gamma; \dep{\Psi} \vdash e @ \dep{i} : \dep{\text{subst}}(\tau, [\dep{i}/\dep[v]])}
+          {\Gamma; \dep{\Psi} \vdash e @ \dep{i} : \dep{\text{subst}}(\tau, [\dep{i}/\dep{v}])}
 \end{mathpar}
 
 STUDENT. Those are very easy to transcribe to Makam.
