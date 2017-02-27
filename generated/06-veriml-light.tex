@@ -14,9 +14,9 @@ type-safe manner.
 \heroSTUDENT{} Exactly. We'd like our object language to be a formal logic, so
 our language will be similar to Beluga \citep{pientka2010beluga} or
 VeriML \citep{stampoulis2013veriml}. We'll have to be able to pattern
-match over the terms of the object language, too\ldots{}. But we don't
-need to do all of that, let's just do a basic version for now, and I can
-do the rest on my own.
+match over the terms of the object language, too, so they are runtime
+entities too\ldots{}. But we don't need to do all of that, let's just do
+a basic version for now, and I can do the rest on my own.
 
 \heroADVISOR{} Sounds good. So, I think the fragment we should do is this: we
 will have dependent functions over a distinguished language of
@@ -35,168 +35,157 @@ Heterogeneous Meta ML Light (HMML?); and there's the ``object-object''
 language that HMML is manipulating. And let's keep that last one simple:
 the simply typed lambda calculus (STLC).
 
-\heroSTUDENT{} Great. So our dependent indices will be the types and terms of
-\heroSTLC{}
+\heroSTUDENT{} Great. So, our dependent indices will be the types and terms of
+STLC -- actually, the open terms of STLC.
 
-\heroADVISOR{} It's a plan.
-
-\TODO{} From here on.
-
-We will follow the construction of (cite my dissertation), but using a
-simpler object language. We will first define the notion of
-\emph{dependent objects}. These are objects that are external to the
-language that we have seen so far, but we will add a standard
-dependently typed subsystem to our language over them. (Similar to the
-DML construction/ the DML generalization by Licata and Harper.)
-Dependent objects are classified through \emph{dependent classifiers}:
+\heroADVISOR{} It's a plan. So, let's get to it. Let's first add distinguished
+sorts for dependent indices, and dependent classifiers -- we'll use
+those to type-check the indices, using an appropriate predicate. Let's
+also have a distinguished type for \emph{dependent variables}, that is,
+variables of dependent indices; and a way to substitute such a variable
+for an object.
 
 \begin{verbatim}
-depobject, depclassifier : type.
-depclassify : depobject \ensuremath{\to} depclassifier \ensuremath{\to} prop.
+depindex, depclassifier, depvar : type.
+depclassify : depindex \ensuremath{\to} depclassifier \ensuremath{\to} prop.
+depclassify : depvar \ensuremath{\to} depclassifier \ensuremath{\to} prop.
+depsubst : [A] (depvar \ensuremath{\to} A) \ensuremath{\to} depindex \ensuremath{\to} A \ensuremath{\to} prop.
 \end{verbatim}
 
-We also have a (perhaps non-trivial) substitution operation for terms
-containing a variable of type \texttt{depobject}:
+\newcommand\dep[1]{\ensuremath{#1_{\text{d}}}}
+\newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
+
+\heroSTUDENT{} Right, we might need to treat variables specially, so it's good
+that they're a different type. And let's assume that classifiers are
+well-formed by construction.
+
+\heroADVISOR{} Now, we have a few typing rules to add. I'll use
+``\(\dep{\cdot}\)'' to signify things that have to do with the dependent
+indices.
+
+\vspace{-1em}\begin{mathpar}
+\small
+\inferrule{\dep{\Psi} \dep{\vdash} \dep{c} : \dep{i}}
+          {\Gamma; \dep{\Psi} \vdash \lift{\dep{c}} : \lift{\dep{i}}}
+
+\inferrule{\Gamma; \dep{\Psi}, \; \dep{v} : \dep{c} \vdash e : \tau}
+          {\Gamma; \dep{\Psi} \vdash \Lambda \dep{v} : \dep{c}.e : \Pi \dep{v} : \dep{c}.\tau}
+
+\inferrule{\Gamma; \dep{\Psi} \vdash e : \Pi \dep{v} : \dep{c}.\tau \\ \dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
+          {\Gamma; \dep{\Psi} \vdash e @ \dep{c} : \dep{\text{subst}}(\tau, [\dep{i}/\dep[v]])}
+\end{mathpar}
+
+\heroSTUDENT{} Those are very easy to transcribe to Makam.
 
 \begin{verbatim}
-depsubst : [A] (depobject \ensuremath{\to} A) \ensuremath{\to} depobject \ensuremath{\to} A \ensuremath{\to} prop.
+lamdep : depclassifier \ensuremath{\to} (depvar \ensuremath{\to} term) \ensuremath{\to} term.
+appdep : term \ensuremath{\to} depindex \ensuremath{\to} term.
+liftdep : depindex \ensuremath{\to} term. liftdep : depclassifier \ensuremath{\to} typ.
+pidep : depclassifier \ensuremath{\to} (depvar \ensuremath{\to} typ) \ensuremath{\to} typ.
+
+typeof (lamdep C EF) (pidep C TF) :-
+  (v:depvar \ensuremath{\to} depclassify v C \ensuremath{\to} typeof (EF v) (TF v)).
+typeof (appdep E I) T' :- typeof E (pidep C TF), depclassify I C, depsubst TF I T'.
+typeof (liftdep I) (liftdep C) :- depclassify I C.
 \end{verbatim}
 
-(In the simple case this could just be the built-in function
-application:
-
-\begin{verbatim}
-depsubst F X (F X).
-\end{verbatim}
-
-We could have something more complicated than that though.)
-
-Now let us add the standards: dependent functions and dependent
-products:
-
-\begin{verbatim}
-lamdep : depclassifier \ensuremath{\to} (depobject \ensuremath{\to} term) \ensuremath{\to} term.
-appdep : term \ensuremath{\to} depobject \ensuremath{\to} term.
-packdep : depobject \ensuremath{\to} term \ensuremath{\to} (depobject \ensuremath{\to} typ) \ensuremath{\to} term.
-unpackdep : term \ensuremath{\to} (depobject \ensuremath{\to} term \ensuremath{\to} term) \ensuremath{\to} term.
-
-pidep : depclassifier \ensuremath{\to} (depobject \ensuremath{\to} typ) \ensuremath{\to} typ.
-sigdep : depclassifier \ensuremath{\to} (depobject \ensuremath{\to} typ) \ensuremath{\to} typ.
-
-typeof (lamdep DC EF) (pidep DC TF) :-
-  (x:depobject \ensuremath{\to} depclassify x DC \ensuremath{\to} typeof (EF x) (TF x)).
-
-typeof (appdep E DO) T' :-
-  typeof E (pidep DC TF), depclassify DO DC, depsubst TF DO T'.
-
-typeof (packdep DO E TYPF) (sigdep DC TYPF) :-
-  depclassify DO DC, depsubst TYPF DO T', typeof E T'.
-
-typeof (unpackdep E F) T' :-
-  typeof E (sigdep DC TYPF),
-  (do:depobject \ensuremath{\to} x:term \ensuremath{\to} depclassify do DC \ensuremath{\to} typeof x (TYPF do) \ensuremath{\to}
-   typeof (F do x) T').
-\end{verbatim}
-
-Let us now add a very simple object language -- the simply typed lambda
-calculus, which we have already defined in a separate namespace:
-
-\begin{verbatim}
-%import "01-base-language" as object.
-
-%extend object.
-intconst : int \ensuremath{\to} term.
-intplus : term \ensuremath{\to} term \ensuremath{\to} term.
-tint : typ.
-typeof (intconst _) tint.
-typeof (intplus E1 E2) tint :- typeof E1 tint, typeof E2 tint.
-%end.
-\end{verbatim}
-
-(Note: we are just importing the previous literate development into a
-different namespace. Unfortunately I can't import the further
-developments right now, probably some issue with the importing code, but
-I think it's fine to skip for now. We could go with just defining a new
-language anew though.)
-
-Now let us turn these into dependent objects:
-
-\begin{verbatim}
-term : object.term \ensuremath{\to} depobject.
-typ : object.typ \ensuremath{\to} depobject.
-
-typ : object.typ \ensuremath{\to} depclassifier.
-ext : depclassifier.
-
-depclassify (term E) (typ T) :- object.typeof E T.
-\end{verbatim}
-
-To classify types, we will need to make sure they are well-formed. For
-the time being, all types are well-formed by construction, but let us
-prepare for the future:
+\heroADVISOR{} Great. Just wanted to say, this framework is quite general. We
+could instantiate dependent indices with a language of natural numbers,
+equality predicates, and equality proofs; this would be quite similar to
+the Dependent ML formulation of \citet{licata2005formulation}. But let's
+go back to what we're trying to do. I'll add the object language in a
+separate namespace prefix, and I'll just copy-paste our STLC code from
+earlier on.
 
 \begin{verbatim}
 %extend object.
-wftype : typ \ensuremath{\to} prop.
-wftype_cases : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
-
-wftype T :- wftype_cases T T.
-wftype_cases T T :- structural wftype_cases T T.
+term : type. typ : type. typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
+...
 %end.
-
-depclassify (typ T) ext :- object.wftype T.
 \end{verbatim}
 
-Next is substitution:
+\heroSTUDENT{} Great! I'll make these into dependent indices now, including
+both types and terms.
 
 \begin{verbatim}
-depsubst_aux, depsubst_cases : [A] depobject \ensuremath{\to} depobject \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} prop.
-depsubst F X Res :- (x:depobject \ensuremath{\to} depsubst_aux x X (F x) Res).
+iterm : object.term \ensuremath{\to} depindex.     ityp : object.typ \ensuremath{\to} depindex.
+ctyp : object.typ \ensuremath{\to} depclassifier.  cext : depclassifier.
+
+depclassify (iterm E) (ctyp T) :- object.typeof E T.
+depclassify (ityp T) cext :- object.wftyp T.
+\end{verbatim}
+
+\heroADVISOR{} Right, we'll need to check that types are well-formed, too.
+Right now, they are all well-formed by construction, but let's prepare
+for any additions, by setting up a structurally recursive predicate:
+
+\begin{verbatim}
+%extend object.
+wftyp : typ \ensuremath{\to} prop. wftyp_cases, wftyp_aux : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
+wftyp T :- wftyp_aux T T.
+wftyp_aux T T :-
+  if (wftyp_cases T T) then success else (structural_recursion wftyp_aux T T).
+%end.
+\end{verbatim}
+
+\heroSTUDENT{} I see -- your structural recursion just needs to do a visit, it
+does not need to produce an output; hence the repeat of the same
+\texttt{typ} argument. Let's prepare for substitutions too.
+
+\begin{verbatim}
+depsubst_aux, depsubst_cases : [A] depvar \ensuremath{\to} depindex \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} prop.
+depsubst F I Res :- (v:depvar \ensuremath{\to} depsubst_aux v I (F v) Res).
 depsubst_aux Var Replace Where Result :-
   if (depsubst_cases Var Replace Where Result)
   then (success)
   else (structural_recursion (depsubst_aux Var Replace) Where Result).
 \end{verbatim}
 
-Now let us see what we can do with these definitions:
+\heroADVISOR{} Great! We only have one thing missing: we need to close the
+loop, being able to refer to dependent variables from within
+object-level terms and types. By the way, we are very much following the
+construction in \citet{stampoulis2013veriml}.
 
-\begin{verbatim}
-typeof
-  (lamdep ext (fun t \ensuremath{\Rightarrow}
-  (packdep t (tuple []) (fun _ \ensuremath{\Rightarrow} product [])))) T ?
-\end{verbatim}
-
-We can only use the dependent variables as they are, so not much use.
-The whole motivation behind these features is to refer to dependent
-variables within the object terms:
+\heroSTUDENT{} I got this.
 
 \begin{verbatim}
 %extend object.
-metaterm : depobject \ensuremath{\to} term.
-metatyp : depobject \ensuremath{\to} typ.
+varterm : depvar \ensuremath{\to} term.  vartyp : depvar \ensuremath{\to} typ.
 
-typeof (metaterm E) T :-
-  refl.isnvar E,
-  depclassify E (typ T).
-  
-wftype_cases (metatyp T) (metatyp T) :-
-  refl.isnvar T,
-  depclassify T ext.
+typeof (varterm V) T :- depclassify V (ctyp T).
+wftyp_cases (vartyp V) (vartyp V) :- depclassify T cext.
 %end.
 
-depsubst_cases Var (term Replace) (object.metaterm Var) Replace.
-depsubst_cases Var (typ Replace) (object.metatyp Var) Replace.
+depsubst_cases Var (iterm Replace) (object.varterm Var) Replace.
+depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace.
 \end{verbatim}
 
-We are getting closer to the program we really want to write:
+\heroADVISOR{} This is exciting, let me try this out! I'll do a function that
+takes an object-level type and returns the object-level identity
+function for it.
 
 \begin{verbatim}
-typeof
-  (lamdep ext (fun t \ensuremath{\Rightarrow}
-  (packdep
-     (term (object.lam (object.metatyp t) (fun x \ensuremath{\Rightarrow} x)))
-     (tuple []) (fun _ \ensuremath{\Rightarrow} product [])))) T ?
+typeof (lamdep cext (fun t \ensuremath{\Rightarrow}
+         (liftdep (iterm (object.lam (object.vartyp t) (fun x \ensuremath{\Rightarrow} x)))))) T ?
+>> Yes!!!!!
+>> T := pidep cext (fun t \ensuremath{\Rightarrow}
+>>        liftdep (ctyp (object.arrow (object.vartyp t) (object.vartyp t))))
 \end{verbatim}
+
+\heroSTUDENT{} Wow, even the Makam REPL is excited!
+
+\heroADVISOR{} Wait until it sees what we have in store for it next: open STLC
+terms in our indices!
+
+\heroSTUDENT{} Good thing I've printed out the contextual types paper by
+\citet{nanevski2008contextual}. (\ldots{}) OK, so it says here that we
+can use contextual types to record at the type level, the context that
+open terms depend on. So let's say, an open \texttt{object.term} of type
+\(\tau\) that mentions variables of a \(\Phi\) context would have a
+contextual type of the form \([\Phi] \tau\). This is some sort of modal
+typing, with a precise context.
+
+\heroADVISOR{}
 
 We can also handle the case of non-closed terms, using contextual types:
 
@@ -223,12 +212,12 @@ map : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} subst A \ens
 map P (subst L) (subst L') :- map P L L'.
 %end.
 
-openterm : object.ctx object.term \ensuremath{\to} depobject.
+openterm : object.ctx object.term \ensuremath{\to} depindex.
 ctxtyp : object.subst object.typ \ensuremath{\to} object.typ \ensuremath{\to} depclassifier.
 
 depclassify (openterm CtxE) (ctxtyp Typs T) :-
   object.openctx CtxE (pfun vars typs e \ensuremath{\Rightarrow} [Units]
-    object.map (pfun t u \ensuremath{\Rightarrow} object.wftype t) typs (Units : object.subst unit),
+    object.map (pfun t u \ensuremath{\Rightarrow} object.wftyp t) typs (Units : object.subst unit),
     object.map eq typs Typs,
     object.typeof e T).
 \end{verbatim}
@@ -237,7 +226,7 @@ And one last step: reify open terms back into the language:
 
 \begin{verbatim}
 %extend object.
-metaterm : depobject \ensuremath{\to} subst term \ensuremath{\to} term.
+metaterm : depindex \ensuremath{\to} subst term \ensuremath{\to} term.
 
 typeof (metaterm E ES) T :-
   refl.isnvar E,

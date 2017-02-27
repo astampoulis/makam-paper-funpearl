@@ -14,8 +14,8 @@ ADVISOR. Yes, it is time. So, what we are aiming to do, is add a facility for ty
 STUDENT. Exactly. We'd like our object language to be a formal logic, so our language will
 be similar to Beluga \citep{pientka2010beluga} or VeriML
 \citep{stampoulis2013veriml}. We'll have to be able to pattern match over the terms of the
-object language, too.... But we don't need to do all of that, let's just do a basic
-version for now, and I can do the rest on my own.
+object language, too, so they are runtime entities too.... But we don't need to do all of
+that, let's just do a basic version for now, and I can do the rest on my own.
 
 ADVISOR. Sounds good. So, I think the fragment we should do is this: we will have
 dependent functions over a distinguished language of *dependent indices*. We need the
@@ -29,161 +29,154 @@ we're using, Makam; there's the object language we are encoding, which is a meta
 in itself, let's call that Heterogeneous Meta ML Light (HMML?); and there's the
 "object-object" language that HMML is manipulating. And let's keep that last one simple: the simply typed lambda calculus (STLC).
 
-STUDENT. Great. So our dependent indices will be the types and terms of STLC.
+STUDENT. Great. So, our dependent indices will be the types and terms of STLC -- actually, the open terms of STLC.
 
-ADVISOR. It's a plan. 
-
-\TODO{} From here on.
-
-We will follow the construction of (cite my dissertation), but using a simpler object
-language. We will first define the notion of *dependent objects*. These are objects
-that are external to the language that we have seen so far, but we will add a standard
-dependently typed subsystem to our language over them. (Similar to the DML construction/
-the DML generalization by Licata and Harper.) Dependent objects are classified through
-*dependent classifiers*:
+ADVISOR. It's a plan. So, let's get to it. Let's first add distinguished sorts for dependent indices, and dependent classifiers -- we'll use those to type-check the indices, using an appropriate predicate. Let's also have a distinguished type for *dependent variables*, that is, variables of dependent indices; and a way to substitute such a variable for an object.
 
 ```makam
-depobject, depclassifier : type.
-depclassify : depobject -> depclassifier -> prop.
+depindex, depclassifier, depvar : type.
+depclassify : depindex -> depclassifier -> prop.
+depclassify : depvar -> depclassifier -> prop.
+depsubst : [A] (depvar -> A) -> depindex -> A -> prop.
 ```
 
-We also have a (perhaps non-trivial) substitution operation for terms containing a
-variable of type `depobject`:
+\newcommand\dep[1]{\ensuremath{#1_{\text{d}}}}
+\newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
+
+STUDENT. Right, we might need to treat variables specially, so it's good that they're a different type. And let's assume that classifiers are well-formed by construction. 
+
+ADVISOR. Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to signify things that have to do with the dependent indices.
+
+\vspace{-1em}
+\begin{mathpar}
+\small
+\inferrule{\dep{\Psi} \dep{\vdash} \dep{c} : \dep{i}}
+          {\Gamma; \dep{\Psi} \vdash \lift{\dep{c}} : \lift{\dep{i}}}
+
+\inferrule{\Gamma; \dep{\Psi}, \; \dep{v} : \dep{c} \vdash e : \tau}
+          {\Gamma; \dep{\Psi} \vdash \Lambda \dep{v} : \dep{c}.e : \Pi \dep{v} : \dep{c}.\tau}
+
+\inferrule{\Gamma; \dep{\Psi} \vdash e : \Pi \dep{v} : \dep{c}.\tau \\ \dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
+          {\Gamma; \dep{\Psi} \vdash e @ \dep{c} : \dep{\text{subst}}(\tau, [\dep{i}/\dep[v]])}
+\end{mathpar}
+
+STUDENT. Those are very easy to transcribe to Makam.
+
 ```makam
-depsubst : [A] (depobject -> A) -> depobject -> A -> prop.
+lamdep : depclassifier -> (depvar -> term) -> term.
+appdep : term -> depindex -> term.
+liftdep : depindex -> term. liftdep : depclassifier -> typ.
+pidep : depclassifier -> (depvar -> typ) -> typ.
+
+typeof (lamdep C EF) (pidep C TF) :-
+  (v:depvar -> depclassify v C -> typeof (EF v) (TF v)).
+typeof (appdep E I) T' :- typeof E (pidep C TF), depclassify I C, depsubst TF I T'.
+typeof (liftdep I) (liftdep C) :- depclassify I C.
 ```
 
-(In the simple case this could just be the built-in function application:
+ADVISOR. Great. Just wanted to say, this framework is quite general. We could instantiate dependent indices with a language of natural numbers, equality predicates, and equality proofs; this would be quite similar to the Dependent ML formulation of \citet{licata2005formulation}. But let's go back to what we're trying to do. I'll add the object language in a separate namespace prefix, and I'll just copy-paste our STLC code from earlier on.
+
 ```
-depsubst F X (F X).
-```
-We could have something more complicated than that though.)
-
-Now let us add the standards: dependent functions and dependent products:
-
-```makam
-lamdep : depclassifier -> (depobject -> term) -> term.
-appdep : term -> depobject -> term.
-packdep : depobject -> term -> (depobject -> typ) -> term.
-unpackdep : term -> (depobject -> term -> term) -> term.
-
-pidep : depclassifier -> (depobject -> typ) -> typ.
-sigdep : depclassifier -> (depobject -> typ) -> typ.
-
-typeof (lamdep DC EF) (pidep DC TF) :-
-  (x:depobject -> depclassify x DC -> typeof (EF x) (TF x)).
-
-typeof (appdep E DO) T' :-
-  typeof E (pidep DC TF), depclassify DO DC, depsubst TF DO T'.
-
-typeof (packdep DO E TYPF) (sigdep DC TYPF) :-
-  depclassify DO DC, depsubst TYPF DO T', typeof E T'.
-
-typeof (unpackdep E F) T' :-
-  typeof E (sigdep DC TYPF),
-  (do:depobject -> x:term -> depclassify do DC -> typeof x (TYPF do) ->
-   typeof (F do x) T').
+%extend object.
+term : type. typ : type. typeof : term -> typ -> prop.
+...
+%end.
 ```
 
-Let us now add a very simple object language -- the simply typed lambda
-calculus, which we have
-already defined in a separate namespace:
+<!--
+We don't have to copy-paste the code, we can import the previous file into a separate namespace. But let's add natural numbers too.
 
 ```makam
 %import "01-base-language" as object.
-
 %extend object.
-intconst : int -> term.
-intplus : term -> term -> term.
-tint : typ.
-typeof (intconst _) tint.
-typeof (intplus E1 E2) tint :- typeof E1 tint, typeof E2 tint.
+nat : typ. zero : term. succ : term -> term.
+typeof zero nat.
+typeof (succ N) nat :- typeof N nat.
+eval zero zero.
+eval (succ E) (succ V) :- eval E V.
+%end.
+```
+-->
+
+<!-- flipped order in the narrative, we need to declare `wftyp` first.
+```makam
+%extend object.
+wftyp : typ -> prop. wftyp_cases, wftyp_aux : [A] A -> A -> prop.
+%end.
+```
+-->
+
+STUDENT. Great! I'll make these into dependent indices now, including both types and terms.
+
+```makam
+iterm : object.term -> depindex.     ityp : object.typ -> depindex.
+ctyp : object.typ -> depclassifier.  cext : depclassifier.
+
+depclassify (iterm E) (ctyp T) :- object.typeof E T.
+depclassify (ityp T) cext :- object.wftyp T.
+```
+
+ADVISOR. Right, we'll need to check that types are well-formed, too. Right now, they are all well-formed by construction, but let's prepare for any additions, by setting up a structurally recursive predicate:
+
+```makam
+%extend object.
+wftyp : typ -> prop. wftyp_cases, wftyp_aux : [A] A -> A -> prop.
+wftyp T :- wftyp_aux T T.
+wftyp_aux T T :-
+  if (wftyp_cases T T) then success else (structural_recursion wftyp_aux T T).
 %end.
 ```
 
-(Note: we are just importing the previous literate development into a different
-namespace. Unfortunately I can't import the further developments right now,
-probably some issue with the importing code, but I think it's fine to skip for now.
-We could go with just defining a new language anew though.)
-
-Now let us turn these into dependent objects:
+STUDENT. I see -- your structural recursion just needs to do a visit, it does not need to produce an output; hence the repeat of the same `typ` argument. Let's prepare for substitutions too.
 
 ```makam
-term : object.term -> depobject.
-typ : object.typ -> depobject.
-
-typ : object.typ -> depclassifier.
-ext : depclassifier.
-
-depclassify (term E) (typ T) :- object.typeof E T.
-```
-
-To classify types, we will need to make sure they are well-formed. For the time
-being, all types are well-formed by construction, but let us prepare for the
-future:
-
-```makam
-%extend object.
-wftype : typ -> prop.
-wftype_cases : [A] A -> A -> prop.
-
-wftype T :- wftype_cases T T.
-wftype_cases T T :- structural wftype_cases T T.
-%end.
-
-depclassify (typ T) ext :- object.wftype T.
-```
-
-Next is substitution:
-
-```makam
-depsubst_aux, depsubst_cases : [A] depobject -> depobject -> A -> A -> prop.
-depsubst F X Res :- (x:depobject -> depsubst_aux x X (F x) Res).
+depsubst_aux, depsubst_cases : [A] depvar -> depindex -> A -> A -> prop.
+depsubst F I Res :- (v:depvar -> depsubst_aux v I (F v) Res).
 depsubst_aux Var Replace Where Result :-
   if (depsubst_cases Var Replace Where Result)
   then (success)
   else (structural_recursion (depsubst_aux Var Replace) Where Result).
 ```
 
-Now let us see what we can do with these definitions:
+ADVISOR. Great! We only have one thing missing: we need to close the loop, being able to refer to dependent variables from within object-level terms and types. By the way, we are very much following the construction in \citet{stampoulis2013veriml}.
 
-```makam
-typeof
-  (lamdep ext (fun t =>
-  (packdep t (tuple []) (fun _ => product [])))) T ?
-```
-
-We can only use the dependent variables as they are, so not much use.
-The whole motivation behind these features is to refer to dependent variables
-within the object terms:
+STUDENT. I got this.
 
 ```makam
 %extend object.
-metaterm : depobject -> term.
-metatyp : depobject -> typ.
+varterm : depvar -> term.  vartyp : depvar -> typ.
 
-typeof (metaterm E) T :-
-  refl.isnvar E,
-  depclassify E (typ T).
-  
-wftype_cases (metatyp T) (metatyp T) :-
-  refl.isnvar T,
-  depclassify T ext.
+typeof (varterm V) T :- depclassify V (ctyp T).
+wftyp_cases (vartyp V) (vartyp V) :- depclassify T cext.
 %end.
 
-depsubst_cases Var (term Replace) (object.metaterm Var) Replace.
-depsubst_cases Var (typ Replace) (object.metatyp Var) Replace.
+depsubst_cases Var (iterm Replace) (object.varterm Var) Replace.
+depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace.
 ```
 
-We are getting closer to the program we really want to write:
+ADVISOR. This is exciting, let me try this out! I'll do a function that takes an
+object-level type and returns the object-level identity function for it.
 
 ```makam
-typeof
-  (lamdep ext (fun t =>
-  (packdep
-     (term (object.lam (object.metatyp t) (fun x => x)))
-     (tuple []) (fun _ => product [])))) T ?
+typeof (lamdep cext (fun t =>
+         (liftdep (iterm (object.lam (object.vartyp t) (fun x => x)))))) T ?
+>> Yes!!!!!
+>> T := pidep cext (fun t =>
+>>        liftdep (ctyp (object.arrow (object.vartyp t) (object.vartyp t))))
 ```
+
+STUDENT. Wow, even the Makam REPL is excited!
+
+ADVISOR. Wait until it sees what we have in store for it next: open STLC terms in our
+indices!
+
+STUDENT. Good thing I've printed out the contextual types paper by
+\citet{nanevski2008contextual}. (...) OK, so it says here that we can use contextual types
+to record at the type level, the context that open terms depend on. So let's say, an open
+`object.term` of type $\tau$ that mentions variables of a $\Phi$ context would have a
+contextual type of the form $[\Phi] \tau$. This is some sort of modal typing, with a precise context.
+
+ADVISOR. 
 
 We can also handle the case of non-closed terms, using contextual types:
 ```makam
@@ -209,12 +202,12 @@ map : (A -> B -> prop) -> subst A -> subst B -> prop.
 map P (subst L) (subst L') :- map P L L'.
 %end.
 
-openterm : object.ctx object.term -> depobject.
+openterm : object.ctx object.term -> depindex.
 ctxtyp : object.subst object.typ -> object.typ -> depclassifier.
 
 depclassify (openterm CtxE) (ctxtyp Typs T) :-
   object.openctx CtxE (pfun vars typs e => [Units]
-    object.map (pfun t u => object.wftype t) typs (Units : object.subst unit),
+    object.map (pfun t u => object.wftyp t) typs (Units : object.subst unit),
     object.map eq typs Typs,
     object.typeof e T).
 ```
@@ -223,7 +216,7 @@ And one last step: reify open terms back into the language:
 
 ```makam
 %extend object.
-metaterm : depobject -> subst term -> term.
+metaterm : depindex -> subst term -> term.
 
 typeof (metaterm E ES) T :-
   refl.isnvar E,
