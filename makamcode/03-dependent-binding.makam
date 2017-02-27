@@ -11,8 +11,7 @@ STUDENT. No dependent types... so what is the λProlog type system? Is it some v
 System F?
 
 ADVISOR. It is a subset of System F$_\omega$, actually -- so, the simply typed lambda
-calculus, plus prenex polymorphism, plus simple type constructors of the form `type ->
-type -> ... -> type`. The `prop` sort of propositions is a bit special, since we can only
+calculus, plus prenex polymorphism, plus simple type constructors of the form `type *
 add rules to its inhabitants, but otherwise it is just a normal type.
 
 STUDENT. I see. So, that is quite similar to base Haskell -- without the recent extensions
@@ -36,9 +35,7 @@ ADVISOR. Oh, right, I forgot about that. Well, we could do the same thing in Mak
 
 *)
 
-natZ : type.
-natS : type -> type.
-
+natZ : type.  natS : type -> type.
 vector : type -> type -> type.
 vnil : vector natZ A.
 vcons : A -> vector N A -> vector (natS N) A.
@@ -67,13 +64,13 @@ STUDENT. Interesting. What is the `[N]` notation in the type of `vmap`?
 ADVISOR. Well, type arguments for propositions are parametric by default, so that notation
 says that `N` is ad-hoc polymorphic -- rules can specialize it further. And the reason
 Makam requires this annotation is that we are used to type arguments being parametric, and
-we can catch some errors that way -- for example this erroneous `fold` is still well-typed
+we can catch some errors that way -- for example this erroneous `foldl` is still well-typed
 if the type arguments are ad-hoc:
 
 ```
 foldl : (B -> A -> B -> prop) -> B -> list A -> B -> prop.
 foldl P S nil S.
-foldl P S (cons HD TL) S'' <- P HD S S', foldl P S' TL S''.
+foldl P S (cons HD TL) S'' :- P HD S S', foldl P S' TL S''.
 ```
 
 STUDENT. Oh, the `HD` argument in the call to `P` should be second instead of first -- and
@@ -89,7 +86,7 @@ ADVISOR. It's hard to say. I think it was part of the original design by
 \citet{miller1988overview}, but I have not come upon any examples that actively use it so
 far -- for example, the book by \citet{miller2012programming} hardly mentions the feature,
 and the standard λProlog implementation, Teyjus \citep{nadathur1999system}, has a few
-issues related to polymorphic types that have not allowed me to test there.
+issues related to polymorphic types that have not allowed me to test it there.
 
 STUDENT. Well, let's see if it is actually useful for what we were trying to do. Maybe we
 can use this feature for a better encoding of `letrec`? We could do the `vector`
@@ -106,9 +103,9 @@ letrec : dbind term N (vector N term * term) -> term.
 (*
 
 ADVISOR. That looks good, but I do not like this natural number trick -- if we could
-define a new `nat` kind and specify it in the type of `dbind`, it would be fine, but as
-it stands.... Well, here's an idea. The "dependent" index could be the type of `n`-tuples
-of variables, rather than `n` itself:
+define a new `nat` kind and specify it in the type of `dbind`, it would be fine, but as it
+stands.... Well, here's an idea. The "dependent" index could be the right type of substitutions
+for the `n` variables we introduce, so an `n`-tuple of terms, rather than `n` itself:
 
 *)
 
@@ -128,8 +125,7 @@ better. Let's call it `subst` for substitutions:
 *)
 
 subst : type -> type -> type.
-nil : subst A unit.
-cons : A -> subst A T -> subst A (A * T).
+nil : subst A unit.  cons : A -> subst A T -> subst A (A * T).
 
 (*
 
@@ -209,7 +205,7 @@ the tuple -- there's no destructuring `pfun`. `eq` is just defined as:
 eq : A -> A -> prop.  eq X X.
 ```
 
-STUDENT. I see. Say, can we use the same trick to do patterns?
+STUDENT. I see. Say, can we use the same dependency trick to do patterns?
 
 ADVISOR. We should be able to... the linearity is going to be a bit tricky, but I am
 fairly confident that having explicit support in our metalanguage just for single-variable
@@ -239,10 +235,8 @@ that we have a simple example.
 *)
 
 nat : typ. zero : term. succ : term -> term.
-typeof zero nat.
-typeof (succ N) nat :- typeof N nat.
-eval zero zero.
-eval (succ E) (succ V) :- eval E V.
+typeof zero nat. typeof (succ N) nat :- typeof N nat.
+eval zero zero. eval (succ E) (succ V) :- eval E V.
 
 (*
 

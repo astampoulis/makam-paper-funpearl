@@ -46,8 +46,7 @@ write the conclusion of a rule first, and the premises follow the `:-` sign. Doe
 something like this work?
 
 ```makam
-typeof (app E1 E2) T' :-
-  typeof E1 (arrow T T'), typeof E2 T.
+typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
 ```
 
 ADVISOR. Yes! That's exactly right. Makam uses capital letters for unification variables.
@@ -58,8 +57,7 @@ extending the context as in $\Gamma, x : \tau$ ?
 ADVISOR. Simple; we introduce a fresh constructor for terms and a new typing rule for it:
 
 ```makam
-typeof (lam T1 E) (arrow T1 T2) :-
-  (x:term -> typeof x T1 -> typeof (E x) T2).
+typeof (lam T1 E) (arrow T1 T2) :- (x:term -> typeof x T1 -> typeof (E x) T2).
 ```
 
 STUDENT. Hmm, so `x:term ->` introduces the fresh constructor standing for the new
@@ -67,7 +65,7 @@ variable, and `typeof x T1 ->` introduces the new assumption? Oh, and we need to
 the body of the lambda function in order to type-check it, so that's why you do `E x`.
 
 ADVISOR. Yes. Note that the introductions are locally scoped, so they are only in effect
-for the recursive call to `typeof`.
+for the recursive call.
 
 STUDENT. Makes sense. So do we have a type checker already? Can we run queries?
 
@@ -118,8 +116,7 @@ STUDENT. Sounds good. So, for tuples, this should work:
 ```makam
 tuple : list term -> term.
 product : list typ -> typ.
-typeof (tuple ES) (product TS) :-
-  map typeof ES TS.
+typeof (tuple ES) (product TS) :- map typeof ES TS.
 ```
 
 ADVISOR. Yes, and we can use syntactic sugar for `cons` and `nil` too:
@@ -145,8 +142,7 @@ think in λProlog function application is exactly capture-avoiding substitution,
 this should be fine:
 
 ```makam
-eval (app E E') V'' :-
-  eval E (lam _ F), eval E' V', eval (F V') V''.
+eval (app E E') V'' :- eval E (lam _ F), eval E' V', eval (F V') V''.
 ```
 
 ADVISOR. Exactly! See, I told you this would be easy!

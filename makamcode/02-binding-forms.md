@@ -29,7 +29,7 @@ STUDENT. Right. So I don't know, instead we want to use a type that stands for `
 term`, `term -> term -> term`, and so on. Can we write `term -> ... -> term`?
 
 ADVISOR. Well, not quite, but we have already defined something similar, a type that
-roughly stands for `term * term`, `term * term * term`, and we did not need anything special
+roughly stands for `term * ... * term`, and we did not need anything special
 for that...
 
 STUDENT. You mean the `list` type?
@@ -92,8 +92,7 @@ application:
 ```makam
 applymany : bindmany A B -> list A -> B -> prop.
 applymany (bindbase Body) [] Body.
-applymany (bindnext F) (HD :: TL) Body :-
-  applymany (F HD) TL Body.
+applymany (bindnext F) (HD :: TL) Body :- applymany (F HD) TL Body.
 ```
 
 STUDENT. I see, so given a `bindmany` and a substitution for the variables, perform
@@ -105,8 +104,7 @@ doing multiple assumptions.
 ```makam
 intromany : bindmany A B -> (list A -> prop) -> prop.
 intromany (bindbase _) P :- P [].
-intromany (bindnext F) P :-
-  (x:A -> intromany (F x) (fun tl => P (x :: tl))).
+intromany (bindnext F) P :- (x:A -> intromany (F x) (fun tl => P (x :: tl))).
 ```
 
 STUDENT. Let me see. So pattern match on the two cases, introducing an extra assumption in
@@ -127,7 +125,7 @@ STUDENT. Is that a limitation that has to do with the correspondence of λProlog
 logic? 
 
 ADVISOR. Not really; I believe it is because of implementation concerns mostly -- it
-would significantly complicate VMs for the language. But Makam is interpreted, so it
+would significantly complicate designing a virtual machine for the language. But Makam is interpreted, so it
 sidesteps that.
 
 STUDENT. Interesting. So let me try doing the typing rule now. I'll add a type for
@@ -142,8 +140,7 @@ arrowmany : list typ -> typ -> typ.
 ```
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T') :-
-  intromany F (fun xs =>
-    applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
+  intromany F (fun xs => applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
 ```
 
 ADVISOR. Almost. There is an issue here: the unification variable `Body` cannot capture

@@ -7,10 +7,9 @@ Is it some version of System F?
 \heroADVISOR{} It is a subset of System F\(_\omega\), actually -- so, the
 simply typed lambda calculus, plus prenex polymorphism, plus simple type
 constructors of the form
-\texttt{type\ \ensuremath{\to}\ type\ \ensuremath{\to}\ ...\ \ensuremath{\to}\ type}.
-The \texttt{prop} sort of propositions is a bit special, since we can
-only add rules to its inhabitants, but otherwise it is just a normal
-type.
+\texttt{type\ *\ ...\ *\ type\ \ensuremath{\to}\ type}. The \texttt{prop}
+sort of propositions is a bit special, since we can only add rules to
+its inhabitants, but otherwise it is just a normal type.
 
 \heroSTUDENT{} I see. So, that is quite similar to base Haskell -- without the
 recent extensions with kind definitions \citep{yorgey2012giving} or
@@ -29,9 +28,7 @@ natural numbers with \texttt{NatZ\ ::\ *} and
 thing in Makam then:
 
 \begin{verbatim}
-natZ : type.
-natS : type \ensuremath{\to} type.
-
+natZ : type.  natS : type \ensuremath{\to} type.
 vector : type \ensuremath{\to} type \ensuremath{\to} type.
 vnil : vector natZ A.
 vcons : A \ensuremath{\to} vector N A \ensuremath{\to} vector (natS N) A.
@@ -62,12 +59,12 @@ default, so that notation says that \texttt{N} is ad-hoc polymorphic --
 rules can specialize it further. And the reason Makam requires this
 annotation is that we are used to type arguments being parametric, and
 we can catch some errors that way -- for example this erroneous
-\texttt{fold} is still well-typed if the type arguments are ad-hoc:
+\texttt{foldl} is still well-typed if the type arguments are ad-hoc:
 
 \begin{verbatim}
 foldl : (B \ensuremath{\to} A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} B \ensuremath{\to} list A \ensuremath{\to} B \ensuremath{\to} prop.
 foldl P S nil S.
-foldl P S (cons HD TL) S'' <- P HD S S', foldl P S' TL S''.
+foldl P S (cons HD TL) S'' :- P HD S S', foldl P S' TL S''.
 \end{verbatim}
 
 \heroSTUDENT{} Oh, the \texttt{HD} argument in the call to \texttt{P} should
@@ -86,7 +83,7 @@ actively use it so far -- for example, the book by
 \citet{miller2012programming} hardly mentions the feature, and the
 standard \foreignlanguage{greek}{λ}Prolog implementation, Teyjus \citep{nadathur1999system}, has
 a few issues related to polymorphic types that have not allowed me to
-test there.
+test it there.
 
 \heroSTUDENT{} Well, let's see if it is actually useful for what we were
 trying to do. Maybe we can use this feature for a better encoding of
@@ -104,8 +101,9 @@ letrec : dbind term N (vector N term * term) \ensuremath{\to} term.
 \heroADVISOR{} That looks good, but I do not like this natural number trick --
 if we could define a new \texttt{nat} kind and specify it in the type of
 \texttt{dbind}, it would be fine, but as it stands\ldots{}. Well, here's
-an idea. The ``dependent'' index could be the type of \texttt{n}-tuples
-of variables, rather than \texttt{n} itself:
+an idea. The ``dependent'' index could be the right type of
+substitutions for the \texttt{n} variables we introduce, so an
+\texttt{n}-tuple of terms, rather than \texttt{n} itself:
 
 \begin{verbatim}
 dbind : type \ensuremath{\to} type \ensuremath{\to} type \ensuremath{\to} type.
@@ -123,8 +121,7 @@ Let's call it \texttt{subst} for substitutions:
 
 \begin{verbatim}
 subst : type \ensuremath{\to} type \ensuremath{\to} type.
-nil : subst A unit.
-cons : A \ensuremath{\to} subst A T \ensuremath{\to} subst A (A * T).
+nil : subst A unit.  cons : A \ensuremath{\to} subst A T \ensuremath{\to} subst A (A * T).
 \end{verbatim}
 
 \heroSTUDENT{} We are already using \texttt{nil} and \texttt{cons} for lists.
@@ -191,7 +188,8 @@ destructuring \texttt{pfun}. \texttt{eq} is just defined as:
 eq : A \ensuremath{\to} A \ensuremath{\to} prop.  eq X X.
 \end{verbatim}
 
-\heroSTUDENT{} I see. Say, can we use the same trick to do patterns?
+\heroSTUDENT{} I see. Say, can we use the same dependency trick to do
+patterns?
 
 \heroADVISOR{} We should be able to\ldots{} the linearity is going to be a bit
 tricky, but I am fairly confident that having explicit support in our
@@ -228,10 +226,8 @@ a base type so that we have a simple example.
 
 \begin{verbatim}
 nat : typ. zero : term. succ : term \ensuremath{\to} term.
-typeof zero nat.
-typeof (succ N) nat :- typeof N nat.
-eval zero zero.
-eval (succ E) (succ V) :- eval E V.
+typeof zero nat. typeof (succ N) nat :- typeof N nat.
+eval zero zero. eval (succ E) (succ V) :- eval E V.
 \end{verbatim}
 
 \heroADVISOR{} Good idea. OK, so here's what I meant:

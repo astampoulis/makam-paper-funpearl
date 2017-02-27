@@ -52,8 +52,7 @@ that in Prolog we write the conclusion of a rule first, and the premises
 follow the \texttt{:-} sign. Does something like this work?
 
 \begin{verbatim}
-typeof (app E1 E2) T' :-
-  typeof E1 (arrow T T'), typeof E2 T.
+typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
 \end{verbatim}
 
 \heroADVISOR{} Yes! That's exactly right. Makam uses capital letters for
@@ -66,8 +65,7 @@ the equivalent of extending the context as in \(\Gamma, x : \tau\) ?
 typing rule for it:
 
 \begin{verbatim}
-typeof (lam T1 E) (arrow T1 T2) :-
-  (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
+typeof (lam T1 E) (arrow T1 T2) :- (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
 \end{verbatim}
 
 \heroSTUDENT{} Hmm, so \texttt{x:term\ \ensuremath{\to}} introduces the fresh
@@ -77,7 +75,7 @@ Oh, and we need to get to the body of the lambda function in order to
 type-check it, so that's why you do \texttt{E\ x}.
 
 \heroADVISOR{} Yes. Note that the introductions are locally scoped, so they
-are only in effect for the recursive call to \texttt{typeof}.
+are only in effect for the recursive call.
 
 \heroSTUDENT{} Makes sense. So do we have a type checker already? Can we run
 queries?
@@ -132,8 +130,7 @@ our metatheoretic proofs.
 \begin{verbatim}
 tuple : list term \ensuremath{\to} term.
 product : list typ \ensuremath{\to} typ.
-typeof (tuple ES) (product TS) :-
-  map typeof ES TS.
+typeof (tuple ES) (product TS) :- map typeof ES TS.
 \end{verbatim}
 
 \heroADVISOR{} Yes, and we can use syntactic sugar for \texttt{cons} and
@@ -161,8 +158,7 @@ call-by-value. And I think in \foreignlanguage{greek}{λ}Prolog function applica
 capture-avoiding substitution, so this should be fine:
 
 \begin{verbatim}
-eval (app E E') V'' :-
-  eval E (lam _ F), eval E' V', eval (F V') V''.
+eval (app E E') V'' :- eval E (lam _ F), eval E' V', eval (F V') V''.
 \end{verbatim}
 
 \heroADVISOR{} Exactly! See, I told you this would be easy!

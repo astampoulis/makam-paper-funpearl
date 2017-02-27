@@ -13,7 +13,7 @@ months?
 ADVISOR. That sounds like a lot. Why don't you use some kind of metalanguage to implement
 the prototype?
 
-STUDENT. You mean a tool like PLT Redex \citep{felleisen2009semantics}, the K Framework
+STUDENT. You mean a tool like Racket/PLT Redex \citep{tobin2011languages,felleisen2009semantics}, the K Framework
 \citep{rosu2010overview,ellison2009rewriting}, Spoofax \citep{kats2010spoofax}, Needle \&
 Knot \citep{keuchel2016needle}, or CRSX \citep{rose2011crsx}?
 
