@@ -32,7 +32,7 @@ worry about exotic terms. So this works fine for Church-style lambdas:
 lam : typ -> (term -> term) -> term.
 ```
 
-STUDENT. I see. And how about the typing judgement, $\Gamma \vdash e : \tau$ ?
+STUDENT. I see. And how about the typing judgment, $\Gamma \vdash e : \tau$ ?
 
 ADVISOR. Let's add a predicate for that. Only, no $\Gamma$, there is an implicit context
 of assumptions that will serve the same purpose.

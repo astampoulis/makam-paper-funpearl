@@ -276,7 +276,7 @@ STUDENT. Let me parse that... the first argument is the scrutinee, the second is
 pattern... the third is the branch body, with the pattern variables introduced. Oh, and
 the last argument is the `else` case.
 
-ADVISOR. Right. And I think something like this should work for the typing judgement. Let
+ADVISOR. Right. And I think something like this should work for the typing judgment. Let
 me write a few cases.
 
 ```makam

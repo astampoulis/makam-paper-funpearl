@@ -1,28 +1,27 @@
 (*
+# Where our heroes reflect on structural recursion
+
 *)
 
 %use "04-ml-subset".
 
 (*
 
-Let us proceed to add type synonyms:
+STUDENT. Type synonyms? Difficult? Why? Doesn't this work?
 
 *)
 
 type_synonym : dbind typ T typ -> (typeconstructor T -> program) -> program.
-
 type_synonym_info : typeconstructor T -> dbind typ T typ -> prop.
 
 wfprogram (type_synonym Syn Program') :-
-  (t:(typeconstructor T) ->
-   type_synonym_info t Syn ->
-   wfprogram (Program' t)).
+  (t:(typeconstructor T) -> type_synonym_info t Syn ->
+    wfprogram (Program' t)).
 
 (*
 
-Simple enough. How to typecheck them, though? We need something like the
-conversion rule:
-
+ADVISOR. Sure, that works. How about the typing rule for them, then? We'll need
+something like the conversion rule:
 \begin{displaymath}
 \inferrule{
   \Gamma \vdash e : \tau \\ \tau =_{\delta} \tau'
@@ -31,9 +30,9 @@ conversion rule:
 }
 \end{displaymath}
 
-Here $=_{\delta}$ means equality up to expanding type synonyms.
+STUDENT. Right, $=_{\delta}$ is equality up to expanding the type synonyms.
 
-We will need a type-equality predicate:
+ADVISOR. Yes, we'll definitely need a type-equality predicate.
 
 *)
 
@@ -41,70 +40,72 @@ teq : typ -> typ -> prop.
 
 (*
 
-A naive attempt at the conversion rule would be:
+STUDENT. OK. And then we do this?
 
 ```
 typeof E T :- typeof E T', teq T T'.
 ```
 
-However, it is easy to see that this rule leads to divergence:
-it does a recursive call to itself.
+ADVISOR. That would be nice, but we'll go into an infinite loop if that rule gets
+used.
 
-We can do a bit better. We only need to use the conversion rule in cases where we
-already know something about the type `T` of the expression, but our typing rules do
-not match that type. In bi-directional typing parlance, instead of analyzing the type
-`T` of the expression `E`, we want to synthesize the type starting from a new
-meta-variable `T'`, and then check that the two types are equal using `teq`.
-So we need to change our rule to apply only in the case where `T` starts with a
-concrete type constructor, rather than when it is an uninstantiated meta-variable.
+STUDENT. Oh. Oh, right. There is a specific proof-finding strategy in logic programming,
+it can't always work... I guess we have to switch our rules to an algorithmic type system
+instead.
 
-It is typical for a logic-programming language to have a predicate that only succeeds
-when a specific term is uninstantiated (usually called `var`). In Makam this is
-called `refl.isunif` -- the `refl` namespace prefix standing for the fact that we
-call these kinds of predicates "reflective," as they give us extra-logical
-information about the form of a term (sometimes referred to as "meta-predicates" in
-Prolog parlance). Our second attempt thus looks as follows:
+ADVISOR. Precisely. Well, luckily, we can do that to a certain extent, without rewriting everything. Consider this: we only need to use the conversion rule in cases where we
+already know something about the type `T` of the expression, but our typing rules do not
+match that type.
+
+STUDENT. Oh. Do you mean that in bi-directional typing terms? So, doing type analysis of
+an expression with a concrete type `T` might fail, but synthesizing the type anew could work?
+
+ADVISOR. Exactly, and in that case we have to check that the two types are equal, using `teq`.
+So we need to change the rule you wrote to apply only in the case where `T` starts with a
+concrete constructor, rather than when it is an uninstantiated unification variable.
+
+STUDENT. Is that even possible? Is there a way in λProlog to tell whether something is a unification variable?
+
+ADVISOR. There is! Most Prolog dialects have a predicate that does that -- it's usually
+called `var`. In Makam this is called `refl.isunif`, the `refl` namespace prefix standing for
+*reflective* predicates. So a second attempt would be this:
 
 ```
 typeof E T :- not(refl.isunif T), typeof E T', teq T T'.
 ```
 
-Upon further consideration, we see that this rule leads to an infinite loop as well:
-since `teq` should be reflexive, for every proof of `typeof E T'` through the other
-rules, a new proof using this rule will be discovered, which will lead to another
-proof for it, etc. One fix is to make sure that this rule is only used once
-at the end, if typing using the other rules fails:
+STUDENT. Interesting. But wouldn't this lead to an infinite loop too? After all, `teq` is reflexive -- so we could end up in the same situation as before.
+
+ADVISOR. Correct: for every proof of `typeof E T'` through the other rules, a new proof
+using this rule will be discovered, which will lead to another proof for it, etc. One fix
+is to make sure that this rule is only used once at the end, if typing using the normal
+rules fails.
+
+STUDENT. So, something like this:
 
 ```
 typeof, typeof_cases, typeof_conversion : term -> typ -> prop.
 typeof E T :-
-  if (typeof_cases E T)
-  then success
-  else (typeof_conversion E T).
-typeof_cases (app E1 E2) T' :-
-  typeof E1 (arrow T1 T2),
-  typeof E2 T1.
-typeof_conversion E T :-
-  not(refl.isunif T), typeof_cases E T', teq T T'.
+  if (typeof_cases E T) then success else (typeof_conversion E T).
+typeof_cases (app E1 E2) T' :- typeof E1 (arrow T1 T2), typeof E2 T1.
+typeof_conversion E T :- not(refl.isunif T), typeof_cases E T', teq T T'.
 ```
 
-However, this would require changing every typing rule we had. Instead, we can do a
-trick, to force the rule to only fire once for each expression `E`, remembering the
-fact that we have used the rule already:
+ADVISOR. Yes, but let's do a trick to side-step the issue for now. We will force the rule
+to only fire once for each expression `E`, by remembering that we have used the rule
+already:
 
 *)
 
 already_in : [A] A -> prop.
-typeof E T :-
-  not(refl.isunif T),
-  not(already_in (typeof E)),
-  (already_in (typeof E) -> typeof E T'),
-  teq T T'.
+typeof E T :- not(refl.isunif T), not(already_in (typeof E)),
+              (already_in (typeof E) -> typeof E T'), teq T T'.
 
 (*
 
-Also, we need to make sure that we also take the conversion rule into account for
-patterns:
+STUDENT. If we ever made a paper submission out of this, the reviewers would not be happy
+about this rule. But sure. We still need to define `teq` now. Oh, and we should add the
+conversion rule for patterns, but that's almost identical as for terms. (...) I'll do `teq`...
 
 *)
 
@@ -116,25 +117,23 @@ typeof (P : patt A B) S' S T :-
 
 (*
 
-Now let us go and define the actual `teq` predicate. A first approach would be to just
-write out each case individually:
-
 ```
+teq (tconstr TC Args) T' :- type_synonym_info TC Syn, applymany Syn Args T, teq T T'.
+teq T' (tconstr TC Args) :- type_synonym_info TC Syn, applymany Syn Args T, teq T' T.
 teq (arrow T1 T2) (arrow T1' T2') :- teq T1 T1', teq T2 T2'.
 teq (product TS) (product TS') :- map teq TS TS'.
-teq (arrowmany TS T) (arrowmany TS' T') :- teq T T', map teq TS TS'.
-teq nat nat.
-teq (forall T) (forall T') :- (x:typ -> teq x x -> teq (T x) (T' x)).
-teq (tconstr TC Args) (tconstr TC Args') :- map teq Args Args'.
-teq (tconstr TC Args) T' :-
-  type_synonym_info TC Syn,
-  applymany Syn Args T,
-  teq T T'.
-teq T' (tconstr TC Args) :-
-  type_synonym_info TC Syn,
-  applymany Syn Args T,
-  teq T' T.
 ```
+
+ADVISOR. Writing boilerplate is not fun, is it?
+
+STUDENT. It is not. I wish we could just write the first two rules; they are the important
+ones after all. All the other ones just propagate the structural recursion through. Also,
+whenever we add a new constructor for types, we'll have to remember to add a `teq` rule
+for it....
+
+ADVISOR. Let us reflect a little bit on that. 
+
+\TODO{} From here on.
 
 Only the two last cases are important; the rest is boilerplate that performs
 structural recursion through the type. Can we do better than that?

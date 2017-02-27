@@ -12,7 +12,7 @@
 
 \begin{verse}
 ``Explicit System F polymorphism is easy, at some point we'll do Hindley-Milner too. \\
-Types are well-formed by construction, an extra `$\vdash \tau \; \text{wf}$' judgement we won't do.
+Types are well-formed by construction, an extra `$\vdash \tau \; \text{wf}$' judgment we won't do.''
 \end{verse}
 
 ```makam
@@ -51,7 +51,7 @@ The typing rules are straightforward.
 
 One thing to note is that in a pen-and-paper version, we would need to define a new context that
 keeps track of type variables that are in scope (typically named $\Delta$), and an auxiliary
-judgement of the form $\Delta \vdash \tau \; \text{wf}$ that checks that all type variables used
+judgment of the form $\Delta \vdash \tau \; \text{wf}$ that checks that all type variables used
 in $\tau$ are in scope. Here we get type well-formedness for free. Furthermore, if we had to
 keep track of further information about type variables (e.g. their kinds), we could have added
 an assumption of the form `kindof a K ->`. Since the local assumption context can carry rules
