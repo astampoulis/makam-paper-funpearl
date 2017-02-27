@@ -14,7 +14,7 @@ ADVISOR. Yes, it is time. So, what we are aiming to do, is add a facility for ty
 STUDENT. Exactly. We'd like our object language to be a formal logic, so our language will
 be similar to Beluga \citep{pientka2010beluga} or VeriML
 \citep{stampoulis2013veriml}. We'll have to be able to pattern match over the terms of the
-object language, too, so they are runtime entities too.... But we don't need to do all of
+object language, too, so they are runtime entities.... But we don't need to do all of
 that, let's just do a basic version for now, and I can do the rest on my own.
 
 ADVISOR. Sounds good. So, I think the fragment we should do is this: we will have
@@ -22,7 +22,7 @@ dependent functions over a distinguished language of *dependent indices*. We nee
 dependency so that, for example, we can take an object-level type as an argument, and
 return an object-level term that uses that type.
 
-STUDENT. Exactly. Dependent products should be similar, but we can skip them for now, and just add a way to return an object-level term from the meta-level terms.
+STUDENT. Exactly. Dependent products should be similar, but we can skip them for now, and just add a way to return an object-level term from the meta-level.
 
 ADVISOR. Good idea. We are getting into many levels of meta -- there's the meta-language
 we're using, Makam; there's the object language we are encoding, which is a meta-language
@@ -44,21 +44,21 @@ depsubst : [A] (depvar -> A) -> depindex -> A -> prop.
 \newcommand\dep[1]{\ensuremath{#1_{\text{d}}}}
 \newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
 
-STUDENT. Right, we might need to treat variables specially, so it's good that they're a different type. And we might need to check that are well-formed.
+STUDENT. Right, we might need to treat variables specially, so it's good that they're a different type. And we might need to check that classifiers are well-formed.
 
 ADVISOR. Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to signify things that have to do with the dependent indices.
 
 \vspace{-1em}
 \begin{mathpar}
 \small
-\inferrule{\dep{\Psi} \dep{\vdash} \dep{c} : \dep{i}}
-          {\Gamma; \dep{\Psi} \vdash \lift{\dep{c}} : \lift{\dep{i}}}
+\inferrule{\dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
+          {\Gamma; \dep{\Psi} \vdash \lift{\dep{i}} : \lift{\dep{c}}}
 
 \inferrule{\Gamma; \dep{\Psi}, \; \dep{v} : \dep{c} \vdash e : \tau \\ \dep{\Psi} \dep{\vdash} \dep{c} \; \text{wf}}
           {\Gamma; \dep{\Psi} \vdash \Lambda \dep{v} : \dep{c}.e : \Pi \dep{v} : \dep{c}.\tau}
 
 \inferrule{\Gamma; \dep{\Psi} \vdash e : \Pi \dep{v} : \dep{c}.\tau \\ \dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
-          {\Gamma; \dep{\Psi} \vdash e @ \dep{c} : \dep{\text{subst}}(\tau, [\dep{i}/\dep[v]])}
+          {\Gamma; \dep{\Psi} \vdash e @ \dep{i} : \dep{\text{subst}}(\tau, [\dep{i}/\dep[v]])}
 \end{mathpar}
 
 STUDENT. Those are very easy to transcribe to Makam.
