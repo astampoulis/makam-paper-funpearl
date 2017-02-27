@@ -44,8 +44,7 @@ typeof E T :- typeof E T', teq T T'.
 ADVISOR. That would be nice, but we'll go into an infinite loop if that rule gets
 used.
 
-STUDENT. Oh. Oh, right. There is a specific proof-finding strategy in logic programming,
-it can't always work.... I guess we have to switch our rules to an algorithmic type system
+STUDENT. Oh. Oh, right. There is a specific proof-finding strategy in logic programming, and it can't always work.... I guess we have to switch our rules to an algorithmic type system
 instead.
 
 ADVISOR. Precisely. Well, luckily, we can do that to a certain extent, without rewriting everything. Consider this: we only need to use the conversion rule in cases where we
@@ -62,14 +61,14 @@ concrete constructor, rather than when it is an uninstantiated unification varia
 STUDENT. Is that even possible? Is there a way in λProlog to tell whether something is a unification variable?
 
 ADVISOR. There is! Most Prolog dialects have a predicate that does that -- it's usually
-called `var`. In Makam this is called `refl.isunif`, the `refl` namespace prefix standing for
+called `var`. In Makam it is called `refl.isunif`, the `refl` namespace prefix standing for
 *reflective* predicates. So a second attempt would be this:
 
 ```
 typeof E T :- not(refl.isunif T), typeof E T', teq T T'.
 ```
 
-STUDENT. Interesting. But wouldn't this lead to an infinite loop too? After all, `teq` is reflexive -- so we could end up in the same situation as before.
+STUDENT. Interesting. But wouldn't this lead to an infinite loop, too? After all, `teq` is reflexive -- so we could end up in the same situation as before.
 
 ADVISOR. Correct: for every proof of `typeof E T'` through the other rules, a new proof
 using this rule will be discovered, which will lead to another proof for it, etc. One fix
@@ -99,7 +98,7 @@ typeof E T :- not(refl.isunif T), not(already_in (typeof E)),
 
 STUDENT. If we ever made a paper submission out of this, the reviewers would not be happy
 about this rule. But sure. We still need to define `teq` now. Oh, and we should add the
-conversion rule for patterns, but that's almost identical as for terms. (...) I'll do `teq`...
+conversion rule for patterns, but that's almost identical as for terms. (...) I'll do `teq`....
 
 *)
 
@@ -121,7 +120,7 @@ teq (arrowmany TS T) (arrowmany TS' T') :- map teq TS TS', teq T T'.
 ADVISOR. Writing boilerplate is not fun, is it?
 
 STUDENT. It is not. I wish we could just write the first two rules; they are the important
-ones after all. All the other ones just propagate the structural recursion through. Also,
+ones, after all. All the other ones just propagate the structural recursion through. Also,
 whenever we add a new constructor for types, we'll have to remember to add a `teq` rule
 for it....
 
@@ -142,7 +141,7 @@ dyn : A -> dyn.
 teq : [A] A -> A -> prop.
 ```
 
-STUDENT. We'll also need a `map` for these heterogeneous lists too. I believe it will need a polymorphic function as an argument, so that it can be used at different types for different elements of the list. So something like this:
+STUDENT. We'll also need a `map` for these heterogeneous lists, too. I believe it will need a polymorphic function as an argument, so that it can be used at different types for different elements of the list. So something like this:
 
 ```
 map : (forall A. [A] A -> A -> prop) -> list dyn -> list dyn -> prop.
@@ -157,7 +156,7 @@ element of the list, making further applications to different types impossible.
 
 STUDENT. Exactly. Does Makam support higher-rank polymorphism?
 
-ADVISOR. Unfortunately it does not right now, but it should. Nor do any other λProlog implementations that I know of though. Also there is no way to refer to a polymorphic constant without implicitly instantiating it with new type variables. So we have to use a helper predicate right now, called `dyn.call`, to avoid that issue:
+ADVISOR. Unfortunately it does not right now, but it should. Nor do any other λProlog implementations that I know of, though. Also, there is no way to refer to a polymorphic constant without implicitly instantiating it with new type variables. So we have to use a helper predicate right now, called `dyn.call`, to avoid that issue:
 
 ```
 dyn.call : [B] (A -> A -> prop) -> B -> B -> prop.
@@ -168,7 +167,7 @@ dyn.map P (HD :: TL) (HD' :: TL') :- dyn.call P HD HD', dyn.map P TL TL'.
 
 STUDENT. Fair enough. So, going back to our generic rule -- is there a way to actually write it? Maybe there's another reflective predicate we can use?
 
-ADVISOR. Exactly -- there is `refl.headargs`. If a term is concrete, it decomposes it into a constructor and a list of arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `compound\_{}name\_{}arguments`, which is quite similar.}. This isn't a hack though: we could define `refl.headargs` without any special support, save for `refl.isunif`, if we maintained a discipline whenever we add a new constructor:
+ADVISOR. Exactly -- there is `refl.headargs`. If a term is concrete, it decomposes it into a constructor and a list of arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `\texttt{compound\_{}name\_{}arguments}', which is quite similar.}. This isn't a hack, though: we could define `refl.headargs` without any special support, save for `refl.isunif`, if we maintained a discipline whenever we add a new constructor:
 ```
 arrowmany : list typ -> typ -> typ.
 refl.headargs Term Head Args :- not(refl.isunif Term), eq Term (arrowmany TS T),
@@ -180,7 +179,7 @@ STUDENT. So `refl.headargs` has this type:
 refl.headargs : B -> A -> list dyn -> prop.
 ```
 
-ADVISOR. Correct. We should now be able to proceed to defining the boilerplate generically. Let's do this as a reusable higher-order predicate for structural recursion. I'll give you the type, you fill in the first case:
+ADVISOR. Correct. We should now be able to proceed to defining the boilerplate generically. Let's do it as a reusable higher-order predicate for structural recursion. I'll give you the type; you fill in the first case:
 
 *)
 
@@ -188,7 +187,7 @@ structural_recursion : [A B] (A -> A -> prop) -> B -> B -> prop.
 
 (*
 
-STUDENT. Let me see. Oh, so, the first argument -- are we doing this in open recursion style? Maybe that's the predicate for recursive calls. I need to deconstruct a term, apply the recursive call.... How is this?
+STUDENT. Let me see. Oh, so, the first argument -- are we doing this in open-recursion style? Maybe that's the predicate for recursive calls. I need to deconstruct a term, apply the recursive call.... How is this?
 
 *)
 
@@ -214,7 +213,7 @@ structural_recursion Rec (X : A -> B) (Y : A -> B) :-
 
 (*
 
-STUDENT. This is exciting, I hope this is part of the standard library of Makam. I can do `teq` in a few lines now!
+STUDENT. This is exciting; I hope it is part of the standard library of Makam. I can do `teq` in a few lines now!
 
 *)
 
@@ -232,7 +231,7 @@ teq' T T' :- structural_recursion teq' T T'.
 ADVISOR. That is exactly right! So, we've minimized the boilerplate, and we won't need any
 adaptation when we add a new constructor -- even if we make use of all sorts of new and complicated types.
 
-STUDENT. That's right, we did not do anything special for the binding forms we defined.... This is great. But, wait, isn't `structural_recursion` missing a case? That of uninstantiated unification variables?
+STUDENT. That's right: we did not do anything special for the binding forms we defined.... quite a payoff for a small amount of code! But, wait, isn't `structural_recursion` missing a case: that of uninstantiated unification variables?
 
 ADVISOR. It is, but in my experience, it's better to define how to handle unification variables as needed, in each new structurally recursive predicate. In this case, we're only supposed to use `teq` with ground terms, so it's fine if we fail when we encounter a unification variable.
 

@@ -36,7 +36,7 @@ typeof E T :- typeof E T', teq T T'.
 rule gets used.
 
 \heroSTUDENT{} Oh. Oh, right. There is a specific proof-finding strategy in
-logic programming, it can't always work\ldots{}. I guess we have to
+logic programming, and it can't always work\ldots{}. I guess we have to
 switch our rules to an algorithmic type system instead.
 
 \heroADVISOR{} Precisely. Well, luckily, we can do that to a certain extent,
@@ -59,7 +59,7 @@ variable.
 whether something is a unification variable?
 
 \heroADVISOR{} There is! Most Prolog dialects have a predicate that does that
--- it's usually called \texttt{var}. In Makam this is called
+-- it's usually called \texttt{var}. In Makam it is called
 \texttt{refl.isunif}, the \texttt{refl} namespace prefix standing for
 \emph{reflective} predicates. So a second attempt would be this:
 
@@ -67,7 +67,7 @@ whether something is a unification variable?
 typeof E T :- not(refl.isunif T), typeof E T', teq T T'.
 \end{verbatim}
 
-\heroSTUDENT{} Interesting. But wouldn't this lead to an infinite loop too?
+\heroSTUDENT{} Interesting. But wouldn't this lead to an infinite loop, too?
 After all, \texttt{teq} is reflexive -- so we could end up in the same
 situation as before.
 
@@ -101,7 +101,7 @@ typeof E T :- not(refl.isunif T), not(already_in (typeof E)),
 would not be happy about this rule. But sure. We still need to define
 \texttt{teq} now. Oh, and we should add the conversion rule for
 patterns, but that's almost identical as for terms. (\ldots{}) I'll do
-\texttt{teq}\ldots{}
+\texttt{teq}\ldots{}.
 
 \begin{verbatim}
 teq (tconstr TC Args) T' :- type_synonym_info TC Syn, applymany Syn Args T, teq T T'.
@@ -114,7 +114,7 @@ teq (arrowmany TS T) (arrowmany TS' T') :- map teq TS TS', teq T T'.
 \heroADVISOR{} Writing boilerplate is not fun, is it?
 
 \heroSTUDENT{} It is not. I wish we could just write the first two rules; they
-are the important ones after all. All the other ones just propagate the
+are the important ones, after all. All the other ones just propagate the
 structural recursion through. Also, whenever we add a new constructor
 for types, we'll have to remember to add a \texttt{teq} rule for
 it\ldots{}.
@@ -145,7 +145,7 @@ dyn : A \ensuremath{\to} dyn.
 teq : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
 \end{verbatim}
 
-\heroSTUDENT{} We'll also need a \texttt{map} for these heterogeneous lists
+\heroSTUDENT{} We'll also need a \texttt{map} for these heterogeneous lists,
 too. I believe it will need a polymorphic function as an argument, so
 that it can be used at different types for different elements of the
 list. So something like this:
@@ -167,7 +167,7 @@ applications to different types impossible.
 \heroSTUDENT{} Exactly. Does Makam support higher-rank polymorphism?
 
 \heroADVISOR{} Unfortunately it does not right now, but it should. Nor do any
-other \foreignlanguage{greek}{λ}Prolog implementations that I know of though. Also there is no
+other \foreignlanguage{greek}{λ}Prolog implementations that I know of, though. Also, there is no
 way to refer to a polymorphic constant without implicitly instantiating
 it with new type variables. So we have to use a helper predicate right
 now, called \texttt{dyn.call}, to avoid that issue:
@@ -185,10 +185,10 @@ can use?
 
 \heroADVISOR{} Exactly -- there is \texttt{refl.headargs}. If a term is
 concrete, it decomposes it into a constructor and a list of
-arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `compound\_{}name\_{}arguments`, which is quite similar.}.
-This isn't a hack though: we could define \texttt{refl.headargs} without
-any special support, save for \texttt{refl.isunif}, if we maintained a
-discipline whenever we add a new constructor:
+arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `\texttt{compound\_{}name\_{}arguments}', which is quite similar.}.
+This isn't a hack, though: we could define \texttt{refl.headargs}
+without any special support, save for \texttt{refl.isunif}, if we
+maintained a discipline whenever we add a new constructor:
 
 \begin{verbatim}
 arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
@@ -203,8 +203,8 @@ refl.headargs : B \ensuremath{\to} A \ensuremath{\to} list dyn \ensuremath{\to} 
 \end{verbatim}
 
 \heroADVISOR{} Correct. We should now be able to proceed to defining the
-boilerplate generically. Let's do this as a reusable higher-order
-predicate for structural recursion. I'll give you the type, you fill in
+boilerplate generically. Let's do it as a reusable higher-order
+predicate for structural recursion. I'll give you the type; you fill in
 the first case:
 
 \begin{verbatim}
@@ -212,7 +212,7 @@ structural_recursion : [A B] (A \ensuremath{\to} A \ensuremath{\to} prop) \ensur
 \end{verbatim}
 
 \heroSTUDENT{} Let me see. Oh, so, the first argument -- are we doing this in
-open recursion style? Maybe that's the predicate for recursive calls. I
+open-recursion style? Maybe that's the predicate for recursive calls. I
 need to deconstruct a term, apply the recursive call\ldots{}. How is
 this?
 
@@ -242,8 +242,8 @@ structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) :
   (x:A \ensuremath{\to} structural_recursion Rec x x \ensuremath{\to} structural_recursion Rec (X x) (Y x)).
 \end{verbatim}
 
-\heroSTUDENT{} This is exciting, I hope this is part of the standard library
-of Makam. I can do \texttt{teq} in a few lines now!
+\heroSTUDENT{} This is exciting; I hope it is part of the standard library of
+Makam. I can do \texttt{teq} in a few lines now!
 
 \begin{verbatim}
 teq' : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
@@ -260,10 +260,10 @@ teq' T T' :- structural_recursion teq' T T'.
 we won't need any adaptation when we add a new constructor -- even if we
 make use of all sorts of new and complicated types.
 
-\heroSTUDENT{} That's right, we did not do anything special for the binding
-forms we defined\ldots{}. This is great. But, wait, isn't
-\texttt{structural\_recursion} missing a case? That of uninstantiated
-unification variables?
+\heroSTUDENT{} That's right: we did not do anything special for the binding
+forms we defined\ldots{}. quite a payoff for a small amount of code!
+But, wait, isn't \texttt{structural\_recursion} missing a case: that of
+uninstantiated unification variables?
 
 \heroADVISOR{} It is, but in my experience, it's better to define how to
 handle unification variables as needed, in each new structurally
