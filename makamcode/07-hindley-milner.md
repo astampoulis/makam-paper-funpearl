@@ -99,7 +99,7 @@ generalize T T :- not(findunif T X).
 STUDENT. Ah, I see what you are getting at. For the recursive case, we will pick out the first
 unification variable that we come upon using `findunif`. We will generalize over it using `replaceunif`,
 and then proceed to the rest. But don't we have to skip over the unification variables that are in
-the $\Gamma$ environment? How do we do that?
+the $\Gamma$ environment?
 
 ADVISOR. Well, that's the last hurdle. Let's assume a predicate that gives us all the types in
 the environment, and write the recursive case down:
