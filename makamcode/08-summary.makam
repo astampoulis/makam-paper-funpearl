@@ -23,12 +23,15 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   are part of the original λProlog language design.
 
 - We defined a generic predicate to perform structural recursion, allowing us to define
-  structurally recursive predicates that only explicitly list out the important cases. Any
-  new definitions, such as constructors or datatypes we introduce later, do not need any
-  special provision to be covered by the same predicates. Our generic definitions depend
-  on a number of reflective predicates, which are available in other Prolog dialects;
-  however, we are not aware of a published example that makes use of them in the λProlog
-  setting.
+  structurally recursive predicates that only explicitly list out the important cases, in
+  what we believe is a novel encoding for the λProlog setting. Any new definitions, such
+  as constructors or datatypes we introduce later, do not need any special provision to be
+  covered by the same predicates. Our generic definitions depend on a number of reflective
+  predicates, which are available in other Prolog dialects; however, we are not aware of a
+  published example that makes use of them in the λProlog setting. These predicates are
+  used to reflect on the structure of Makam terms, and to get the list of local
+  assumptions; for the most part, their use is limited to predicates that would be part of
+  the standard library, not in user code.
 
 - The above encodings are reusable, and can be made part of the Makam standard library. As
   a result, we were able to develop the type checker for quite an advanced type system, in

@@ -220,6 +220,8 @@ depsubst_cases Var (openterm CtxE) (object.metaterm Var Subst) Result :-
   depsubst_aux Var (openterm CtxE) E Result.
 ```
 
+<!--
+
 Here is the final example program.
 
 ```makam
@@ -269,3 +271,4 @@ itself. Getting to that point in the VeriML implementation took months!
 
 Mention that adding polymorphic contexts and dependent pattern matching as in VeriML is
 also possible, but we won't show it here.
+-->
