@@ -89,9 +89,10 @@ yourself, it's similar to the above.
 
 \begin{verbatim}
 hasunif : [A B] B \ensuremath{\to} bool \ensuremath{\to} A \ensuremath{\to} bool \ensuremath{\to} prop.
-... (3 cases for hasunif)
-hasunif : [A B] A \ensuremath{\to} B \ensuremath{\to} prop.
-hasunif Term Var :- hasunif Var false Term true.
+hasunif _ true _ true.
+hasunif X false Y true :- refl.sameunif X Y.
+hasunif X In Y Out :- generic.fold (hasunif X) In Y Out.
+hasunif : [A B] A \ensuremath{\to} B \ensuremath{\to} prop. hasunif Term Var :- hasunif Var false Term true.
 \end{verbatim}
 
 \heroADVISOR{} OK, we are now mostly ready to implement \texttt{generalize}.
@@ -130,9 +131,9 @@ we introduce a new \texttt{typeof\ x\ T\ \ensuremath{\to}} assumption?
 shame to do that now! Maybe we'll be excused to use yet another
 reflective predicate that does what we want? There is a way to get a
 list of all the local assumptions for the \texttt{typeof} predicate; it
-turns out that all the rules and connectives are normal Makam terms like
-any other, so there's not really much magic to it. And those assumptions
-will include all the types in \(\Gamma\)\ldots{}.
+turns out that all the rules and connectives are normal \foreignlanguage{greek}{λ}Prolog terms
+like any other, so there's not really much magic to it. And those
+assumptions will include just the types in \(\Gamma\)\ldots{}.
 
 \begin{verbatim}
 get_types_in_environment Assumptions :-

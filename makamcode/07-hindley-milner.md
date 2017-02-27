@@ -77,17 +77,11 @@ variable exists within a term. You can do that yourself, it's similar to the abo
 STUDENT. Yes, I think I know how to do that.
 ```makam
 hasunif : [A B] B -> bool -> A -> bool -> prop.
-... (3 cases for hasunif)
-hasunif : [A B] A -> B -> prop.
-hasunif Term Var :- hasunif Var false Term true.
-```
-<!--
-```makam
 hasunif _ true _ true.
 hasunif X false Y true :- refl.sameunif X Y.
 hasunif X In Y Out :- generic.fold (hasunif X) In Y Out.
+hasunif : [A B] A -> B -> prop. hasunif Term Var :- hasunif Var false Term true.
 ```
--->
 
 ADVISOR. OK, we are now mostly ready to implement `generalize`. We'll do this recursively. The
 base case is when there are no unification variables within a type left:
@@ -100,8 +94,8 @@ unification variable that we come upon using `findunif`. We will generalize over
 and then proceed to the rest. But don't we have to skip over the unification variables that are in
 the $\Gamma$ environment?
 
-ADVISOR. Well, that's the last hurdle. Let's assume a predicate that gives us all the types in
-the environment, and write the recursive case down:
+ADVISOR. Well, that's the last hurdle. Let's assume a predicate that gives us all the
+types in the environment, and write the recursive case down:
 
 ```makam
 get_types_in_environment : [A] A -> prop.
@@ -118,8 +112,8 @@ new `typeof x T ->` assumption?
 ADVISOR. Well, we came this far without rewriting our rules, it's a shame to do that now!
 Maybe we'll be excused to use yet another reflective predicate that does what we
 want? There is a way to get a list of all the local assumptions for the `typeof` predicate; it
-turns out that all the rules and connectives are normal Makam terms like any other,
-so there's not really much magic to it. And those assumptions will include all the
+turns out that all the rules and connectives are normal λProlog terms like any other,
+so there's not really much magic to it. And those assumptions will include just the
 types in $\Gamma$....
 
 ```makam
