@@ -11,10 +11,8 @@ STUDENT. Type synonyms? Difficult? Why? Doesn't this work?
 ```makam
 type_synonym : dbind typ T typ -> (typeconstructor T -> program) -> program.
 type_synonym_info : typeconstructor T -> dbind typ T typ -> prop.
-
 wfprogram (type_synonym Syn Program') :-
-  (t:(typeconstructor T) -> type_synonym_info t Syn ->
-    wfprogram (Program' t)).
+  (t:(typeconstructor T) -> type_synonym_info t Syn -> wfprogram (Program' t)).
 ```
 
 ADVISOR. Sure, that works. How about the typing rule for them, then? We'll need
@@ -39,7 +37,7 @@ typeof E T :- typeof E T', teq T T'.
 ADVISOR. That would be nice, but we'll go into an infinite loop if that rule gets
 used.
 
-STUDENT. Oh. Oh, right. There is a specific proof-finding strategy in logic programming, and it can't always work.... I guess we have to switch our rules to an algorithmic type system
+STUDENT. Oh. Oh, right. There is a specific proof-finding strategy in logic programming, and it can't always work.... I guess we have to switch our rules to an algorithmic type-system
 instead.
 
 ADVISOR. Precisely. Well, luckily, we can do that to a certain extent, without rewriting everything. Consider this: we only need to use the conversion rule in cases where we
@@ -57,7 +55,7 @@ STUDENT. Is that even possible? Is there a way in λProlog to tell whether somet
 
 ADVISOR. There is! Most Prolog dialects have a predicate that does that -- it's usually
 called `var`. In Makam it is called `refl.isunif`, the `refl` namespace prefix standing for
-*reflective* predicates. So a second attempt would be this:
+*reflective* predicates. So, here's a second attempt:
 
 ```
 typeof E T :- not(refl.isunif T), typeof E T', teq T T'.
@@ -131,8 +129,7 @@ STUDENT. Right, so in the example of the `arrow` type, `Constructor` would match
 ADVISOR. Glad you figured that out. We can do that using the existential type -- let's call it `dyn` --, so the arguments can be of `list dyn` type. And we'll need to make `teq` polymorphic:
 
 ```
-dyn : type.
-dyn : A -> dyn.
+dyn : type.  dyn : A -> dyn.
 teq : [A] A -> A -> prop.
 ```
 
@@ -142,10 +139,11 @@ STUDENT. We'll also need a `map` for these heterogeneous lists, too. I believe i
 map : (forall A. [A] A -> A -> prop) -> list dyn -> list dyn -> prop.
 ```
 
-ADVISOR. Right, we'd need higher-rank types here. There's a problem with
+ADVISOR. Right, we'd need higher-rank types here. There's a problem with the alternative:
 ```
 map : [A] (A -> A -> prop) -> list dyn -> list dyn -> prop
 ```
+\noindent
 In the first `cons` cell, this would instantiate the type `A` to the type of the first
 element of the list, making further applications to different types impossible.
 
@@ -166,7 +164,7 @@ ADVISOR. Exactly -- there is `refl.headargs`. If a term is concrete, it decompos
 ```
 arrowmany : list typ -> typ -> typ.
 refl.headargs Term Head Args :- not(refl.isunif Term), eq Term (arrowmany TS T),
-                                eq Head arrowmany, eq Args [TS, T].
+                                eq Head arrowmany, eq Args [dyn TS, dyn T].
 ```
 
 STUDENT. So `refl.headargs` has this type:
@@ -195,7 +193,7 @@ ADVISOR. Wait, who said that? Anyway. That looks great! And you're right about u
 
 STUDENT. Are we done?
 
-ADVISOR. Almost there! We just need to handle the case of the meta-level function type. We cannot destructure functions using `refl.headargs`, so we have to treat them specially:
+ADVISOR. Almost there! We just need to handle the case of the meta-level function type. It does not make sense to destructure functions using `refl.headargs`; so, that fails for functions, and we have to treat them specially:
 
 ```makam
 structural_recursion Rec (X : A -> B) (Y : A -> B) :-
@@ -207,7 +205,6 @@ STUDENT. This is exciting; I hope it is part of the standard library of Makam. I
 ```makam
 teq' : [A] A -> A -> prop.
 teq T T' :- teq' T T'.
-
 teq' (tconstr TC Args) T' :-
   type_synonym_info TC Synonym, applymany Synonym Args T, teq' T T'.
 teq' T' (tconstr TC Args) :-

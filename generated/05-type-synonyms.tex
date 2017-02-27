@@ -6,10 +6,8 @@ recursion}\label{where-our-heroes-reflect-on-structural-recursion}
 \begin{verbatim}
 type_synonym : dbind typ T typ \ensuremath{\to} (typeconstructor T \ensuremath{\to} program) \ensuremath{\to} program.
 type_synonym_info : typeconstructor T \ensuremath{\to} dbind typ T typ \ensuremath{\to} prop.
-
 wfprogram (type_synonym Syn Program') :-
-  (t:(typeconstructor T) \ensuremath{\to} type_synonym_info t Syn \ensuremath{\to}
-    wfprogram (Program' t)).
+  (t:(typeconstructor T) \ensuremath{\to} type_synonym_info t Syn \ensuremath{\to} wfprogram (Program' t)).
 \end{verbatim}
 
 \heroADVISOR{} Sure, that works. How about the typing rule for them, then?
@@ -37,7 +35,7 @@ rule gets used.
 
 \heroSTUDENT{} Oh. Oh, right. There is a specific proof-finding strategy in
 logic programming, and it can't always work\ldots{}. I guess we have to
-switch our rules to an algorithmic type system instead.
+switch our rules to an algorithmic type-system instead.
 
 \heroADVISOR{} Precisely. Well, luckily, we can do that to a certain extent,
 without rewriting everything. Consider this: we only need to use the
@@ -61,7 +59,7 @@ whether something is a unification variable?
 \heroADVISOR{} There is! Most Prolog dialects have a predicate that does that
 -- it's usually called \texttt{var}. In Makam it is called
 \texttt{refl.isunif}, the \texttt{refl} namespace prefix standing for
-\emph{reflective} predicates. So a second attempt would be this:
+\emph{reflective} predicates. So, here's a second attempt:
 
 \begin{verbatim}
 typeof E T :- not(refl.isunif T), typeof E T', teq T T'.
@@ -140,8 +138,7 @@ type -- let's call it \texttt{dyn} --, so the arguments can be of
 polymorphic:
 
 \begin{verbatim}
-dyn : type.
-dyn : A \ensuremath{\to} dyn.
+dyn : type.  dyn : A \ensuremath{\to} dyn.
 teq : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
 \end{verbatim}
 
@@ -155,11 +152,13 @@ map : (forall A. [A] A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to
 \end{verbatim}
 
 \heroADVISOR{} Right, we'd need higher-rank types here. There's a problem with
+the alternative:
 
 \begin{verbatim}
 map : [A] (A \ensuremath{\to} A \ensuremath{\to} prop) \ensuremath{\to} list dyn \ensuremath{\to} list dyn \ensuremath{\to} prop
 \end{verbatim}
 
+\noindent
 In the first \texttt{cons} cell, this would instantiate the type
 \texttt{A} to the type of the first element of the list, making further
 applications to different types impossible.
@@ -193,7 +192,7 @@ maintained a discipline whenever we add a new constructor:
 \begin{verbatim}
 arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
 refl.headargs Term Head Args :- not(refl.isunif Term), eq Term (arrowmany TS T),
-                                eq Head arrowmany, eq Args [TS, T].
+                                eq Head arrowmany, eq Args [dyn TS, dyn T].
 \end{verbatim}
 
 \heroSTUDENT{} So \texttt{refl.headargs} has this type:
@@ -234,8 +233,9 @@ arguments.
 \heroSTUDENT{} Are we done?
 
 \heroADVISOR{} Almost there! We just need to handle the case of the meta-level
-function type. We cannot destructure functions using
-\texttt{refl.headargs}, so we have to treat them specially:
+function type. It does not make sense to destructure functions using
+\texttt{refl.headargs}; so, that fails for functions, and we have to
+treat them specially:
 
 \begin{verbatim}
 structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) :-
@@ -248,7 +248,6 @@ Makam. I can do \texttt{teq} in a few lines now!
 \begin{verbatim}
 teq' : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
 teq T T' :- teq' T T'.
-
 teq' (tconstr TC Args) T' :-
   type_synonym_info TC Synonym, applymany Synonym Args T, teq' T T'.
 teq' T' (tconstr TC Args) :-
