@@ -80,7 +80,7 @@ typeof (liftdep I) (liftdep C) :- depclassify I C.
 
 (*
 
-ADVISOR. Great. Just wanted to say, this framework is quite general. We could instantiate dependent indices with a language of natural numbers, equality predicates, and equality proofs; this would be quite similar to the Dependent ML formulation of \citet{licata2005formulation}. But let's go back to what we're trying to do. I'll add the object language in a separate namespace prefix, and I'll just copy-paste our STLC code from earlier on.
+ADVISOR. Great. Just wanted to say, this framework is quite general. We could instantiate dependent indices with a language of natural numbers, equality predicates, and equality proofs; this would be quite similar to the Dependent ML formulation of \citet{licata2005formulation}. But let's go back to what we're trying to do. I'll add the object language in a separate namespace prefix -- we can use `\texttt{\%extend}' for going into a namespace -- and I'll just copy-paste our STLC code from earlier on.
 
 ```
 %extend object.
@@ -133,10 +133,9 @@ it applies or not.
 wftyp : typ -> prop. wftyp_aux : [A] A -> A -> prop.
 wftyp_cases : [A] A -> A -> bool -> prop.
 wftyp T :- wftyp_aux T T.
-wftyp_aux T T :-
-  if (wftyp_cases T T Applies)
-  then (eq Applies true)
-  else (eq Applies false, structural_recursion wftyp_aux T T).
+wftyp_aux T T :- if (wftyp_cases T T Applies)
+                 then (eq Applies true)
+                 else (eq Applies false, structural_recursion wftyp_aux T T).
 %end.
 ```
 
@@ -157,9 +156,10 @@ wftyp_aux T T :-
 
 
 STUDENT. I see -- if a type-checking rule applies, but fails, we don't want to proceed to
-do structural recursion; it would defeat the purpose. Neat trick. I also see that your structural
-recursion just needs to do a simple visit, it does not need to produce an output; hence
-the repeat of the same `typ` argument. Let's prepare for substitutions too, in the same way.
+also try structural recursion; it would defeat the purpose. Neat trick. I also see that
+your structural recursion just needs to do a simple visit, it does not need to produce an
+output; hence the repeat of the same `typ` argument. Let's prepare for substitutions too,
+in the same way.
 
 *)
 
@@ -174,7 +174,7 @@ depsubst_aux Var Replace Where Result :-
 
 (*
 
-ADVISOR. Great! We only have one thing missing: we need to close the loop, being able to refer to dependent variables from within object-level terms and types. By the way, we are very much following the construction in \citet{stampoulis2013veriml}.
+ADVISOR. Great! We only have one thing missing: we need to close the loop, being able to refer to dependent variables from within object-level terms and types. By the way, we are very much following the construction of \textit{(reference elided for blind submission)}.
 
 STUDENT. I got this.
 
