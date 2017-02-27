@@ -12,8 +12,7 @@
 
 \begin{verse}
 ``Explicit System F polymorphism is easy, at some point we'll do Hindley-Milner too. \\
-Types are well-formed by construction, an extra $\vdash \tau \; \text{wf}$ judgement we won't do. \\
-But if we needed it, we'd put `kind of' assumptions in the context, we would not thread an extra $\Delta$ through.''
+Types are well-formed by construction, an extra `$\vdash \tau \; \text{wf}$' judgement we won't do.
 \end{verse}
 
 ```makam
@@ -41,8 +40,6 @@ main : term -> program.
 wfprogram (main E) :- typeof E _.
 ```
 
----
-
 <!--
 First we add polymorphism, therefore extending our simply typed lambda calculus to System
 F. We will only consider the explicit polymorphism case for the time being, leaving type
@@ -50,8 +47,7 @@ inference for later.
 
 We need a type for quantification over types, as well as term-level constructs for
 functions over types and instantiating a polymorphic function with a specific type.
-
-The typing rules are similarly straightforward.
+The typing rules are straightforward.
 
 One thing to note is that in a pen-and-paper version, we would need to define a new context that
 keeps track of type variables that are in scope (typically named $\Delta$), and an auxiliary
@@ -74,7 +70,7 @@ datatypes. We must first introduce a notion of top-level programs, each composed
 series of declarations of types and terms, as well as a predicate to check that a program is
 well-formed:
 
-```makam
+```
 program : type.
 wfprogram : program -> prop.
 ```
@@ -82,7 +78,7 @@ wfprogram : program -> prop.
 Let us add `let` definitions as a first example of a program component, each introducing a term
 variable that can be used in the rest of the program:
 
-```makam
+```
 let : term -> (term -> program) -> program.
 
 wfprogram (let E P) :-
@@ -92,7 +88,7 @@ wfprogram (let E P) :-
 
 We also need a "last" component for the program, typically a main expression:
 
-```makam
+```
 main : term -> program.
 
 wfprogram (main E) :-
@@ -100,8 +96,12 @@ wfprogram (main E) :-
 ```
 -->
 
-Let us now proceed to algebraic datatypes. A datatype has a name, a number of type parameters,
-and a list of constructors; constructors themselves have names and lists of arguments:
+---
+
+ADVISOR. I think we are ready to do polymorphic algebraic datatypes now. We'll add a type
+for type constructors, like `list`, dependent on their arity; and a type for the
+constructors of a datatype. Also a type for constructor declarations, dependent on the
+number of constructors they introduce:
 
 ```makam
 typeconstructor : type -> type.
@@ -109,35 +109,45 @@ constructor : type.
 
 ctor_declaration : type -> type.
 nil : ctor_declaration unit.
-cons : list typ -> ctor_declaration T ->
-         ctor_declaration (constructor * T).
+cons : list typ -> ctor_declaration T -> ctor_declaration (constructor * T).
+```
+
+STUDENT. Oh, so each constructor takes multiple arguments. Great. So datatype declarations would be something like this:
+
+```makam
 datatype_declaration : type -> type -> type.
 datatype_declaration : 
-  (typeconstructor Arity -> dbind typ Arity (ctor_declaration Constructors)) ->
+  (typeconstructor Arity -> dbind typ Arity (ctor_declaration Ctors)) ->
   datatype_declaration Arity Ctors.
 
 datatype :
-  datatype_declaration Arity Constructors ->
-  (typeconstructor Arity -> dbind constructor Constructors program) ->
+  datatype_declaration Arity Ctors ->
+  (typeconstructor Arity -> dbind constructor Ctors program) ->
   program.
 ```
 
-The datatype introduces a type constructor, as well as a number of constructors, in the rest of
-the program. Here we use dependency to carry the arity of the type constructor in its
-meta-level type, avoiding the need for a well-formedness predicate for types. Of course, in
-situations where object-level types are more complicated, we would need to incorporate kind
-checking into our predicates.
+ADVISOR. Right, so when declaring a datatype, we introduce a `typeconstructor` variable so
+that we can refer to the type recursive when we declare our constructors. And we also have
+acces to the right number of polymorphic variables, matching the `Arity` of the
+constructor. I like how you split out the declaration of the type itself from the "rest of the program" part, this could become unwieldy otherwise.
 
-Let us now proceed to well-formedness for datatype declarations. We will need two auxiliary
-predicates: one that keeps information about a constructor -- which type it belongs to, what
-arguments it expects; and another one that abstracts over the type variables
-used in the datatype declaration, creating a polymorphic type for the type of the constructor,
-which can be instantiated with different types at different places.
+STUDENT. That's what I thought too. And I see why you made the type constructors carry their arity -- to keep types well-formed by construction.
+
+ADVISOR. Exactly. In a richer type system, we would need an extra kind checking predicate though.
+
+STUDENT. Makes sense. Should we proceed to well-formedness for datatype declarations? I
+think we will need a predicate to keep track of information about constructors -- which
+datatype it belongs to and what arguments it expects. That way we can carry that information
+in the assumptions context.
 
 ```makam
 constructor_info :
   typeconstructor Arity -> constructor -> dbind typ Arity (list typ) -> prop.
+```
 
+\TODO{} from here on.
+
+```makam
 constructor_polytypes : [Arity Ctors PolyTypes]
   subst typ Arity ->
   ctor_declaration Ctors -> subst (dbind typ Arity (list typ)) PolyTypes -> prop.
@@ -176,7 +186,10 @@ typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
   map typeof Args Typs.
 ```
 
-We will also need patterns:
+<!--
+Additional information.
+
+Patterns and their typing rule:
 
 ```makam
 patt_constr : constructor -> pattlist T T' -> patt T T'.
@@ -187,7 +200,7 @@ typeof (patt_constr Constructor Args) S' S (tconstr TypConstr TypArgs) :-
   typeof Args S' S Typs.
 ```
 
-As an example, we will define lists and their append function:
+Example: definition of lists and append.
 
 ```makam
 wfprogram
@@ -204,15 +217,15 @@ wfprogram
           (patt_constr lcons [patt_var, patt_var])
             (dbindnext (fun hd => dbindnext (fun tl => dbindbase (
             constr lcons [hd, app (app (appt append _) tl) l2]))))
-          l2))) ])))
-      (dbindnext (fun append => dbindbase (
-    (app (app (appt append _)
-      (constr lcons [zero, constr lnil []]))
-      (constr lcons [zero, constr lnil []]))
-)))))))))) ?
+          l2))) ],
+      (app (app (appt append _)
+        (constr lcons [zero, constr lnil []]))
+        (constr lcons [zero, constr lnil []]))
+      )))))))))) ?
 ```
 
-The semantics, if needed:
+The semantics:
+
 ```makam
 patt_to_term (patt_constr Constructor Args) (constr Constructor Args') S' S :-
   pattlist_to_termlist Args Args' S' S.
@@ -236,7 +249,7 @@ eval (main E) (main V) :-
   eval E V.
 ```
 
-Example:
+Example of evaluation:
 
 ```makam
 (eq _PROGRAM (
@@ -254,3 +267,4 @@ Example:
  wfprogram _PROGRAM,
  eval _PROGRAM FINAL) ?
 ```
+-->

@@ -7,8 +7,7 @@ recursion}\label{where-our-heroes-add-more-ml-features-and-reflect-on-structural
 
 \begin{verse}
 ``Explicit System F polymorphism is easy, at some point we'll do Hindley-Milner too. \\
-Types are well-formed by construction, an extra $\vdash \tau \; \text{wf}$ judgement we won't do. \\
-But if we needed it, we'd put `kind of' assumptions in the context, we would not thread an extra $\Delta$ through.''
+Types are well-formed by construction, an extra `$\vdash \tau \; \text{wf}$' judgement we won't do.
 \end{verse}
 
 \begin{verbatim}
@@ -38,9 +37,11 @@ wfprogram (main E) :- typeof E _.
 
 \begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
 
-Let us now proceed to algebraic datatypes. A datatype has a name, a
-number of type parameters, and a list of constructors; constructors
-themselves have names and lists of arguments:
+\heroADVISOR{} I think we are ready to do polymorphic algebraic datatypes now.
+We'll add a type for type constructors, like \texttt{list}, dependent on
+their arity; and a type for the constructors of a datatype. Also a type
+for constructor declarations, dependent on the number of constructors
+they introduce:
 
 \begin{verbatim}
 typeconstructor : type \ensuremath{\to} type.
@@ -48,38 +49,53 @@ constructor : type.
 
 ctor_declaration : type \ensuremath{\to} type.
 nil : ctor_declaration unit.
-cons : list typ \ensuremath{\to} ctor_declaration T \ensuremath{\to}
-         ctor_declaration (constructor * T).
+cons : list typ \ensuremath{\to} ctor_declaration T \ensuremath{\to} ctor_declaration (constructor * T).
+\end{verbatim}
+
+\heroSTUDENT{} Oh, so each constructor takes multiple arguments. Great. So
+datatype declarations would be something like this:
+
+\begin{verbatim}
 datatype_declaration : type \ensuremath{\to} type \ensuremath{\to} type.
 datatype_declaration : 
-  (typeconstructor Arity \ensuremath{\to} dbind typ Arity (ctor_declaration Constructors)) \ensuremath{\to}
+  (typeconstructor Arity \ensuremath{\to} dbind typ Arity (ctor_declaration Ctors)) \ensuremath{\to}
   datatype_declaration Arity Ctors.
 
 datatype :
-  datatype_declaration Arity Constructors \ensuremath{\to}
-  (typeconstructor Arity \ensuremath{\to} dbind constructor Constructors program) \ensuremath{\to}
+  datatype_declaration Arity Ctors \ensuremath{\to}
+  (typeconstructor Arity \ensuremath{\to} dbind constructor Ctors program) \ensuremath{\to}
   program.
 \end{verbatim}
 
-The datatype introduces a type constructor, as well as a number of
-constructors, in the rest of the program. Here we use dependency to
-carry the arity of the type constructor in its meta-level type, avoiding
-the need for a well-formedness predicate for types. Of course, in
-situations where object-level types are more complicated, we would need
-to incorporate kind checking into our predicates.
+\heroADVISOR{} Right, so when declaring a datatype, we introduce a
+\texttt{typeconstructor} variable so that we can refer to the type
+recursive when we declare our constructors. And we also have acces to
+the right number of polymorphic variables, matching the \texttt{Arity}
+of the constructor. I like how you split out the declaration of the type
+itself from the ``rest of the program'' part, this could become unwieldy
+otherwise.
 
-Let us now proceed to well-formedness for datatype declarations. We will
-need two auxiliary predicates: one that keeps information about a
-constructor -- which type it belongs to, what arguments it expects; and
-another one that abstracts over the type variables used in the datatype
-declaration, creating a polymorphic type for the type of the
-constructor, which can be instantiated with different types at different
-places.
+\heroSTUDENT{} That's what I thought too. And I see why you made the type
+constructors carry their arity -- to keep types well-formed by
+construction.
+
+\heroADVISOR{} Exactly. In a richer type system, we would need an extra kind
+checking predicate though.
+
+\heroSTUDENT{} Makes sense. Should we proceed to well-formedness for datatype
+declarations? I think we will need a predicate to keep track of
+information about constructors -- which datatype it belongs to and what
+arguments it expects. That way we can carry that information in the
+assumptions context.
 
 \begin{verbatim}
 constructor_info :
   typeconstructor Arity \ensuremath{\to} constructor \ensuremath{\to} dbind typ Arity (list typ) \ensuremath{\to} prop.
+\end{verbatim}
 
+\TODO{} from here on.
+
+\begin{verbatim}
 constructor_polytypes : [Arity Ctors PolyTypes]
   subst typ Arity \ensuremath{\to}
   ctor_declaration Ctors \ensuremath{\to} subst (dbind typ Arity (list typ)) PolyTypes \ensuremath{\to} prop.
@@ -118,84 +134,4 @@ typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
   constructor_info TypConstr Constructor PolyType,
   applymany PolyType TypArgs Typs,
   map typeof Args Typs.
-\end{verbatim}
-
-We will also need patterns:
-
-\begin{verbatim}
-patt_constr : constructor \ensuremath{\to} pattlist T T' \ensuremath{\to} patt T T'.
-
-typeof (patt_constr Constructor Args) S' S (tconstr TypConstr TypArgs) :-
-  constructor_info TypConstr Constructor PolyType,
-  applymany PolyType TypArgs Typs,
-  typeof Args S' S Typs.
-\end{verbatim}
-
-As an example, we will define lists and their append function:
-
-\begin{verbatim}
-wfprogram
-  (datatype
-    (datatype_declaration (fun llist \ensuremath{\Rightarrow} dbindnext (fun a \ensuremath{\Rightarrow} dbindbase (
-    [ [] (* nil *) ,
-      [a, tconstr llist [a]] (* cons of a * list a *) ]))))
-  (fun llist \ensuremath{\Rightarrow} dbindnext (fun lnil \ensuremath{\Rightarrow} dbindnext (fun lcons \ensuremath{\Rightarrow} dbindbase (
-  (main
-    (letrec
-      (dbindnext (fun append \ensuremath{\Rightarrow} dbindbase (
-      [ lamt (fun a \ensuremath{\Rightarrow} lam (tconstr llist [a]) (fun l1 \ensuremath{\Rightarrow} lam _ (fun l2 \ensuremath{\Rightarrow}
-        case_or_else l1
-          (patt_constr lcons [patt_var, patt_var])
-            (dbindnext (fun hd \ensuremath{\Rightarrow} dbindnext (fun tl \ensuremath{\Rightarrow} dbindbase (
-            constr lcons [hd, app (app (appt append _) tl) l2]))))
-          l2))) ])))
-      (dbindnext (fun append \ensuremath{\Rightarrow} dbindbase (
-    (app (app (appt append _)
-      (constr lcons [zero, constr lnil []]))
-      (constr lcons [zero, constr lnil []]))
-)))))))))) ?
-\end{verbatim}
-
-The semantics, if needed:
-
-\begin{verbatim}
-patt_to_term (patt_constr Constructor Args) (constr Constructor Args') S' S :-
-  pattlist_to_termlist Args Args' S' S.
-
-eval (constr C Args) (constr C Args') :-
-  map eval Args Args'.
-
-eval : program \ensuremath{\to} program \ensuremath{\to} prop.
-
-eval (let E P') P'' :-
-  eval E V, eval (P' V) P''.
-
-eval (datatype D P') (datatype D P'') :-
-  (dt:(typeconstructor T) \ensuremath{\to}
-    intromany CS (pfun cs \ensuremath{\Rightarrow} ([P'c P''c]
-    applymany (P' dt) cs P'c,
-    applymany (P'' dt) cs P''c,
-    eval P'c P''c))).
-
-eval (main E) (main V) :-
-  eval E V.
-\end{verbatim}
-
-Example:
-
-\begin{verbatim}
-(eq _PROGRAM (
-
-    (datatype
-      (datatype_declaration (fun llist \ensuremath{\Rightarrow} dbindnext (fun a \ensuremath{\Rightarrow} dbindbase (
-      [ [] (* nil *) ,
-        [a, tconstr llist [a]] (* cons of a * list a *) ]))))
-      (fun llist \ensuremath{\Rightarrow} dbindnext (fun lnil \ensuremath{\Rightarrow} dbindnext (fun lcons \ensuremath{\Rightarrow} dbindbase (
-
-    (main (constr lcons [zero, constr lnil []]))
-
-    )))))),
-
- wfprogram _PROGRAM,
- eval _PROGRAM FINAL) ?
 \end{verbatim}
