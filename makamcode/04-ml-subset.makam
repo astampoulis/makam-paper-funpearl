@@ -140,14 +140,31 @@ that we can refer to the type recursive when we declare our constructors. And we
 acces to the right number of polymorphic variables, matching the `Arity` of the
 constructor. I like how you split out the declaration of the type itself from the "rest of the program" part, this could become unwieldy otherwise.
 
-STUDENT. That's what I thought too. And I see why you made the type constructors carry their arity -- to keep types well-formed by construction.
+STUDENT. That's what I thought too. And I see why you made the type constructors carry their arity -- to keep types well-formed by construction. In order to be able to actually refer to the type constructors though, don't we need a type former:
+*)
 
-ADVISOR. Exactly. In a richer type system, we would need an extra kind checking predicate though.
+tconstr : typeconstructor T -> subst typ T -> typ.
 
-STUDENT. Makes sense. Should we proceed to well-formedness for datatype declarations? I
-think we will need a predicate to keep track of information about constructors -- which
-datatype it belongs to and what arguments it expects. That way we can carry that information
-in the assumptions context.
+(*
+
+ADVISOR. We do. Also keep in mind that in a richer type system, we probably would need an
+extra kind checking predicate. But this will do for now. Let's just make sure this is fine --
+I'll write down the declaration of binary terms, to make sure we're not missing anything, and typecheck it with Makam.
+
+*)
+
+%type (datatype_declaration
+  (fun tree => dbindnext (fun a => dbindbase
+    [ (* leaf *) [],
+      (* node *) [tconstr tree [a], a, tconstr tree [a]] ]))).
+(* >> (...) : datatype_declaration (typ * unit) (constructor * constructor * unit) *)
+
+(*
+
+STUDENT. Looks good. Should we proceed to actual well-formedness for datatype
+declarations? I think we will need a predicate to keep track of information about
+constructors -- which datatype it belongs to and what arguments it expects. That way we
+can carry that information in the assumptions context.
 
 *)
 
@@ -193,7 +210,6 @@ formers.
 
 *)
 
-tconstr : typeconstructor T -> subst typ T -> typ.
 constr : constructor -> list term -> term.
 
 typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
