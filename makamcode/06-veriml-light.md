@@ -252,7 +252,6 @@ actual open term for the metavariable. I know what to do:
 ```makam
 %extend object.
 varmeta : depvar -> list term -> term.
-%trace+ typeof.
 typeof (varmeta V ES) T :- depclassify V (cctx_typ TS T), map object.typeof ES TS.
 %end.
 depsubst_applies Var (object.varmeta Var _).
