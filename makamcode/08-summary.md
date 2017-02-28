@@ -10,6 +10,7 @@ ADVISOR. I agree, though it would be hard for somebody to publish a paper on thi
 it is novel, some of it is folklore, some of it, we just did in a pleasant way; and we
 did also use a couple of not-so-pleasant hacks. But let's make a list of what's what.
 
+\vspace{-0.5em}
 - We defined HOAS encodings of complicated binding forms, including mutually recursive
   definitions and patterns, while only having explicit support in our metalanguage for
   single-variable binding. These encodings are novel, as far as I know. We made use of

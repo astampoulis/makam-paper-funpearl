@@ -67,7 +67,7 @@ normal application won't work as is.
 
 \heroADVISOR{} Exactly; and that extra computation will be necessary in order
 to maintain type-safety. Hopefully, we won't have to write any
-unnecessary cases though! Now, we have a few typing rules to add. I'll
+unnecessary cases, though! Now, we have a few typing rules to add. I'll
 use ``\(\dep{\cdot}\)'' to signify things that have to do with the
 dependent indices.
 
@@ -89,21 +89,20 @@ lamdep : depclassifier \ensuremath{\to} (depvar \ensuremath{\to} term) \ensurema
 appdep : term \ensuremath{\to} depindex \ensuremath{\to} term.
 liftdep : depindex \ensuremath{\to} term. liftdep : depclassifier \ensuremath{\to} typ.
 pidep : depclassifier \ensuremath{\to} (depvar \ensuremath{\to} typ) \ensuremath{\to} typ.
-
 typeof (lamdep C EF) (pidep C TF) :-
   (v:depvar \ensuremath{\to} depclassify v C \ensuremath{\to} typeof (EF v) (TF v)), depwf C.
 typeof (appdep E I) T' :- typeof E (pidep C TF), depclassify I C, depsubst TF I T'.
 typeof (liftdep I) (liftdep C) :- depclassify I C.
 \end{verbatim}
 
-\heroADVISOR{} Great. Just wanted to say, this framework is quite general. We
-could instantiate dependent indices with a language of natural numbers,
-equality predicates, and equality proofs, which would be quite similar
-to the Dependent ML formulation of \citet{licata2005formulation}. But
-let's go back to what we're trying to do. I'll add the object language
-in a separate namespace prefix -- we can use `\texttt{\%extend}' for
-going into a namespace -- and I'll just copy-paste our STLC code from
-earlier on.
+\heroADVISOR{} Looks nice. Just wanted to say, this framework is quite
+general. We could instantiate dependent indices with a language of
+natural numbers, equality predicates, and equality proofs, which would
+be quite similar to the Dependent ML formulation of
+\citet{licata2005formulation}. But let's go back to what we're trying to
+do. I'll add the object language in a separate namespace prefix -- we
+can use `\texttt{\%extend}' for going into a namespace -- and I'll just
+copy-paste our STLC code from earlier on.
 
 \begin{verbatim}
 %extend object.
@@ -129,17 +128,17 @@ depwf cext.
 Right now, they are all well-formed by construction, but let's prepare
 for any additions, by setting up a structurally recursive predicate. The
 \texttt{wftyp\_cases} predicate will hold the important type-checking
-cases, and it will have an extra argument to say whether it applies or
-not.
+cases, and we will have an extra predicate to say whether those cases
+apply or not for a specific \texttt{typ}.
 
 \begin{verbatim}
 %extend object.
 wftyp : typ \ensuremath{\to} prop. wftyp_aux : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
-wftyp_cases : [A] A \ensuremath{\to} A \ensuremath{\to} bool \ensuremath{\to} prop.
+wftyp_cases, wftyp_applies : [A] A \ensuremath{\to} prop.
 wftyp T :- wftyp_aux T T.
-wftyp_aux T T :- if (wftyp_cases T T Applies)
-                 then (eq Applies true)
-                 else (eq Applies false, structural_recursion wftyp_aux T T).
+wftyp_aux T T :- if (wftyp_applies T)
+                 then (wftyp_cases T)
+                 else (structural_recursion wftyp_aux T T).
 %end.
 \end{verbatim}
 
@@ -151,14 +150,13 @@ hence the repeat of the same \texttt{typ} argument. Let's prepare for
 substitutions, too, in the same way.
 
 \begin{verbatim}
-depsubst_aux : [A] depvar \ensuremath{\to} depindex \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} prop.
-depsubst_cases : [A] depvar \ensuremath{\to} depindex \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} bool \ensuremath{\to} prop.
+depsubst_aux, depsubst_cases : [A] depvar \ensuremath{\to} depindex \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} prop.
+depsubst_applies : [A] depvar \ensuremath{\to} A \ensuremath{\to} prop.
 depsubst F I Res :- (v:depvar \ensuremath{\to} depsubst_aux v I (F v) Res).
-depsubst_aux Var Replace Where Result :-
-  if (depsubst_cases Var Replace Where Result Applies)
-  then (eq Applies true)
-  else (eq Applies false,
-        structural_recursion (depsubst_aux Var Replace) Where Result).
+depsubst_aux Var Replace Where Res :-
+  if (depsubst_applies Var Where)
+  then (depsubst_cases Var Replace Where Res)
+  else (structural_recursion (depsubst_aux Var Replace) Where Res).
 \end{verbatim}
 
 \heroADVISOR{} Great! We only have one thing missing: we need to close the
@@ -171,11 +169,12 @@ object-level term or type.
 %extend object.
 varterm : depvar \ensuremath{\to} term.  vartyp : depvar \ensuremath{\to} typ.
 typeof (varterm V) T :- depclassify V (ctyp T).
-wftyp_cases (vartyp V) (vartyp V) true :- depclassify V cext.
+wftyp_applies (vartyp V). wftyp_cases (vartyp V) :- depclassify V cext.
 %end.
-
-depsubst_cases Var (iterm Replace) (object.varterm Var) Replace true.
-depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace true.
+depsubst_applies Var (object.varterm Var).
+depsubst_cases Var (iterm Replace) (object.varterm Var) Replace.
+depsubst_applies Var (object.vartyp Var).
+depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace.
 \end{verbatim}
 
 \heroADVISOR{} This is exciting; let me try it out! I'll do a function that
@@ -256,7 +255,8 @@ do:
 varmeta : depvar \ensuremath{\to} list term \ensuremath{\to} term.
 typeof (varmeta V ES) T :- depclassify E (cctx_typ TS T), map object.typeof ES TS.
 %end.
-depsubst_cases Var (iopen_term XS_E) (object.varmeta Var ES) Result true :-
+depsubst_applies Var (object.varmeta Var _).
+depsubst_cases Var (iopen_term XS_E) (object.varmeta Var ES) Result :-
   applymany XS_E ES E', depsubst_aux Var (iopen_term XS_E) E' Result.
 \end{verbatim}
 
@@ -278,6 +278,10 @@ typeof (lamdep _ (fun t1 \ensuremath{\Rightarrow} (lamdep _ (fun t2 \ensuremath{
 >>      (pidep (ctyp (object.vartyp t1)) (fun a \ensuremath{\Rightarrow}
 >>      (liftdep (cctx_typ [] (object.vartyp t2))))))))))))
 \end{verbatim}
+
+\begin{scenecomment}
+(Our heroes try out a few more examples to convince themselves that this works.)
+\end{scenecomment}
 
 \heroSTUDENT{} That's it! That's it! I cannot believe how easy this was!
 

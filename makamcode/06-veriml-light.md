@@ -46,7 +46,7 @@ depsubst : [A] (depvar -> A) -> depindex -> A -> prop.
 
 STUDENT. Right, we might need to check that classifiers are well-formed. And we might need to treat variables specially, so it's good that they're a different type. So, that's why you made substitution a predicate, rather than using the normal HOAS function application `F X` directly, as we have been doing so far. I know that when we add variables that stand for open STLC terms, there will be some extra computation involved to substitute them for an open term, so the normal application won't work as is.
 
-ADVISOR. Exactly; and that extra computation will be necessary in order to maintain type-safety. Hopefully, we won't have to write any unnecessary cases though! Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to signify things that have to do with the dependent indices.
+ADVISOR. Exactly; and that extra computation will be necessary in order to maintain type-safety. Hopefully, we won't have to write any unnecessary cases, though! Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to signify things that have to do with the dependent indices.
 
 \vspace{-1.5em}
 \begin{mathpar}
@@ -67,14 +67,13 @@ lamdep : depclassifier -> (depvar -> term) -> term.
 appdep : term -> depindex -> term.
 liftdep : depindex -> term. liftdep : depclassifier -> typ.
 pidep : depclassifier -> (depvar -> typ) -> typ.
-
 typeof (lamdep C EF) (pidep C TF) :-
   (v:depvar -> depclassify v C -> typeof (EF v) (TF v)), depwf C.
 typeof (appdep E I) T' :- typeof E (pidep C TF), depclassify I C, depsubst TF I T'.
 typeof (liftdep I) (liftdep C) :- depclassify I C.
 ```
 
-ADVISOR. Great. Just wanted to say, this framework is quite general. We could instantiate
+ADVISOR. Looks nice. Just wanted to say, this framework is quite general. We could instantiate
 dependent indices with a language of natural numbers, equality predicates, and equality
 proofs, which would be quite similar to the Dependent ML formulation of
 \citet{licata2005formulation}. But let's go back to what we're trying to do. I'll add the
@@ -107,6 +106,9 @@ eval (succ E) (succ V) :- eval E V.
 ```makam
 %extend object.
 wftyp : typ -> prop.
+lam : typ -> (term -> term) -> term.
+typeof (lam T E) (arrow T T') :-
+  (x:term -> typeof x T -> typeof (E x) T'), wftyp T.
 %end.
 ```
 -->
@@ -123,17 +125,16 @@ depwf (ctyp T) :- object.wftyp T.
 depwf cext.
 ```
 
-ADVISOR. Right, we'll need to check that types are well-formed, too. Right now, they are all well-formed by construction, but let's prepare for any additions, by setting up a structurally recursive predicate. The `wftyp_cases` predicate will hold the important type-checking cases, and it will have an extra argument to say whether
-it applies or not.
+ADVISOR. Right, we'll need to check that types are well-formed, too. Right now, they are all well-formed by construction, but let's prepare for any additions, by setting up a structurally recursive predicate. The `wftyp_cases` predicate will hold the important type-checking cases, and we will have an extra predicate to say whether those cases apply or not for a specific `typ`.
 
 ```
 %extend object.
 wftyp : typ -> prop. wftyp_aux : [A] A -> A -> prop.
-wftyp_cases : [A] A -> A -> bool -> prop.
+wftyp_cases, wftyp_applies : [A] A -> prop.
 wftyp T :- wftyp_aux T T.
-wftyp_aux T T :- if (wftyp_cases T T Applies)
-                 then (eq Applies true)
-                 else (eq Applies false, structural_recursion wftyp_aux T T).
+wftyp_aux T T :- if (wftyp_applies T)
+                 then (wftyp_cases T)
+                 else (structural_recursion wftyp_aux T T).
 %end.
 ```
 
@@ -142,12 +143,11 @@ wftyp_aux T T :- if (wftyp_cases T T Applies)
 ```makam
 %extend object.
 wftyp_aux : [A] A -> A -> prop.
-wftyp_cases : [A] A -> A -> bool -> prop.
+wftyp_cases, wftyp_applies : [A] A -> prop.
 wftyp T :- wftyp_aux T T.
-wftyp_aux T T :-
-  if (wftyp_cases T T Applies)
-  then (eq Applies true)
-  else (eq Applies false, structural_recursion wftyp_aux T T).
+wftyp_aux T T :- if (wftyp_applies T)
+                 then (wftyp_cases T)
+                 else (structural_recursion wftyp_aux T T).
 %end.
 ```
 
@@ -160,14 +160,13 @@ output; hence the repeat of the same `typ` argument. Let's prepare for substitut
 in the same way.
 
 ```makam
-depsubst_aux : [A] depvar -> depindex -> A -> A -> prop.
-depsubst_cases : [A] depvar -> depindex -> A -> A -> bool -> prop.
+depsubst_aux, depsubst_cases : [A] depvar -> depindex -> A -> A -> prop.
+depsubst_applies : [A] depvar -> A -> prop.
 depsubst F I Res :- (v:depvar -> depsubst_aux v I (F v) Res).
-depsubst_aux Var Replace Where Result :-
-  if (depsubst_cases Var Replace Where Result Applies)
-  then (eq Applies true)
-  else (eq Applies false,
-        structural_recursion (depsubst_aux Var Replace) Where Result).
+depsubst_aux Var Replace Where Res :-
+  if (depsubst_applies Var Where)
+  then (depsubst_cases Var Replace Where Res)
+  else (structural_recursion (depsubst_aux Var Replace) Where Res).
 ```
 
 ADVISOR. Great! We only have one thing missing: we need to close the loop, being able to refer to a dependent variable from within an object-level term or type. 
@@ -178,11 +177,12 @@ STUDENT. I got this.
 %extend object.
 varterm : depvar -> term.  vartyp : depvar -> typ.
 typeof (varterm V) T :- depclassify V (ctyp T).
-wftyp_cases (vartyp V) (vartyp V) true :- depclassify V cext.
+wftyp_applies (vartyp V). wftyp_cases (vartyp V) :- depclassify V cext.
 %end.
-
-depsubst_cases Var (iterm Replace) (object.varterm Var) Replace true.
-depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace true.
+depsubst_applies Var (object.varterm Var).
+depsubst_cases Var (iterm Replace) (object.varterm Var) Replace.
+depsubst_applies Var (object.vartyp Var).
+depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace.
 ```
 
 ADVISOR. This is exciting; let me try it out! I'll do a function that takes an
@@ -254,7 +254,8 @@ actual open term for the metavariable. I know what to do:
 varmeta : depvar -> list term -> term.
 typeof (varmeta V ES) T :- depclassify E (cctx_typ TS T), map object.typeof ES TS.
 %end.
-depsubst_cases Var (iopen_term XS_E) (object.varmeta Var ES) Result true :-
+depsubst_applies Var (object.varmeta Var _).
+depsubst_cases Var (iopen_term XS_E) (object.varmeta Var ES) Result :-
   applymany XS_E ES E', depsubst_aux Var (iopen_term XS_E) E' Result.
 ```
 
@@ -273,6 +274,24 @@ typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
 >>      (pidep (ctyp (object.vartyp t1)) (fun a =>
 >>      (liftdep (cctx_typ [] (object.vartyp t2))))))))))))
 ```
+
+<!--
+```makam
+(eq _FUNCTION 
+       (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
+       (lamdep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
+       (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
+         (object.varmeta f [object.varterm a]))))))))))))),
+ typeof (appdep (appdep (appdep _FUNCTION (ityp object.nat)) (ityp object.nat))
+           (iopen_term (bindnext (fun x => bindbase (object.succ x))))) T) ?
+>> Yes:
+>> T := pidep (ctyp object.nat) (fun a => liftdep (cctx_typ nil object.nat))
+```
+-->
+
+\begin{scenecomment}
+(Our heroes try out a few more examples to convince themselves that this works.)
+\end{scenecomment}
 
 STUDENT. That's it! That's it! I cannot believe how easy this was!
 
