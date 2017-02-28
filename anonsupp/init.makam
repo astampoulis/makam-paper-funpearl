@@ -1,0 +1,3 @@
+print_string "\n\n\n----------------------\n Welcome to Makam. \n Available files, corresponding to each chapter: \n\n    02-stlc \n    03-bindmany \n    04-dbind \n    05-smallml \n    06-synonyms \n    07-meta \n    08-typgen \n To load one of the files, do: '%use \"02-stlc\".' \n To re-load a file after you've made changes, do: '%usenew \"02-stlc\".' \n Enjoy!\n" ?
+
+%directory "justcode".

@@ -1,0 +1,47 @@
+%use "06-synonyms".
+
+generalize : typ -> typ -> prop.
+let : term -> (term -> term) -> term.
+typeof (let E F) T' :-
+  typeof E T, generalize T Tgen, (x:term -> typeof x Tgen -> typeof (F x) T').
+
+findunif : [A B] option B -> A -> option B -> prop.
+findunif (some X) _ (some X).
+findunif none (X : B) (some (X : B)) :- refl.isunif X.
+findunif In X Out :- generic.fold findunif In X Out.
+findunif : [A B] A -> B -> prop.  findunif T X :- findunif none T (some X).
+
+replaceunif : [A B] A -> A -> B -> B -> prop.
+replaceunif Which ToWhat Where Result :- refl.isunif Where,
+  if (refl.sameunif Which Where) then (eq (dyn Result) (dyn ToWhat))
+  else (eq Result Where).
+replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
+  structural_recursion (replaceunif Which ToWhat) Where Result.
+
+hasunif : [A B] B -> bool -> A -> bool -> prop.
+hasunif _ true _ true.
+hasunif X false Y true :- refl.sameunif X Y.
+hasunif X In Y Out :- generic.fold (hasunif X) In Y Out.
+hasunif : [A B] A -> B -> prop. hasunif Term Var :- hasunif Var false Term true.
+
+generalize T T :- not(findunif T X).
+
+get_types_in_environment : [A] A -> prop.
+generalize T Res :- 
+  findunif T Var, get_types_in_environment GammaTypes,
+  (x:typ -> (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
+  if (hasunif GammaTypes Var) then (eq Res (T'' Var)) else (eq Res (forall T'')).
+
+get_types_in_environment Assumptions :-
+  refl.assume_get (typeof : term -> typ -> prop) Assumptions.
+
+typeof (let (lam _ (fun x => let x (fun y => y))) (fun id => id)) T ?
+(* >> Yes: *)
+(* >> T := forall (fun a => arrow a a) *)
+
+(get_types_in_environment [] ->
+  typeof (let (lam _ (fun x => let x (fun y => y)))
+            (fun z => z)) T) ?
+(* >> Yes: *)
+(* >> T := forall (fun a => arrow a (forall (fun b => b))) *)
+

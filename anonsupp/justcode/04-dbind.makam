@@ -1,0 +1,117 @@
+%use "03-bindmany".
+
+natZ : type.  natS : type -> type.
+vector : type -> type -> type.
+vnil : vector natZ A.
+vcons : A -> vector N A -> vector (natS N) A.
+
+vmap : [N] (A -> B -> prop) -> vector N A -> vector N B -> prop.
+vmap P vnil vnil.
+vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
+
+dbind : type -> type -> type -> type. 
+dbindbase : B -> dbind A natZ B.
+dbindnext : (A -> dbind A N B) -> dbind A (natS N) B.
+letrec : dbind term N (vector N term * term) -> term.
+
+dbind : type -> type -> type -> type.
+dbindbase : B -> dbind A unit B.
+dbindnext : (A -> dbind A T B) -> dbind A (A * T) B.
+
+subst : type -> type -> type.
+nil : subst A unit.  cons : A -> subst A T -> subst A (A * T).
+
+intromany : [T] dbind A T B -> (subst A T -> prop) -> prop.
+applymany : [T] dbind A T B -> subst A T -> B -> prop.
+openmany : [T] dbind A T B -> (subst A T -> B -> prop) -> prop.
+assumemany : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop -> prop.
+map : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop.
+
+intromany (dbindbase F) P :- P [].
+intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
+
+applymany (dbindbase Body) [] Body.
+applymany (dbindnext F) (X :: XS) Body :- applymany (F X) XS Body.
+
+openmany F P :-
+  intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
+
+assumemany P [] [] Q :- Q.
+assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
+
+map P [] [].
+map P (X :: XS) (Y :: YS) :- P X Y, map P XS YS.
+
+letrec : dbind term T (subst term T * term) -> term.
+typeof (letrec XS_DefsBody) T' :-
+  openmany XS_DefsBody (pfun xs defsbody => [Defs Body]
+    eq defsbody (Defs, Body),
+    assumemany typeof xs TS (map typeof Defs TS),
+    assumemany typeof xs TS (typeof Body T')).
+
+nat : typ. zero : term. succ : term -> term.
+typeof zero nat. typeof (succ N) nat :- typeof N nat.
+eval zero zero. eval (succ E) (succ V) :- eval E V.
+
+patt : type -> type -> type.
+patt_var : patt (term * T) T.
+patt_zero : patt T T.
+patt_succ : patt T T' -> patt T T'.
+
+pattlist : type -> type -> type.
+nil : pattlist T T.
+cons : patt T1 T2 -> pattlist T2 T3 -> pattlist T1 T3.
+patt_tuple : pattlist T T' -> patt T T'.
+
+patt_wild : patt T T.
+
+case_or_else : term -> patt T unit -> dbind term T term -> term -> term.
+
+typeof : [T T' Ttyp T'typ] patt T T' -> subst typ T'typ -> subst typ Ttyp -> typ -> prop.
+typeof patt_var S' (cons T S') T.
+typeof patt_wild S S T.
+typeof patt_zero S S nat.
+typeof (patt_succ P) S' S nat :- typeof P S' S nat.
+
+typeof : [T T' Ttyp T'typ]
+  pattlist T T' -> subst typ T'typ -> subst typ Ttyp -> list typ -> prop.
+typeof (patt_tuple PS) S' S (product TS) :- typeof PS S' S TS.
+typeof [] S S [].
+typeof (P :: PS) S3 S1 (T :: TS) :- typeof PS S3 S2 TS, typeof P S2 S1 T.
+
+typeof (case_or_else Scrutinee Pattern Body Else) T' :-
+  typeof Scrutinee T,
+  typeof Pattern nil TS T,
+  openmany Body (pfun xs body => assumemany typeof xs TS (typeof body T')),
+  typeof Else T'.
+
+patt_to_term : [T T'] patt T T' -> term -> subst term T' -> subst term T -> prop.
+patt_to_term patt_var X Subst (X :: Subst).
+patt_to_term patt_wild _ Subst Subst.
+patt_to_term patt_zero zero Subst Subst.
+patt_to_term (patt_succ PN) (succ EN) Subst' Subst :- patt_to_term PN EN Subst' Subst.
+
+pattlist_to_termlist : [T T'] pattlist T T' -> list term -> subst term T' -> subst term T -> prop.
+
+patt_to_term (patt_tuple PS) (tuple ES) Subst' Subst :-
+  pattlist_to_termlist PS ES Subst' Subst.
+
+pattlist_to_termlist [] [] Subst Subst.
+pattlist_to_termlist (P :: PS) (T :: TS) Subst3 Subst1 :-
+  pattlist_to_termlist PS TS Subst3 Subst2,
+  patt_to_term P T Subst2 Subst1.
+
+eval (case_or_else Scrutinee Pattern Body Else) V :-
+  patt_to_term Pattern TermWithUnifvars [] Unifvars,
+  if (eq Scrutinee TermWithUnifvars)  (* reuse unification from the meta-language *)
+  then (applymany Body Unifvars Body', eval Body' V)
+  else (eval Else V).
+
+(eq _PRED (lam _ (fun n => case_or_else n
+  (patt_succ patt_var) (dbindnext (fun pred => dbindbase pred))
+  zero)),
+ typeof _PRED T,
+ eval (app _PRED zero) PRED0, eval (app _PRED (succ (succ zero))) PRED2) ?
+(* >> Yes: *)
+(* >> T := arrow nat nat, PRED0 := zero, PRED2 := succ zero *)
+

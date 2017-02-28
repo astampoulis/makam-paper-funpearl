@@ -1,0 +1,249 @@
+(*
+# Where our heroes add parentheses and discover how to do multiple binding
+
+*)
+
+%use "02-stlc".
+
+(*
+
+STUDENT. Still, I feel like we've been playing to the strengths of λProlog.... Yes,
+single-variable binding, substitutions, and so on work nicely, but how about any other form
+of binding? Say, binding multiple variables at the same time? We are definitely going to
+need that for the language we have in mind, and I remember that \citet{keuchel2016needle}
+mention that HOAS encodings do not work for such forms of binding.
+
+ADVISOR. I beg to differ. Let's try it out; let's try adding multiple-argument functions
+for example -- I mean uncurried ones. Want to give it at try?
+
+STUDENT. Let me see. Well, I want to write something like this, but I know this is wrong.
+
+```
+lammany : (list term -> term) -> term.
+```
+
+ADVISOR. Yes, that doesn't quite work. It would introduce a fresh variable for `list`s,
+not a number of fresh variables for `term`s. HOAS functions are parametric, too, which
+means we cannot even get to the potential elements of the fresh `list` inside the `term`.
+
+STUDENT. Right. So I don't know, instead we want to use a type that stands for `term ->
+term`, `term -> term -> term`, and so on. Can we write `term -> ... -> term`?
+
+ADVISOR. Well, not quite, but we have already defined something similar, a type that
+roughly stands for `term * ... * term`, and we did not need anything special
+for that...
+
+STUDENT. You mean the `list` type?
+
+ADVISOR. Exactly. What do you think about this definition?
+
+*)
+
+bindmanyterms : type.
+bindnil : term -> bindmanyterms.
+bindcons : (term -> bindmanyterms) -> bindmanyterms.
+
+(*
+
+STUDENT. Hmm. That looks quite similar to lists; the parentheses in `cons` are
+different. `nil` gets an extra `term` argument, too....
+
+ADVISOR. Yes... So what is happening here is that `bindcons` takes a single argument,
+adding another binder; and `bindnil` is when we get to the body and don't need any more
+binders, so we just need the body.
+
+STUDENT. Oh, so could we generalize their types? Maybe that will help me get a better
+grasp of it. How is this?
+
+*)
+
+bindmany : type -> type -> type.
+bindbase : Body -> bindmany Variable Body.
+bindnext : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
+
+(*
+
+ADVISOR. This looks great! Though let me say, I cheated a bit: in order for the
+constructors to look nicer, we have allowed binding zero variables. We could definitely
+disallow that by changing `bindbase` to take a `Variable -> Body` argument instead, but
+let's just go along with this; it will make all our predicates simpler to write, too.
+
+STUDENT. I see. That is quite an interesting datatype. Is there some reference about it?
+
+ADVISOR. Not that I know of -- though I think this is part of PL folklore. After I started
+using this in Makam, I noticed similar constructions in the wild, for example in MTac
+\citep{ziliani2013mtac}, for the parametric HOAS implementation of telescopes.
+
+STUDENT. Interesting. So how do we work with `bindmany`? I know we can now define
+`lammany` as follows, but how about the typing rules?
+
+*)
+
+lammany : bindmany term term -> term.
+
+(*
+
+ADVISOR. Well, for the built-in single binding type, we used three built-in
+operations:
+
+- variable substitution, encoded through HOAS function application
+- introducing a fresh variable, through the predicate form `x:term -> ...`
+- introducing a new assumption, through the predicate form `P -> ...`
+
+STUDENT. So we should add three operations for `bindmany` that correspond to those, right?
+
+ADVISOR. Correct, and they will be predicates, since that's the only kind of computation
+we can define in λProlog. So let's first do the predicate that generalizes
+application:
+
+*)
+
+applymany : bindmany A B -> list A -> B -> prop.
+applymany (bindbase Body) [] Body.
+applymany (bindnext F) (HD :: TL) Body :- applymany (F HD) TL Body.
+
+(*
+
+STUDENT. I see, so given a `bindmany` and a substitution for the variables, perform
+simultaneous substitution to get the body. 
+
+ADVISOR. Right. And a predicate for introducing multiple variables at once. Then you try
+doing multiple assumptions.
+
+*)
+
+intromany : bindmany A B -> (list A -> prop) -> prop.
+intromany (bindbase _) P :- P [].
+intromany (bindnext F) P :- (x:A -> intromany (F x) (fun tl => P (x :: tl))).
+
+(*
+
+STUDENT. Let me see. So pattern match on the two cases, introducing an extra assumption in
+the `bindnext` case. How does this look?
+
+*)
+
+assumemany : (A -> B -> prop) -> list A -> list B -> prop -> prop.
+assumemany P [] [] Q :- Q.
+assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
+
+(*
+
+ADVISOR. That looks good. Maybe one thing to note is that this last rule might not work in
+other λProlog implementations, as it introduces an assumption for a predicate that is
+not known statically, and that is usually not allowed. That's why I said we should use
+Makam.
+
+STUDENT. Is that a limitation that has to do with the correspondence of λProlog to
+logic? 
+
+ADVISOR. Not really; I believe it is because of implementation concerns mostly -- it
+would significantly complicate designing an abstract machine for the language. But Makam is interpreted, so it
+sidesteps that.
+
+STUDENT. Interesting. So let me try doing the typing rule now. I'll add a type for
+multiple-argument functions. Would this work?
+
+*)
+
+arrowmany : list typ -> typ -> typ.
+
+(*
+--->
+
+```
+arrowmany : list typ -> typ -> typ.
+typeof (lammany F) (arrowmany TS T') :-
+  intromany F (fun xs => applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
+```
+
+ADVISOR. Almost. There is an issue here: the unification variable `Body` cannot capture
+the free variables `xs` that get introduced later. A unification variable is allowed to
+capture all the free variables in scope at the point where it is introduced. By
+default, they get introduced when we check whether a rule fires, but here we need to say explicitly that
+`Body` should be introduced when `intromany` uses its predicate argument; Makam uses
+square-bracket notation for that. Oh, and a Makam idiosyncrasy: the parser isn't clever
+enough to tell that the predicate argument to `intromany` is, in fact, a predicate, so we
+can't use the normal predicate syntax for it. There is the syntactic form `pfun` for
+anonymous predicates; save for predicate syntax, it's entirely identical to `fun`. So:
+
+*)
+
+typeof (lammany F) (arrowmany TS T') :-
+  intromany F (pfun xs => ([Body]
+    applymany F xs Body, assumemany typeof xs TS (typeof Body T'))).
+
+(*
+
+STUDENT. Oh, so `[Body]` is like existential quantification. I wonder, would it make sense
+to combine `intromany` and `appmany` into one predicate, like this, since we will probably
+always need both the variables and the body of a `bindmany`?
+
+*)
+
+openmany : bindmany A B -> (list A -> B -> prop) -> prop.
+openmany F P :- intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
+
+(*
+
+ADVISOR. Yes, that predicate turns out to be quite useful. Let's try out a query now!
+
+*)
+
+typeof (lammany (bindnext (fun x => bindnext (fun y => bindbase (tuple [y, x]))))) T ?
+(* >> Yes: *)
+(* >> T := arrowmany [T1, T2] (product [T2, T1]) *)
+
+(*
+
+STUDENT. Great, I think I got the hang of this. We could definitely add a
+multiple-argument application construct `appmany` or define the rules for `eval` for
+these. But that would be easy; we can do it later. Something that worries me, though --
+all these fancy higher-order abstract binders, how do we ... make them concrete? Say, how
+do we print them?
+
+ADVISOR. That's actually quite easy. We just add a concrete name to them. A plain old
+`string`. Our typing rules etc. do not care about it, but we could use it for parsing
+concrete syntax into our abstract binding syntax, or for pretty-printing.... Let's not get
+into that for the time being, but let's just say that we could have defined `bindnext`
+with an extra `string` argument; and then `intromany` and friends would just ignore it.
+
+```
+bindnext : string -> (Variable -> bindmany Variable Body) -> bindmany Variable Body.
+```
+
+STUDENT. Interesting. I would like to see more about this, but maybe some other time. I
+thought of another thing that could be challenging: mutually recursive `let rec`s?
+
+ADVISOR. Sure -- how about this?
+
+*)
+
+letrec : bindmany term (list term * term) -> term.
+
+(*
+
+STUDENT. Bind many terms into a list of terms and a term. I guess `*` is for tuples... Is
+the first element the definitions and the second element the body?
+
+ADVISOR. Yes -- so, for this expression ...
+
+```
+let rec f = f_def and g = g_def in body
+```
+
+STUDENT. ... we would write something like this:
+
+```
+letrec (bindnext (fun f => bindnext (fun g => bindbase ([f_def, g_def], body))))
+```
+
+ADVISOR. Yes, and we need to be careful so that the number of binders matches the number
+of definitions in the list. We can go ahead and encode that in our typing rules....
+
+STUDENT. Wait. I let you get away before with the zero binders in `bindmany`, but this is
+pushing it a little bit. It doesn't sound like an accurate encoding.
+
+ADVISOR. You're right, but we would need some sort of dependency to enforce those kinds of
+limitations... and λProlog does not have dependent types.
+*)

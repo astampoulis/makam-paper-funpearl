@@ -1,0 +1,134 @@
+%use "04-dbind".
+
+forall : (typ -> typ) -> typ.
+lamt : (typ -> term) -> term.
+appt : term -> typ -> term.
+typeof (lamt E) (forall T) :- (a:typ -> typeof (E a) (T a)).
+typeof (appt E T) (TF T) :- typeof E (forall TF).
+
+program : type.
+wfprogram : program -> prop.
+
+let : term -> (term -> program) -> program.
+wfprogram (let E P) :- typeof E T, (x:term -> typeof x T -> wfprogram (P x)).
+
+main : term -> program.
+wfprogram (main E) :- typeof E _.
+
+typeof (lamt (fun a => lam a (fun x => x))) T ?
+
+typeconstructor : type -> type.
+constructor : type.
+
+ctor_declaration : type -> type.
+nil : ctor_declaration unit.
+cons : list typ -> ctor_declaration T -> ctor_declaration (constructor * T).
+
+datatype_declaration : type -> type -> type.
+datatype_declaration : 
+  (typeconstructor Arity -> dbind typ Arity (ctor_declaration Ctors)) ->
+  datatype_declaration Arity Ctors.
+datatype :
+  datatype_declaration Arity Ctors ->
+  (typeconstructor Arity -> dbind constructor Ctors program) -> program.
+
+tconstr : typeconstructor T -> subst typ T -> typ.
+
+%type (datatype_declaration
+  (fun tree => dbindnext (fun a => dbindbase
+    [ (* leaf *) [],
+      (* node *) [tconstr tree [a], a, tconstr tree [a]] ]))).
+(* >> (...) : datatype_declaration (typ * unit) (constructor * constructor * unit) *)
+
+constructor_info :
+  typeconstructor Arity -> constructor -> dbind typ Arity (list typ) -> prop.
+
+constructor_polytypes : [Arity Ctors PolyTypes]
+  ctor_declaration Ctors -> subst typ Arity ->
+  subst (dbind typ Arity (list typ)) PolyTypes -> prop.
+
+constructor_polytypes [] _ [].
+constructor_polytypes (CtorType :: CtorTypes) TypVars (PolyType :: PolyTypes) :-
+  applymany PolyType TypVars CtorType,
+  constructor_polytypes CtorTypes TypVars PolyTypes.
+
+wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
+  (dt:(typeconstructor T) -> ([PolyTypes]
+    openmany (ConstructorDecls dt) (pfun tvars constructor_decls => (
+      constructor_polytypes constructor_decls tvars PolyTypes)),
+    openmany (Program' dt) (pfun constructors program' =>
+      assumemany (constructor_info dt) constructors PolyTypes
+      (wfprogram program')))).
+
+(x:typ -> y:typ -> applymany PolyType [x, y] (arrow y x)) ?
+(* >> Yes: *)
+(* >> PolyType = dbindnext (fun x => dbindnext (fun y => dbindbase (arrow y x))) *)
+
+constr : constructor -> list term -> term.
+typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
+  constructor_info TypConstr Constructor PolyType,
+  applymany PolyType TypArgs Typs, map typeof Args Typs.
+
+patt_constr : constructor -> pattlist T T' -> patt T T'.
+
+typeof (patt_constr Constructor Args) S' S (tconstr TypConstr TypArgs) :-
+  constructor_info TypConstr Constructor PolyType,
+  applymany PolyType TypArgs Typs,
+  typeof Args S' S Typs.
+
+wfprogram
+  (datatype
+    (datatype_declaration (fun llist => dbindnext (fun a => dbindbase (
+    [ [] (* nil *) ,
+      [a, tconstr llist [a]] (* cons of a * list a *) ]))))
+  (fun llist => dbindnext (fun lnil => dbindnext (fun lcons => dbindbase (
+  (main
+    (letrec
+      (dbindnext (fun append => dbindbase (
+      [ lamt (fun a => lam (tconstr llist [a]) (fun l1 => lam _ (fun l2 =>
+        case_or_else l1
+          (patt_constr lcons [patt_var, patt_var])
+            (dbindnext (fun hd => dbindnext (fun tl => dbindbase (
+            constr lcons [hd, app (app (appt append _) tl) l2]))))
+          l2))) ],
+      (app (app (appt append _)
+        (constr lcons [zero, constr lnil []]))
+        (constr lcons [zero, constr lnil []]))
+      )))))))))) ?
+
+patt_to_term (patt_constr Constructor Args) (constr Constructor Args') S' S :-
+  pattlist_to_termlist Args Args' S' S.
+
+eval (constr C Args) (constr C Args') :-
+  map eval Args Args'.
+
+eval : program -> program -> prop.
+
+eval (let E P') P'' :-
+  eval E V, eval (P' V) P''.
+
+eval (datatype D P') (datatype D P'') :-
+  (dt:(typeconstructor T) ->
+    intromany CS (pfun cs => ([P'c P''c]
+    applymany (P' dt) cs P'c,
+    applymany (P'' dt) cs P''c,
+    eval P'c P''c))).
+
+eval (main E) (main V) :-
+  eval E V.
+
+(eq _PROGRAM (
+
+    (datatype
+      (datatype_declaration (fun llist => dbindnext (fun a => dbindbase (
+      [ [] (* nil *) ,
+        [a, tconstr llist [a]] (* cons of a * list a *) ]))))
+      (fun llist => dbindnext (fun lnil => dbindnext (fun lcons => dbindbase (
+
+    (main (constr lcons [zero, constr lnil []]))
+
+    )))))),
+
+ wfprogram _PROGRAM,
+ eval _PROGRAM FINAL) ?
+
