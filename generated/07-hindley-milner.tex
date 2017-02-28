@@ -87,7 +87,7 @@ replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
 
 \heroADVISOR{} And last, we'll need an auxiliary predicate that tells us
 whether a unification variable exists within a term. You can do that
-yourself, it's similar to the above.
+yourself; it's similar to the above.
 
 \heroSTUDENT{} Yes, I think I know how to do that.
 
@@ -109,10 +109,9 @@ generalize T T :- not(findunif T X).
 
 \heroSTUDENT{} Ah, I see what you are getting at. For the recursive case, we
 will pick out the first unification variable that we come upon using
-\texttt{findunif}. We will generalize over it using
-\texttt{replaceunif}, and then proceed to the rest. But don't we have to
-skip over the unification variables that are in the \(\Gamma\)
-environment?
+\texttt{findunif}. We will generalize over it using \texttt{replaceunif}
+and then proceed to the rest. But don't we have to skip over the
+unification variables that are in the \(\Gamma\) environment?
 
 \heroADVISOR{} Well, that's the last hurdle. Let's assume a predicate that
 gives us all the types in the environment, and write the recursive case
@@ -131,7 +130,7 @@ generalize T Res :-
 thread a list of types through our \texttt{typeof} predicate, every time
 we introduce a new \texttt{typeof\ x\ T\ \ensuremath{\to}} assumption?
 
-\heroADVISOR{} Well, we came this far without rewriting our rules, it's a
+\heroADVISOR{} Well, we came this far without rewriting our rules, so it's a
 shame to do that now! Maybe we'll be excused to use yet another
 reflective predicate that does what we want? There is a way to get a
 list of all the local assumptions for the \texttt{typeof} predicate; it

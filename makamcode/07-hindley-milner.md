@@ -76,7 +76,7 @@ replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
 ```
 
 ADVISOR. And last, we'll need an auxiliary predicate that tells us whether a unification
-variable exists within a term. You can do that yourself, it's similar to the above.
+variable exists within a term. You can do that yourself; it's similar to the above.
 
 STUDENT. Yes, I think I know how to do that.
 ```makam
@@ -94,7 +94,7 @@ generalize T T :- not(findunif T X).
 ```
 
 STUDENT. Ah, I see what you are getting at. For the recursive case, we will pick out the first
-unification variable that we come upon using `findunif`. We will generalize over it using `replaceunif`,
+unification variable that we come upon using `findunif`. We will generalize over it using `replaceunif`
 and then proceed to the rest. But don't we have to skip over the unification variables that are in
 the $\Gamma$ environment?
 
@@ -113,7 +113,7 @@ STUDENT. Oh, clever. But what should `get_types_in_environment` be? Don't we hav
 back and thread a list of types through our `typeof` predicate, every time we introduce a
 new `typeof x T ->` assumption?
 
-ADVISOR. Well, we came this far without rewriting our rules, it's a shame to do that now!
+ADVISOR. Well, we came this far without rewriting our rules, so it's a shame to do that now!
 Maybe we'll be excused to use yet another reflective predicate that does what we
 want? There is a way to get a list of all the local assumptions for the `typeof` predicate; it
 turns out that all the rules and connectives are normal λProlog terms like any other,

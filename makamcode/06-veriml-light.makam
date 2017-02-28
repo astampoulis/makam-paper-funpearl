@@ -10,20 +10,20 @@
 STUDENT. I'm fairly confident by now that Makam should be able to handle the research idea
 we want to try out. Shall we get to it?
 
-ADVISOR. Yes, it is time. So, what we are aiming to do, is add a facility for type-safe, heterogeneous meta-programming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a separate object language in a type-safe manner.
+ADVISOR. Yes, it is time. So, what we are aiming to do is add a facility for type-safe, heterogeneous meta-programming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a separate object language in a type-safe manner.
 
 STUDENT. Exactly. We'd like our object language to be a formal logic, so our language will
 be similar to Beluga \citep{pientka2010beluga} or VeriML
 \citep{stampoulis2013veriml}. We'll have to be able to pattern match over the terms of the
 object language, too, so they are runtime entities.... But we don't need to do all of
-that, let's just do a basic version for now, and I can do the rest on my own.
+that; let's just do a basic version for now, and I can do the rest on my own.
 
 ADVISOR. Sounds good. So, I think the fragment we should do is this: we will have
 dependent functions over a distinguished language of *dependent indices*. We need the
-dependency so that, for example, we can take an object-level type as an argument, and
+dependency so that, for example, we can take an object-level type as an argument and
 return an object-level term that uses that type.
 
-STUDENT. Exactly. Dependent products should be similar, but we can skip them for now, and just add a way to return an object-level term from the meta-level.
+STUDENT. Exactly. Dependent products should be similar, but we can skip them for now and just add a way to return an object-level term from the meta-level.
 
 ADVISOR. Good idea. We are getting into many levels of meta -- there's the meta-language
 we're using, Makam; there's the object language we are encoding, which is a meta-language
@@ -32,7 +32,7 @@ in itself, let's call that Heterogeneous Meta ML Light (HMML?); and there's the
 
 STUDENT. Great. So, our dependent indices will be the types and terms of STLC -- actually, the open terms of STLC.
 
-ADVISOR. It's a plan. So, let's get to it. Let's first add distinguished sorts for dependent indices, and dependent classifiers -- we'll use those to type-check the indices, using an appropriate predicate. Let's also have a distinguished type for *dependent variables*, that is, variables of dependent indices; and a way to substitute such a variable for an object.
+ADVISOR. It's a plan. So, let's get to it. Let's first add distinguished sorts for dependent indices and dependent classifiers -- we'll use those to type-check the indices, with an appropriate predicate. Let's also have a distinguished type for *dependent variables*, that is, variables of dependent indices; and a way to substitute such a variable for an object.
 
 *)
 
@@ -79,7 +79,12 @@ typeof (liftdep I) (liftdep C) :- depclassify I C.
 
 (*
 
-ADVISOR. Great. Just wanted to say, this framework is quite general. We could instantiate dependent indices with a language of natural numbers, equality predicates, and equality proofs; this would be quite similar to the Dependent ML formulation of \citet{licata2005formulation}. But let's go back to what we're trying to do. I'll add the object language in a separate namespace prefix -- we can use `\texttt{\%extend}' for going into a namespace -- and I'll just copy-paste our STLC code from earlier on.
+ADVISOR. Great. Just wanted to say, this framework is quite general. We could instantiate
+dependent indices with a language of natural numbers, equality predicates, and equality
+proofs, which would be quite similar to the Dependent ML formulation of
+\citet{licata2005formulation}. But let's go back to what we're trying to do. I'll add the
+object language in a separate namespace prefix -- we can use `\texttt{\%extend}' for going
+into a namespace -- and I'll just copy-paste our STLC code from earlier on.
 
 ```
 %extend object.
@@ -156,8 +161,8 @@ wftyp_aux T T :-
 
 STUDENT. I see -- if a type-checking rule applies, but fails, we don't want to proceed to
 also try structural recursion; it would defeat the purpose. Neat trick. I also see that
-your structural recursion just needs to do a simple visit, it does not need to produce an
-output; hence the repeat of the same `typ` argument. Let's prepare for substitutions too,
+your structural recursion just needs to do a simple visit and it does not need to produce an
+output; hence the repeat of the same `typ` argument. Let's prepare for substitutions, too,
 in the same way.
 
 *)
@@ -190,7 +195,7 @@ depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace true.
 
 (*
 
-ADVISOR. This is exciting, let me try this out! I'll do a function that takes an
+ADVISOR. This is exciting; let me try it out! I'll do a function that takes an
 object-level type and returns the object-level identity function for it.
 
 *)
@@ -210,11 +215,11 @@ indices!
 
 STUDENT. Good thing I've printed out the contextual types paper by
 \citet{nanevski2008contextual}. (...) OK, so it says here that we can use contextual types
-to record at the type level, the context that open terms depend on. So let's say, an open
+to record, at the type level, the context that open terms depend on. So let's say, an open
 `object.term` of type $\tau$ that mentions variables of a $\Phi$ context would have a
 contextual type of the form $[\Phi] \tau$. This is some sort of modal typing, with a precise context.
 
-ADVISOR. Right. So in our case, open STLC terms depend on a number of variables, and we will need to keep track of the STLC types of those variables, in order to maintain type safety. So, let's add a new dependent index for open STLC terms; and, a dependent classifier for their contextual type, which records the types of the variables that the term depends on, as well as the actual type of the term itself.
+ADVISOR. Right. So in our case, open STLC terms depend on a number of variables, and we will need to keep track of the STLC types of those variables, in order to maintain type safety. So, let's add a new dependent index for open STLC terms, and a dependent classifier for their contextual types, which record the types of the variables that the term depends on, as well as the actual type of the term itself.
 
 STUDENT. Let me see. I think something like this is what we want:
 
@@ -253,9 +258,9 @@ ADVISOR. Right. We now get to the tricky part: referring to variables that stand
 terms within other terms! You know what those are, right? Those are Object-level
 Object-level Meta-variables.
 
-STUDENT. My head hurts, I'm getting [OOM](https://en.wikipedia.org/wiki/Out_of_memory) errors. Maybe this is easier to implement in Makam than to talk about.
+STUDENT. My head hurts; I'm getting [OOM](https://en.wikipedia.org/wiki/Out_of_memory) errors. Maybe this is easier to implement in Makam than to talk about.
 
-ADVISOR. Might be so. Well, let me just say this: those variables will stand for open terms that depend on a specific context $\Phi$, but we might use them at a different context $\Phi'$. We need a *substitution* $\sigma$ to go from the context they were defined, to the current context.
+ADVISOR. Maybe so. Well, let me just say this: those variables will stand for open terms that depend on a specific context $\Phi$, but we might use them at a different context $\Phi'$. We need a *substitution* $\sigma$ to go from the context they were defined into the current context.
 
 STUDENT. OK, and then we need to apply that substitution $\sigma$ when we substitute an
 actual open term for the metavariable. I know what to do:
@@ -271,9 +276,9 @@ depsubst_cases Var (iopen_term XS_E) (object.varmeta Var ES) Result true :-
 
 (*
 
-ADVISOR. That should be it, let's try this out! Let's do meta-level application, maybe?
+ADVISOR. That should be it; let's try this out! Let's do meta-level application, maybe?
 So, take a "function" body that needs a single argument, and an instantiation for that
-argument, and do the substitution at the meta-level. This will be sort-of like inlining. And let's use unification variables wherever it makes sense, to push our rules to infer what they can for themselves!
+argument, and do the substitution at the meta-level. This will be sort of like inlining. And let's use unification variables wherever it makes sense, to push our rules to infer what they can for themselves!
 
 *)
 
