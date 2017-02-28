@@ -44,7 +44,7 @@ depsubst : [A] (depvar -> A) -> depindex -> A -> prop.
 \newcommand\dep[1]{\ensuremath{#1_{\text{d}}}}
 \newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
 
-STUDENT. Right, we might need to check that classifiers are well-formed. And we might need to treat variables specially, so it's good that they're a different type. So, that's why you want substitution to be a predicate, rather than using the normal HOAS function application `F X`, as we have been doing so far. In this case, we will later on have variables that stand for open STLC terms, and there will be some extra computation involved, so the normal application won't work as is.
+STUDENT. Right, we might need to check that classifiers are well-formed. And we might need to treat variables specially, so it's good that they're a different type. So, that's why you made substitution a predicate, rather than using the normal HOAS function application `F X` directly, as we have been doing so far. I know that when we add variables that stand for open STLC terms, there will be some extra computation involved to substitute them for an open term, so the normal application won't work as is.
 
 ADVISOR. Exactly; and that extra computation will be necessary in order to maintain type-safety. Hopefully, we won't have to write any unnecessary cases though! Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to signify things that have to do with the dependent indices.
 

@@ -58,11 +58,12 @@ depsubst : [A] (depvar \ensuremath{\to} A) \ensuremath{\to} depindex \ensuremath
 
 \heroSTUDENT{} Right, we might need to check that classifiers are well-formed.
 And we might need to treat variables specially, so it's good that
-they're a different type. So, that's why you want substitution to be a
+they're a different type. So, that's why you made substitution a
 predicate, rather than using the normal HOAS function application
-\texttt{F\ X}, as we have been doing so far. In this case, we will later
-on have variables that stand for open STLC terms, and there will be some
-extra computation involved, so the normal application won't work as is.
+\texttt{F\ X} directly, as we have been doing so far. I know that when
+we add variables that stand for open STLC terms, there will be some
+extra computation involved to substitute them for an open term, so the
+normal application won't work as is.
 
 \heroADVISOR{} Exactly; and that extra computation will be necessary in order
 to maintain type-safety. Hopefully, we won't have to write any
