@@ -138,7 +138,7 @@ STUDENT. Is that a limitation that has to do with the correspondence of λProlog
 logic? 
 
 ADVISOR. Not really; I believe it is because of implementation concerns mostly -- it
-would significantly complicate designing a virtual machine for the language. But Makam is interpreted, so it
+would significantly complicate designing an abstract machine for the language. But Makam is interpreted, so it
 sidesteps that.
 
 STUDENT. Interesting. So let me try doing the typing rule now. I'll add a type for

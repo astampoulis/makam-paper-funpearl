@@ -35,12 +35,12 @@ the following ingredients:
 \begin{itemize}
 \tightlist
 \item
-  something that picks out free variables from a term -- or, in our
+  something that picks out free variables from a type -- or, in our
   setting, uninstantiated unification variables
 \item
   something that picks out free variables from the local context
 \item
-  a way to turn something that includes meta-variables into a
+  a way to turn something that includes unification variables into a
   \texttt{forall} type
 \end{itemize}
 
@@ -60,7 +60,7 @@ from a term, if at least one exists.
 \begin{verbatim}
 findunif : [A B] option B \ensuremath{\to} A \ensuremath{\to} option B \ensuremath{\to} prop.
 findunif (some X) _ (some X).
-findunif none (X : A) (some (X : A)) :- refl.isunif X.
+findunif none (X : B) (some (X : B)) :- refl.isunif X.
 findunif In X Out :- generic.fold findunif In X Out.
 findunif : [A B] A \ensuremath{\to} B \ensuremath{\to} prop.  findunif T X :- findunif none T (some X).
 \end{verbatim}

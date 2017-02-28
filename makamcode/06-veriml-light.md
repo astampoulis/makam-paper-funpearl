@@ -118,7 +118,6 @@ STUDENT. Great! I'll make these into dependent indices now, including both types
 ```makam
 iterm : object.term -> depindex.     ityp : object.typ -> depindex.
 ctyp : object.typ -> depclassifier.  cext : depclassifier.
-
 depclassify (iterm E) (ctyp T) :- object.typeof E T.
 depclassify (ityp T) cext :- object.wftyp T.
 depwf (ctyp T) :- object.wftyp T.
@@ -249,10 +248,12 @@ ADVISOR. Maybe so. Well, let me just say this: those variables will stand for op
 STUDENT. OK, and then we need to apply that substitution $\sigma$ when we substitute an
 actual open term for the metavariable. I know what to do:
 
+\vspace{-0.5em}
 ```makam
 %extend object.
 varmeta : depvar -> list term -> term.
-typeof (varmeta V ES) T :- depclassify E (cctx_typ TS T), map object.typeof ES TS.
+%trace+ typeof.
+typeof (varmeta V ES) T :- depclassify V (cctx_typ TS T), map object.typeof ES TS.
 %end.
 depsubst_applies Var (object.varmeta Var _).
 depsubst_cases Var (iopen_term XS_E) (object.varmeta Var ES) Result :-

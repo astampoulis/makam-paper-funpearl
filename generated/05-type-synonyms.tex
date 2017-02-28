@@ -135,7 +135,7 @@ example! The argument list needs to be heterogeneous.
 \heroADVISOR{} Glad you figured that out. We can do that using the existential
 type -- let's call it \texttt{dyn} --, so the arguments can be of
 \texttt{list\ dyn} type. And we'll need to make \texttt{teq}
-polymorphic:
+polymorphic, handling any type that includes a \texttt{typ}:
 
 \begin{verbatim}
 dyn : type.  dyn : A \ensuremath{\to} dyn.

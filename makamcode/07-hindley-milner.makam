@@ -37,9 +37,9 @@ typeof (let E F) T' :-
 
 STUDENT. Right, so for generalization, based on the typing rule, we need the following ingredients:
 
-- something that picks out free variables from a term -- or, in our setting, uninstantiated unification variables
+- something that picks out free variables from a type -- or, in our setting, uninstantiated unification variables
 - something that picks out free variables from the local context
-- a way to turn something that includes meta-variables into a `forall` type
+- a way to turn something that includes unification variables into a `forall` type
 
 \noindent
 Those look like things that we should be able to do with our generic recursion and with the
@@ -56,7 +56,7 @@ variable of the right type from a term, if at least one exists.
 
 findunif : [A B] option B -> A -> option B -> prop.
 findunif (some X) _ (some X).
-findunif none (X : A) (some (X : A)) :- refl.isunif X.
+findunif none (X : B) (some (X : B)) :- refl.isunif X.
 findunif In X Out :- generic.fold findunif In X Out.
 findunif : [A B] A -> B -> prop.  findunif T X :- findunif none T (some X).
 

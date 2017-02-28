@@ -131,7 +131,7 @@ teq (Constructor Arguments) (Constructor Arguments') :- map teq Arguments Argume
 
 STUDENT. Right, so in the example of the `arrow` type, `Constructor` would match `arrow` and arguments would be instantiated with `[T1, T2]`. But we are not really guaranteed that all arguments are of `typ` type, or even that they are all of the same type, right? Take `arrowmany` for example! The argument list needs to be heterogeneous.
 
-ADVISOR. Glad you figured that out. We can do that using the existential type -- let's call it `dyn` --, so the arguments can be of `list dyn` type. And we'll need to make `teq` polymorphic:
+ADVISOR. Glad you figured that out. We can do that using the existential type -- let's call it `dyn` --, so the arguments can be of `list dyn` type. And we'll need to make `teq` polymorphic, handling any type that includes a `typ`:
 
 ```
 dyn : type.  dyn : A -> dyn.
