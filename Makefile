@@ -21,4 +21,7 @@ watch:
 	@ shared/watch-pdflatex -c main.tex
 	@ shared/watch-pdflatex main.tex
 
+test:
+	@ bash -c "set -e; for i in makamcode/*.md; do makam --run-tests \$$i; done"
+
 .PHONY: all clean tmpclean watch
