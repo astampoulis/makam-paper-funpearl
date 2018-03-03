@@ -14,8 +14,6 @@ OUTPUT_DIR=$2
 
 for INPUT_FILE in $INPUT_DIR/*.md; do
 
-  awk -f shared/generate-makam.awk $INPUT_FILE
-
   OUTPUT_FILE="$OUTPUT_DIR/$(basename $INPUT_FILE .md).tex"
   echo "Generating $OUTPUT_FILE from $INPUT_FILE"
   pandoc -S $INPUT_FILE -o $OUTPUT_FILE
