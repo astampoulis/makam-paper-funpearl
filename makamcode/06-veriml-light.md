@@ -2,7 +2,8 @@
 
 <!--
 ```makam
-%use "05-type-synonyms".
+%use "05-type-synonyms.md".
+test06: testsuite. %testsuite test06.
 ```
 -->
 
@@ -91,7 +92,7 @@ term : type. typ : type. typeof : term -> typ -> prop.
 We don't have to copy-paste the code, we can import the previous file into a separate namespace. But let's add natural numbers too.
 
 ```makam
-%import "01-base-language" as object.
+%import "01-base-language.md" as object.
 %extend object.
 nat : typ. zero : term. succ : term -> term.
 typeof zero nat.
@@ -187,13 +188,22 @@ depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace.
 ADVISOR. This is exciting; let me try it out! I'll do a function that takes an
 object-level type and returns the object-level identity function for it.
 
-```makam
+```makam-noeval
 typeof (lamdep cext (fun t =>
          (liftdep (iterm (object.lam (object.vartyp t) (fun x => x)))))) T ?
 >> Yes!!!!!
 >> T := pidep cext (fun t =>
 >>        liftdep (ctyp (object.arrow (object.vartyp t) (object.vartyp t))))
 ```
+
+<!--
+```makam
+typeof (lamdep cext (fun t =>
+         (liftdep (iterm (object.lam (object.vartyp t) (fun x => x)))))) T ?
+>> Yes:
+>> T := pidep cext (fun t => liftdep (ctyp (object.arrow (object.vartyp t) (object.vartyp t)))).
+```
+-->
 
 STUDENT. Look, even the Makam REPL is excited!
 
@@ -263,19 +273,29 @@ ADVISOR. That should be it; let's try this out! Let's do meta-level application,
 So, take a "function" body that needs a single argument, and an instantiation for that
 argument, and do the substitution at the meta-level. This will be sort of like inlining. And let's use unification variables wherever it makes sense, to push our rules to infer what they can for themselves!
 
+```makam-noeval
+typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
+       (lamdep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
+       (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
+         (object.varmeta f [object.varterm a]))))))))))))) T ?
+>> Yes:
+>> T := (pidep cext (fun t1 => pidep cext (fun t2 =>
+>>      (pidep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
+>>      (pidep (ctyp (object.vartyp t1)) (fun a =>
+>>      (liftdep (cctx_typ [] (object.vartyp t2)))))))))).
+```
+
+<!--
+
 ```makam
 typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
        (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
          (object.varmeta f [object.varterm a]))))))))))))) T ?
 >> Yes:
->> T := (pidep (cext (fun t1 => pidep (cext (fun t2 =>
->>      (pidep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
->>      (pidep (ctyp (object.vartyp t1)) (fun a =>
->>      (liftdep (cctx_typ [] (object.vartyp t2))))))))))))
+>> T := (pidep cext (fun t1 => pidep cext (fun t2 => (pidep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f => (pidep (ctyp (object.vartyp t1)) (fun a => (liftdep (cctx_typ [] (object.vartyp t2)))))))))).
 ```
 
-<!--
 ```makam
 (eq _FUNCTION 
        (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
@@ -285,7 +305,7 @@ typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
  typeof (appdep (appdep (appdep _FUNCTION (ityp object.nat)) (ityp object.nat))
            (iopen_term (bindnext (fun x => bindbase (object.succ x))))) T) ?
 >> Yes:
->> T := pidep (ctyp object.nat) (fun a => liftdep (cctx_typ nil object.nat))
+>> T := pidep (ctyp object.nat) (fun a => liftdep (cctx_typ nil object.nat)).
 ```
 -->
 
