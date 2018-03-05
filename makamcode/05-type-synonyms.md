@@ -2,7 +2,8 @@
 
 <!--
 ```makam
-%use "04-ml-subset".
+%use "04-ml-subset.md".
+test05: testsuite. %testsuite test05.
 ```
 -->
 

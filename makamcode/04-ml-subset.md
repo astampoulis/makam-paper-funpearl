@@ -2,7 +2,8 @@
 
 <!--
 ```makam
-%use "03-dependent-binding".
+%use "03-dependent-binding.md".
+test04: testsuite. %testsuite test04.
 ```
 -->
 
@@ -138,7 +139,7 @@ ADVISOR. We do. Also keep in mind that in a richer type system, we probably woul
 extra kind-checking predicate. But this will do for now. Let's just make sure this is fine --
 I'll write down the declaration of binary trees, to make sure we're not missing anything, and typecheck it with Makam.
 
-```makam
+```makam-noeval
 %type (datatype_declaration
   (fun tree => dbindnext (fun a => dbindbase
     [ (* leaf *) [],
@@ -197,7 +198,7 @@ ADVISOR. Here's a hint.
 ```makam
 (x:typ -> y:typ -> applymany PolyType [x, y] (arrow y x)) ?
 >> Yes:
->> PolyType = dbindnext (fun x => dbindnext (fun y => dbindbase (arrow y x)))
+>> PolyType := dbindnext (fun x => dbindnext (fun y => dbindbase (arrow y x))).
 ```
 
 \begin{scenecomment}
@@ -270,6 +271,7 @@ wfprogram
         (constr lcons [zero, constr lnil []]))
         (constr lcons [zero, constr lnil []]))
       )))))))))) ?
+>> Yes.
 ```
 
 The semantics:
@@ -314,5 +316,8 @@ Example of evaluation:
 
  wfprogram _PROGRAM,
  eval _PROGRAM FINAL) ?
+>> Yes:
+>> FINAL := datatype (datatype_declaration (fun llist => dbindnext (fun a => dbindbase (cons nil (cons (cons a (cons (tconstr llist (cons a nil)) nil)) nil))))) (fun llist => dbindnext (fun lnil => dbindnext (fun lcons => dbindbase (main (constr lcons (cons zero (cons (constr lnil nil) nil))))))).
+
 ```
 -->

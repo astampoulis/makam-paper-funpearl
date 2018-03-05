@@ -25,10 +25,10 @@ recommended.
 1. Start the REPL with
    `./makam`.
 2. To load one of the developments, do
-   `%use "02-stlc".`
+   `%use "02-stlc.md".`
 3. Files that have been already loaded won't get loaded again with `%use`.
    If you make changes to a file and want to load it anew, you can use
-   `%usenew "02-stlc".`
+   `%usenew "02-stlc.md".`
    Note that this will also load all files dependent on it.
 
 ## File structure
@@ -40,14 +40,13 @@ recommended.
   use of it in the paper development: `list` predicates, some basic
   types like `option`, the `generic.fold` predicate, and `dyn.call`.
 `literate/` -- Directory containing the literate Markdown files of the
-  paper, together with Makam files generated from them. To load files
-  from this directory in Makam, do `%use "literate/02-stlc".`
+  paper. Makam can read these files and executes all code blocks marked
+  as `makam` (skipping `makam-noeval` blocks). To load files
+  from this directory in Makam, do `%use "literate/02-stlc.md".`
 `justcode/` -- Directory containing just the code part of the literate
   developments. These are generated from the Markdown files too, without
   adding comments, and are thus easier to read for the code part, and they
-  are more amenable to modifications. The `justcode` directory
-  is included in the Makam search path, so loading files with `%use` will
-  make use of the files in this directory without specifying it.
+  are more amenable to modifications.
 
 ## Notes
 

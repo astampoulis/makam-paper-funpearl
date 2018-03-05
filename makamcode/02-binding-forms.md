@@ -2,7 +2,8 @@
 
 <!--
 ```makam
-%use "01-base-language".
+%use "01-base-language.md".
+test02 : testsuite. %testsuite test02.
 ```
 -->
 
@@ -131,13 +132,13 @@ sidesteps that.
 STUDENT. Interesting. So let me try doing the typing rule now. I'll add a type for
 multiple-argument functions. Would this work?
 
-<!-- add just this line to makam:
+<!--
 ```makam
 arrowmany : list typ -> typ -> typ.
 ```
---->
+-->
 
-```
+```makam-noeval
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T') :-
   intromany F (fun xs => applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
@@ -173,7 +174,7 @@ ADVISOR. Yes, that predicate turns out to be quite useful. Let's try out a query
 ```makam
 typeof (lammany (bindnext (fun x => bindnext (fun y => bindbase (tuple [y, x]))))) T ?
 >> Yes:
->> T := arrowmany [T1, T2] (product [T2, T1])
+>> T := arrowmany [T1, T2] (product [T2, T1]).
 ```
 
 STUDENT. Great, I think I got the hang of this. We could definitely add a

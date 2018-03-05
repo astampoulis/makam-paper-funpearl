@@ -2,7 +2,8 @@
 
 <!--
 ```makam
-%use "02-binding-forms".
+%use "02-binding-forms.md".
+test03: testsuite. %testsuite test03.
 ```
 -->
 
@@ -147,7 +148,7 @@ further; I am sure we could capture that if needed with another dependent constr
 STUDENT. That's what I was thinking too. Let me see; I think most of these are almost
 identical to what we had before.
 
-```makam
+```makam-noeval
 intromany (dbindbase F) P :- P [].
 intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
 ...
@@ -157,8 +158,12 @@ intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
 (Our heroes copy-paste the code from before for the rest of the predicates,
 changing `\texttt{bindbase}' to `\texttt{dbindbase}' and `\texttt{bindnext}' to `\texttt{dbindnext}'.)
 \end{scenecomment}
+
 <!--
 ```makam
+intromany (dbindbase F) P :- P [].
+intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
+
 applymany (dbindbase Body) [] Body.
 applymany (dbindnext F) (X :: XS) Body :- applymany (F X) XS Body.
 
@@ -378,7 +383,7 @@ couple of cases.
  typeof _PRED T,
  eval (app _PRED zero) PRED0, eval (app _PRED (succ (succ zero))) PRED2) ?
 >> Yes:
->> T := arrow nat nat, PRED0 := zero, PRED2 := succ zero
+>> T := arrow nat nat, PRED0 := zero, PRED2 := succ zero.
 ```
 
 ADVISOR. Seems to be working fine!

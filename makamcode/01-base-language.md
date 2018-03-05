@@ -1,5 +1,11 @@
 # Where our heroes get the easy stuff out of the way
 
+<!--
+```makam
+test01 : testsuite. %testsuite test01.
+```
+-->
+
 STUDENT. OK, let's just start with the simply typed lambda calculus to see how this
 works. Let's define just the basics: application, lambda abstraction, and the arrow type.
 
@@ -74,7 +80,7 @@ ADVISOR. We do! Observe:
 ```makam
 typeof (lam _ (fun x => x)) T ?
 >> Yes:
->> T := arrow T1 T1
+>> T := arrow T1 T1.
 ```
 
 STUDENT. Cool! So underscores for unification variables we don't care about and `?` for
@@ -94,7 +100,7 @@ Can we use something like a polymorphic list?
 
 ADVISOR. Sure, λProlog has polymorphic types and higher-order predicates:
 
-```
+```makam-noeval
 list : type -> type.
 nil : list A.
 cons : A -> list A -> list A.
@@ -124,7 +130,7 @@ ADVISOR. Yes, and we can use syntactic sugar for `cons` and `nil` too:
 ```makam
 typeof (lam _ (fun x => lam _ (fun y => tuple [x, y]))) T ?
 >> Yes:
->> T := arrow T1 (arrow T2 (product [T1, T2]))
+>> T := arrow T1 (arrow T2 (product [T1, T2])).
 ```
 
 STUDENT. So how about evaluation? Can we write the big-step semantics too?

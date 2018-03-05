@@ -27,14 +27,6 @@ mv justcode/05-type-synonyms.makam justcode/06-synonyms.makam
 mv justcode/06-veriml-light.makam justcode/07-meta.makam
 mv justcode/07-hindley-milner.makam justcode/08-typgen.makam
 
-mv literate/01-base-language.makam literate/02-stlc.makam
-mv literate/02-binding-forms.makam literate/03-bindmany.makam
-mv literate/03-dependent-binding.makam literate/04-dbind.makam
-mv literate/04-ml-subset.makam literate/05-smallml.makam
-mv literate/05-type-synonyms.makam literate/06-synonyms.makam
-mv literate/06-veriml-light.makam literate/07-meta.makam
-mv literate/07-hindley-milner.makam literate/08-typgen.makam
-
 mv literate/01-base-language.md literate/02-stlc.md
 mv literate/02-binding-forms.md literate/03-bindmany.md
 mv literate/03-dependent-binding.md literate/04-dbind.md
@@ -43,7 +35,7 @@ mv literate/05-type-synonyms.md literate/06-synonyms.md
 mv literate/06-veriml-light.md literate/07-meta.md
 mv literate/07-hindley-milner.md literate/08-typgen.md
 
-for i in literate/*.{md,makam} justcode/*.makam; do
+for i in literate/*.md justcode/*.makam; do
   sed -i \
       -e's/01-base-language/02-stlc/' \
       -e's/02-binding-forms/03-bindmany/' \
