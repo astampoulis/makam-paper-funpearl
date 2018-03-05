@@ -148,7 +148,7 @@ get_types_in_environment Assumptions :-
 \begin{verbatim}
 typeof (let (lam _ (fun x \ensuremath{\Rightarrow} let x (fun y \ensuremath{\Rightarrow} y))) (fun id \ensuremath{\Rightarrow} id)) T ?
 >> Yes:
->> T := forall (fun a \ensuremath{\Rightarrow} arrow a a)
+>> T := forall (fun a \ensuremath{\Rightarrow} arrow a a).
 \end{verbatim}
 
 \heroADVISOR{} And yet, it can.

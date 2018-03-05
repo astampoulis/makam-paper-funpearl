@@ -136,7 +136,7 @@ program. Note that \texttt{PolyTypes} can't capture the type variables
 \begin{verbatim}
 (x:typ \ensuremath{\to} y:typ \ensuremath{\to} applymany PolyType [x, y] (arrow y x)) ?
 >> Yes:
->> PolyType = dbindnext (fun x \ensuremath{\Rightarrow} dbindnext (fun y \ensuremath{\Rightarrow} dbindbase (arrow y x)))
+>> PolyType := dbindnext (fun x \ensuremath{\Rightarrow} dbindnext (fun y \ensuremath{\Rightarrow} dbindbase (arrow y x))).
 \end{verbatim}
 
 \begin{scenecomment}

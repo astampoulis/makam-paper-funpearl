@@ -1,0 +1,9 @@
+version: '2'
+services:
+  texlive:
+    build:
+      context: .
+    volumes:
+      - ./:/code:ro
+      - ./generated:/code/generated
+      - ./tmp:/code/tmp

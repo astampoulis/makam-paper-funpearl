@@ -85,7 +85,7 @@ queries?
 \begin{verbatim}
 typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T ?
 >> Yes:
->> T := arrow T1 T1
+>> T := arrow T1 T1.
 \end{verbatim}
 
 \heroSTUDENT{} Cool! So underscores for unification variables we don't care
@@ -139,7 +139,7 @@ typeof (tuple ES) (product TS) :- map typeof ES TS.
 \begin{verbatim}
 typeof (lam _ (fun x \ensuremath{\Rightarrow} lam _ (fun y \ensuremath{\Rightarrow} tuple [x, y]))) T ?
 >> Yes:
->> T := arrow T1 (arrow T2 (product [T1, T2]))
+>> T := arrow T1 (arrow T2 (product [T1, T2])).
 \end{verbatim}
 
 \heroSTUDENT{} So how about evaluation? Can we write the big-step semantics

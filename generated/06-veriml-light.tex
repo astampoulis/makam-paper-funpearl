@@ -274,10 +274,10 @@ typeof (lamdep _ (fun t1 \ensuremath{\Rightarrow} (lamdep _ (fun t2 \ensuremath{
        (lamdep _ (fun a \ensuremath{\Rightarrow} (liftdep (iopen_term (bindbase (
          (object.varmeta f [object.varterm a]))))))))))))) T ?
 >> Yes:
->> T := (pidep (cext (fun t1 \ensuremath{\Rightarrow} pidep (cext (fun t2 \ensuremath{\Rightarrow}
+>> T := (pidep cext (fun t1 \ensuremath{\Rightarrow} pidep cext (fun t2 \ensuremath{\Rightarrow}
 >>      (pidep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f \ensuremath{\Rightarrow}
 >>      (pidep (ctyp (object.vartyp t1)) (fun a \ensuremath{\Rightarrow}
->>      (liftdep (cctx_typ [] (object.vartyp t2))))))))))))
+>>      (liftdep (cctx_typ [] (object.vartyp t2)))))))))).
 \end{verbatim}
 
 \begin{scenecomment}
