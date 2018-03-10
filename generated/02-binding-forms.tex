@@ -6,13 +6,15 @@ binding}\label{where-our-heroes-add-parentheses-and-discover-how-to-do-multiple-
 \foreignlanguage{greek}{λ}Prolog\ldots{}. Yes, single-variable binding, substitutions, and so on
 work nicely, but how about any other form of binding? Say, binding
 multiple variables at the same time? We are definitely going to need
-that for the language we have in mind, and I remember that
-\citet{keuchel2016needle} mention that HOAS encodings do not work for
-such forms of binding.
+that for the language we have in mind. I was under the impression that
+HOAS encodings do not work for such forms of binding -- for example, I
+was reading \citet{keuchel2016needle} recently and I remember reading
+something like that.
 
-\heroADVISOR{} I beg to differ. Let's try it out; let's try adding
-multiple-argument functions for example -- I mean uncurried ones. Want
-to give it at try?
+\heroADVISOR{} That's not really true; having first-class support for
+single-variable binders should be enough, and I think this is
+well-understood. But let's try it out, maybe adding multiple-argument
+functions for example -- I mean uncurried ones. Want to give it at try?
 
 \heroSTUDENT{} Let me see. Well, I want to write something like this, but I
 know this is wrong.
@@ -48,87 +50,70 @@ bindcons : (term \ensuremath{\to} bindmanyterms) \ensuremath{\to} bindmanyterms.
 
 \heroSTUDENT{} Hmm. That looks quite similar to lists; the parentheses in
 \texttt{cons} are different. \texttt{nil} gets an extra \texttt{term}
-argument, too\ldots{}.
+argument, too\ldots{}
 
 \heroADVISOR{} Yes\ldots{} So what is happening here is that \texttt{bindcons}
-takes a single argument, adding another binder; and \texttt{bindnil} is
-when we get to the body and don't need any more binders, so we just need
-the body.
+takes a single argument, introducing a binder; and \texttt{bindnil} is
+when we get to the body and don't need any more binders. Maybe we should
+name them accordingly.
 
-\heroSTUDENT{} Oh, so could we generalize their types? Maybe that will help me
-get a better grasp of it. How is this?
+\heroSTUDENT{} Right, and could we generalize their types? Maybe that will
+help me get a better grasp of it. How is this?
 
 \begin{verbatim}
 bindmany : type \ensuremath{\to} type \ensuremath{\to} type.
-bindbase : Body \ensuremath{\to} bindmany Variable Body.
-bindnext : (Variable \ensuremath{\to} bindmany Variable Body) \ensuremath{\to} bindmany Variable Body.
+body : Body \ensuremath{\to} bindmany Variable Body.
+bind : (Variable \ensuremath{\to} bindmany Variable Body) \ensuremath{\to} bindmany Variable Body.
 \end{verbatim}
 
-\heroADVISOR{} This looks great! Though let me say, I cheated a bit: in order
-for the constructors to look nicer, we have allowed binding zero
-variables. We could definitely disallow that by changing
-\texttt{bindbase} to take a \texttt{Variable\ \ensuremath{\to}\ Body}
-argument instead, but let's just go along with this; it will make all
-our predicates simpler to write, too.
+\heroADVISOR{} This looks great! We have allowed binding zero variables, but
+that makes the constructors nicer and will simplify our predicates too.
 
-\heroSTUDENT{} I see. That is quite an interesting datatype. Is there some
-reference about it?
+\heroSTUDENT{} I see. That is an interesting datatype. Is there some reference
+about it?
 
-\heroADVISOR{} Not that I know of -- though I think this is part of PL
+\heroADVISOR{} Not that I know of, at least where it is called out as a
+reusable datatype -- though the construction is definitely part of PL
 folklore. After I started using this in Makam, I noticed similar
 constructions in the wild, for example in MTac \citep{ziliani2013mtac},
-for the parametric HOAS implementation of telescopes.
+for parametric HOAS implementation of telescopes in Coq.
 
 \heroSTUDENT{} Interesting. So how do we work with \texttt{bindmany}? I know
-we can now define \texttt{lammany} as follows, but how about the typing
-rules?
+we can now define \texttt{lammany} now, but how about the typing rule?
 
 \begin{verbatim}
 lammany : bindmany term term \ensuremath{\to} term.
 \end{verbatim}
 
-\heroADVISOR{} Well, for the built-in single binding type, we used three
-built-in operations:
-
-\begin{itemize}
-\tightlist
-\item
-  variable substitution, encoded through HOAS function application
-\item
-  introducing a fresh variable, through the predicate form
-  \texttt{x:term\ \ensuremath{\to}\ ...}
-\item
-  introducing a new assumption, through the predicate form
-  \texttt{P\ \ensuremath{\to}\ ...}
-\end{itemize}
-
-\heroSTUDENT{} So we should add three operations for \texttt{bindmany} that
-correspond to those, right?
-
-\heroADVISOR{} Correct, and they will be predicates, since that's the only
-kind of computation we can define in \foreignlanguage{greek}{λ}Prolog. So let's first do the
-predicate that generalizes application:
+\heroADVISOR{} The rule will be like this, but I'll explain what goes into it:
 
 \begin{verbatim}
-applymany : bindmany A B \ensuremath{\to} list A \ensuremath{\to} B \ensuremath{\to} prop.
-applymany (bindbase Body) [] Body.
-applymany (bindnext F) (HD :: TL) Body :- applymany (F HD) TL Body.
+arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
+typeof (lammany F) (arrowmany TS T) :-
+  openmany F (fun xs body \ensuremath{\Rightarrow}
+    assumemany typeof xs TS (typeof body T)).
 \end{verbatim}
 
-\heroSTUDENT{} I see, so given a \texttt{bindmany} and a substitution for the
-variables, perform simultaneous substitution to get the body.
+\heroSTUDENT{} Let me see if I can read this\ldots{} \texttt{openmany} somehow
+gives you fresh variables \texttt{xs} for the binders, and the
+\texttt{body} of the \texttt{lammany}; and then the
+\texttt{assumemany\ typeof} part is what corresponds to extending the
+\(\Gamma\) context with multiple typing assumptions?
 
-\heroADVISOR{} Right. And a predicate for introducing multiple variables at
-once. Then you try doing multiple assumptions.
+\heroADVISOR{} Yes, and then we typecheck the \texttt{body} in that local
+context. But let's do one step at a time. \texttt{openmany} is simple;
+we iterate through the nested binders, introducing one fresh variable at
+a time, and substituting each bound variable for the fresh variable.
 
 \begin{verbatim}
-intromany : bindmany A B \ensuremath{\to} (list A \ensuremath{\to} prop) \ensuremath{\to} prop.
-intromany (bindbase _) P :- P [].
-intromany (bindnext F) P :- (x:A \ensuremath{\to} intromany (F x) (fun tl \ensuremath{\Rightarrow} P (x :: tl))).
+openmany : bindmany A B \ensuremath{\to} (list A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} prop.
+openmany (body Body) P :- P [] Body.
+openmany (bind F) P :-
+  (x:A \ensuremath{\to} openmany (F x) (fun xs \ensuremath{\Rightarrow} P (x :: xs))).
 \end{verbatim}
 
-\heroSTUDENT{} Let me see. So pattern match on the two cases, introducing an
-extra assumption in the \texttt{bindnext} case. How does this look?
+\heroSTUDENT{} I guess \texttt{assumemany} is similar, introducing one
+assumption at a time?
 
 \begin{verbatim}
 assumemany : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} list A \ensuremath{\to} list B \ensuremath{\to} prop \ensuremath{\to} prop.
@@ -136,66 +121,24 @@ assumemany P [] [] Q :- Q.
 assumemany P (X :: XS) (Y :: YS) Q :- (P X Y \ensuremath{\to} assumemany P XS YS Q).
 \end{verbatim}
 
-\heroADVISOR{} That looks good. Maybe one thing to note is that this last rule
-might not work in other \foreignlanguage{greek}{λ}Prolog implementations, as it introduces an
-assumption for a predicate that is not known statically, and that is
-usually not allowed. That's why I said we should use Makam.
+\heroTODO{} Use a reference below and refine wording.
 
-\heroSTUDENT{} Is that a limitation that has to do with the correspondence of
-\foreignlanguage{greek}{λ}Prolog to logic?
+\heroADVISOR{} Yes, exactly! Just a note though -- \lamprolog typically does
+not allow the definition of \texttt{assumemany}, where a non-concrete
+predicate like \texttt{P\ X\ Y} is used as an assumption, because of
+logical reasons. Makam is more lax, and so is ELPI, another recent
+\lamprolog implementation, and allows this form statically, though there
+are instantiations of \texttt{P} that will fail at run-time.
 
-\heroADVISOR{} Not really; I believe it is because of implementation concerns
-mostly -- it would significantly complicate designing an abstract
-machine for the language. But Makam is interpreted, so it sidesteps
-that.
-
-\heroSTUDENT{} Interesting. So let me try doing the typing rule now. I'll add
-a type for multiple-argument functions. Would this work?
+\heroSTUDENT{} Can I try this out?
 
 \begin{verbatim}
-arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
-typeof (lammany F) (arrowmany TS T') :-
-  intromany F (fun xs \ensuremath{\Rightarrow} applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
-\end{verbatim}
-
-\heroADVISOR{} Almost. There is an issue here: the unification variable
-\texttt{Body} cannot capture the free variables \texttt{xs} that get
-introduced later. A unification variable is allowed to capture all the
-free variables in scope at the point where it is introduced. By default,
-they get introduced when we check whether a rule fires, but here we need
-to say explicitly that \texttt{Body} should be introduced when
-\texttt{intromany} uses its predicate argument; Makam uses
-square-bracket notation for that. Oh, and a Makam idiosyncrasy: the
-parser isn't clever enough to tell that the predicate argument to
-\texttt{intromany} is, in fact, a predicate, so we can't use the normal
-predicate syntax for it. There is the syntactic form \texttt{pfun} for
-anonymous predicates; save for predicate syntax, it's entirely identical
-to \texttt{fun}. So:
-
-\begin{verbatim}
-typeof (lammany F) (arrowmany TS T') :-
-  intromany F (pfun xs \ensuremath{\Rightarrow} ([Body]
-    applymany F xs Body, assumemany typeof xs TS (typeof Body T'))).
-\end{verbatim}
-
-\heroSTUDENT{} Oh, so \texttt{{[}Body{]}} is like existential quantification.
-I wonder, would it make sense to combine \texttt{intromany} and
-\texttt{appmany} into one predicate, like this, since we will probably
-always need both the variables and the body of a \texttt{bindmany}?
-
-\begin{verbatim}
-openmany : bindmany A B \ensuremath{\to} (list A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} prop.
-openmany F P :- intromany F (pfun xs \ensuremath{\Rightarrow} [Body] applymany F xs Body, P xs Body).
-\end{verbatim}
-
-\heroADVISOR{} Yes, that predicate turns out to be quite useful. Let's try out
-a query now!
-
-\begin{verbatim}
-typeof (lammany (bindnext (fun x \ensuremath{\Rightarrow} bindnext (fun y \ensuremath{\Rightarrow} bindbase (tuple [y, x]))))) T ?
+typeof (lammany (bind (fun x \ensuremath{\Rightarrow} bind (fun y \ensuremath{\Rightarrow} body (tuple [y, x]))))) T ?
 >> Yes:
 >> T := arrowmany [T1, T2] (product [T2, T1]).
 \end{verbatim}
+
+\heroTODO{} (Still WIP below!!)
 
 \heroSTUDENT{} Great, I think I got the hang of this. We could definitely add
 a multiple-argument application construct \texttt{appmany} or define the
@@ -209,11 +152,11 @@ them. A plain old \texttt{string}. Our typing rules etc. do not care
 about it, but we could use it for parsing concrete syntax into our
 abstract binding syntax, or for pretty-printing\ldots{}. Let's not get
 into that for the time being, but let's just say that we could have
-defined \texttt{bindnext} with an extra \texttt{string} argument; and
-then \texttt{intromany} and friends would just ignore it.
+defined \texttt{bind} with an extra \texttt{string} argument; and then
+\texttt{openmany} could just ignore it.
 
 \begin{verbatim}
-bindnext : string \ensuremath{\to} (Variable \ensuremath{\to} bindmany Variable Body) \ensuremath{\to} bindmany Variable Body.
+bind : string \ensuremath{\to} (Var \ensuremath{\to} bindmany Var Body) \ensuremath{\to} bindmany Var Body.
 \end{verbatim}
 
 \heroSTUDENT{} Interesting. I would like to see more about this, but maybe
@@ -239,7 +182,7 @@ let rec f = f_def and g = g_def in body
 \heroSTUDENT{} \ldots{} we would write something like this:
 
 \begin{verbatim}
-letrec (bindnext (fun f \ensuremath{\Rightarrow} bindnext (fun g \ensuremath{\Rightarrow} bindbase ([f_def, g_def], body))))
+letrec (bind f g \ensuremath{\Rightarrow} body ([f_def, g_def], body))
 \end{verbatim}
 
 \heroADVISOR{} Yes, and we need to be careful so that the number of binders

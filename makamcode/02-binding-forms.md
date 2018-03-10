@@ -7,14 +7,15 @@ test02 : testsuite. %testsuite test02.
 ```
 -->
 
-STUDENT. Still, I feel like we've been playing to the strengths of λProlog.... Yes,
-single-variable binding, substitutions, and so on work nicely, but how about any other form
-of binding? Say, binding multiple variables at the same time? We are definitely going to
-need that for the language we have in mind, and I remember that \citet{keuchel2016needle}
-mention that HOAS encodings do not work for such forms of binding.
+STUDENT. Still, I feel like we've been playing to the strengths of λProlog.... Yes, single-variable
+binding, substitutions, and so on work nicely, but how about any other form of binding? Say, binding
+multiple variables at the same time? We are definitely going to need that for the language we have
+in mind. I was under the impression that HOAS encodings do not work for such forms of binding -- for
+example, I was reading \citet{keuchel2016needle} recently and I remember reading something like
+that.
 
-ADVISOR. I beg to differ. Let's try it out; let's try adding multiple-argument functions
-for example -- I mean uncurried ones. Want to give it at try?
+ADVISOR. That's not really true; having first-class support for single-variable binders should be enough, and I think this is well-understood. But let's try it out, maybe adding multiple-argument functions for
+example -- I mean uncurried ones. Want to give it at try?
 
 STUDENT. Let me see. Well, I want to write something like this, but I know this is wrong.
 
@@ -44,72 +45,61 @@ bindcons : (term -> bindmanyterms) -> bindmanyterms.
 ```
 
 STUDENT. Hmm. That looks quite similar to lists; the parentheses in `cons` are
-different. `nil` gets an extra `term` argument, too....
+different. `nil` gets an extra `term` argument, too...
 
 ADVISOR. Yes... So what is happening here is that `bindcons` takes a single argument,
-adding another binder; and `bindnil` is when we get to the body and don't need any more
-binders, so we just need the body.
+introducing a binder; and `bindnil` is when we get to the body and don't need any more
+binders. Maybe we should name them accordingly.
 
-STUDENT. Oh, so could we generalize their types? Maybe that will help me get a better
+STUDENT. Right, and could we generalize their types? Maybe that will help me get a better
 grasp of it. How is this?
 
 ```makam
 bindmany : type -> type -> type.
-bindbase : Body -> bindmany Variable Body.
-bindnext : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
+body : Body -> bindmany Variable Body.
+bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
 ```
 
-ADVISOR. This looks great! Though let me say, I cheated a bit: in order for the
-constructors to look nicer, we have allowed binding zero variables. We could definitely
-disallow that by changing `bindbase` to take a `Variable -> Body` argument instead, but
-let's just go along with this; it will make all our predicates simpler to write, too.
+ADVISOR. This looks great! We have allowed binding zero variables, but that makes the
+constructors nicer and will simplify our predicates too.
 
-STUDENT. I see. That is quite an interesting datatype. Is there some reference about it?
+STUDENT. I see. That is an interesting datatype. Is there some reference about it?
 
-ADVISOR. Not that I know of -- though I think this is part of PL folklore. After I started
-using this in Makam, I noticed similar constructions in the wild, for example in MTac
-\citep{ziliani2013mtac}, for the parametric HOAS implementation of telescopes.
+ADVISOR. Not that I know of, at least where it is called out as a reusable datatype -- though the
+construction is definitely part of PL folklore. After I started using this in Makam, I noticed
+similar constructions in the wild, for example in MTac \citep{ziliani2013mtac}, for parametric HOAS
+implementation of telescopes in Coq.
 
 STUDENT. Interesting. So how do we work with `bindmany`? I know we can now define
-`lammany` as follows, but how about the typing rules?
+`lammany` now, but how about the typing rule?
 
 ```makam
 lammany : bindmany term term -> term.
 ```
 
-ADVISOR. Well, for the built-in single binding type, we used three built-in
-operations:
+ADVISOR. The rule will be like this, but I'll explain what goes into it:
 
-- variable substitution, encoded through HOAS function application
-- introducing a fresh variable, through the predicate form `x:term -> ...`
-- introducing a new assumption, through the predicate form `P -> ...`
-
-STUDENT. So we should add three operations for `bindmany` that correspond to those, right?
-
-ADVISOR. Correct, and they will be predicates, since that's the only kind of computation
-we can define in λProlog. So let's first do the predicate that generalizes
-application:
-
-```makam
-applymany : bindmany A B -> list A -> B -> prop.
-applymany (bindbase Body) [] Body.
-applymany (bindnext F) (HD :: TL) Body :- applymany (F HD) TL Body.
+```makam-noeval
+arrowmany : list typ -> typ -> typ.
+typeof (lammany F) (arrowmany TS T) :-
+  openmany F (fun xs body =>
+    assumemany typeof xs TS (typeof body T)).
 ```
 
-STUDENT. I see, so given a `bindmany` and a substitution for the variables, perform
-simultaneous substitution to get the body. 
+STUDENT. Let me see if I can read this... `openmany` somehow gives you fresh variables `xs` for the binders, and the `body` of the `lammany`; and then the `assumemany typeof` part is what corresponds to extending the $\Gamma$ context with multiple typing assumptions?
 
-ADVISOR. Right. And a predicate for introducing multiple variables at once. Then you try
-doing multiple assumptions.
+ADVISOR. Yes, and then we typecheck the `body` in that local context. But let's do one step at a
+time. `openmany` is simple; we iterate through the nested binders, introducing one fresh variable at
+a time, and substituting each bound variable for the fresh variable.
 
 ```makam
-intromany : bindmany A B -> (list A -> prop) -> prop.
-intromany (bindbase _) P :- P [].
-intromany (bindnext F) P :- (x:A -> intromany (F x) (fun tl => P (x :: tl))).
+openmany : bindmany A B -> (list A -> B -> prop) -> prop.
+openmany (body Body) P :- P [] Body.
+openmany (bind F) P :-
+  (x:A -> openmany (F x) (fun xs => P (x :: xs))).
 ```
 
-STUDENT. Let me see. So pattern match on the two cases, introducing an extra assumption in
-the `bindnext` case. How does this look?
+STUDENT. I guess `assumemany` is similar, introducing one assumption at a time?
 
 ```makam
 assumemany : (A -> B -> prop) -> list A -> list B -> prop -> prop.
@@ -117,65 +107,38 @@ assumemany P [] [] Q :- Q.
 assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
 ```
 
-ADVISOR. That looks good. Maybe one thing to note is that this last rule might not work in
-other λProlog implementations, as it introduces an assumption for a predicate that is
-not known statically, and that is usually not allowed. That's why I said we should use
-Makam.
-
-STUDENT. Is that a limitation that has to do with the correspondence of λProlog to
-logic? 
-
-ADVISOR. Not really; I believe it is because of implementation concerns mostly -- it
-would significantly complicate designing an abstract machine for the language. But Makam is interpreted, so it
-sidesteps that.
-
-STUDENT. Interesting. So let me try doing the typing rule now. I'll add a type for
-multiple-argument functions. Would this work?
-
 <!--
 ```makam
 arrowmany : list typ -> typ -> typ.
+typeof (lammany F) (arrowmany TS T) :-
+  openmany F (fun xs body =>
+    assumemany typeof xs TS (typeof body T)).
 ```
 -->
 
-```makam-noeval
-arrowmany : list typ -> typ -> typ.
-typeof (lammany F) (arrowmany TS T') :-
-  intromany F (fun xs => applymany F xs Body, assumemany typeof xs TS (typeof Body T')).
+<!--
+TODO. Figure out where to place this.
+```makam
+applymany : bindmany A B -> list A -> B -> prop.
+applymany (body B) [] B.
+applymany (bind F) (X :: XS) B :-
+  applymany (F X) XS B.
 ```
+-->
 
-ADVISOR. Almost. There is an issue here: the unification variable `Body` cannot capture
-the free variables `xs` that get introduced later. A unification variable is allowed to
-capture all the free variables in scope at the point where it is introduced. By
-default, they get introduced when we check whether a rule fires, but here we need to say explicitly that
-`Body` should be introduced when `intromany` uses its predicate argument; Makam uses
-square-bracket notation for that. Oh, and a Makam idiosyncrasy: the parser isn't clever
-enough to tell that the predicate argument to `intromany` is, in fact, a predicate, so we
-can't use the normal predicate syntax for it. There is the syntactic form `pfun` for
-anonymous predicates; save for predicate syntax, it's entirely identical to `fun`. So:
+TODO. Use a reference below and refine wording.
+
+ADVISOR. Yes, exactly! Just a note though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons. Makam is more lax, and so is ELPI, another recent \lamprolog implementation, and allows this form statically, though there are instantiations of `P` that will fail at run-time.
+
+STUDENT. Can I try this out?
 
 ```makam
-typeof (lammany F) (arrowmany TS T') :-
-  intromany F (pfun xs => ([Body]
-    applymany F xs Body, assumemany typeof xs TS (typeof Body T'))).
-```
-
-STUDENT. Oh, so `[Body]` is like existential quantification. I wonder, would it make sense
-to combine `intromany` and `appmany` into one predicate, like this, since we will probably
-always need both the variables and the body of a `bindmany`?
-
-```makam
-openmany : bindmany A B -> (list A -> B -> prop) -> prop.
-openmany F P :- intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
-```
-
-ADVISOR. Yes, that predicate turns out to be quite useful. Let's try out a query now!
-
-```makam
-typeof (lammany (bindnext (fun x => bindnext (fun y => bindbase (tuple [y, x]))))) T ?
+typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T ?
 >> Yes:
 >> T := arrowmany [T1, T2] (product [T2, T1]).
 ```
+
+TODO. (Still WIP below!!)
 
 STUDENT. Great, I think I got the hang of this. We could definitely add a
 multiple-argument application construct `appmany` or define the rules for `eval` for
@@ -186,11 +149,11 @@ do we print them?
 ADVISOR. That's actually quite easy. We just add a concrete name to them. A plain old
 `string`. Our typing rules etc. do not care about it, but we could use it for parsing
 concrete syntax into our abstract binding syntax, or for pretty-printing.... Let's not get
-into that for the time being, but let's just say that we could have defined `bindnext`
-with an extra `string` argument; and then `intromany` and friends would just ignore it.
+into that for the time being, but let's just say that we could have defined `bind`
+with an extra `string` argument; and then `openmany` could just ignore it.
 
-```
-bindnext : string -> (Variable -> bindmany Variable Body) -> bindmany Variable Body.
+```makam-noeval
+bind : string -> (Var -> bindmany Var Body) -> bindmany Var Body.
 ```
 
 STUDENT. Interesting. I would like to see more about this, but maybe some other time. I
@@ -214,7 +177,7 @@ let rec f = f_def and g = g_def in body
 STUDENT. ... we would write something like this:
 
 ```
-letrec (bindnext (fun f => bindnext (fun g => bindbase ([f_def, g_def], body))))
+letrec (bind f g => body ([f_def, g_def], body))
 ```
 
 ADVISOR. Yes, and we need to be careful so that the number of binders matches the number

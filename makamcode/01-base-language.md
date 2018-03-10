@@ -58,7 +58,7 @@ typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
 ADVISOR. Yes! That's exactly right. Makam uses capital letters for unification variables.
 
 STUDENT. I will need help with the lambda typing rule, though. What's the equivalent of
-extending the context as in $\Gamma, x : \tau$ ?
+extending the context as in $\Gamma, \; x : \tau$ ?
 
 ADVISOR. Simple; we introduce a fresh constructor for terms and a new typing rule for it:
 
@@ -115,7 +115,7 @@ LF, since you cannot use polymorphism there?
 
 ADVISOR. Indeed. We will see, once we figure out what our language should be, one thing we
 could do is transcribe our definitions to LF, and then we could even use Beluga
-\citep{pientka2010beluga} to do all our metatheoretic proofs.
+\citep{pientka2010beluga} to do all of our metatheoretic proofs.
 
 STUDENT. Sounds good. So, for tuples, this should work:
 
