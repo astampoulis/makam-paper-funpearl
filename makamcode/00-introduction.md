@@ -13,24 +13,25 @@ months?
 ADVISOR. That sounds like a lot. Why don't you use some kind of metalanguage to implement
 the prototype?
 
-STUDENT. You mean a tool like Racket/PLT Redex \citep{tobin2011languages,felleisen2009semantics}, the K Framework
-\citep{rosu2010overview,ellison2009rewriting}, Spoofax \citep{kats2010spoofax}, Needle \&
-Knot \citep{keuchel2016needle}, or CRSX \citep{rose2011crsx}?
+STUDENT. You mean a tool like Racket/PLT Redex \citep{tobin2011languages,felleisen2009semantics},
+the K Framework \citep{rosu2010overview,ellison2009rewriting}, Spoofax \citep{kats2010spoofax}, or
+CRSX \citep{rose2011crsx}?
 
-ADVISOR. Sure, all fine choices. Though I do not think these frameworks have been used to
-implement a type system as advanced as the one we have in mind, or can handle all the
-binding constructs we will need... I was actually thinking we should use higher-order
-logic programming.
+ADVISOR. Yes, all of those should be good choices. I was actually thinking though that we should
+use higher-order logic programming... it's a formalism that is well-suited to what we want to do,
+since we will need all sorts of different binding constructs, and the type system we are thinking
+about is quite advanced.
 
-STUDENT. Oh, so λProlog \citep{miller1988overview} or LF \citep{pfenning1999system}.
+STUDENT. Oh, so you mean λProlog \citep{miller1988overview} or LF \citep{pfenning1999system}.
 
-ADVISOR. Yes. Actually, a few years back I worked on this new implementation of λProlog
+ADVISOR. Yes. Actually, a few years back a friend of mine worked on this new implementation of λProlog
 just for this purpose -- rapid prototyping of languages. It's called Makam. It should be
-able to handle what we have in mind, and we won't need more than a few hours.
+able to handle what we have in mind nicely.
 
 STUDENT. Sounds great! Anything I can read up on it?
 
-ADVISOR. Not much, unfortunately... Let's just work on this together, it'll be fun.
+ADVISOR. Not much, unfortunately... But I know the language and its standard library quite well, so
+let's work on this together, it'll be fun. I'll show you how things work along the way!
 
 \begin{scenecomment}
 (Our heroes install Makam from --elided for blind reviewing-- and figure out how to run the REPL.)

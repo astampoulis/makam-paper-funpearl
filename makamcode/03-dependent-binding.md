@@ -1,4 +1,30 @@
-# Where our heroes get out of the bind using ad-hoc polymorphism
+# Where the legend of the GADTs is recounted
+
+\it
+
+Once upon a time, the great republic of Haskell lacked one of the
+natural wonders that it is now well-known for, and which is now regularly
+visited by tourists and inhabitants alike. I am talking of course
+about the Great Arboretum of Dangling Trees, known as GADTs for short.
+
+Then settlers from the far-away land of the Dependency started coming
+to the republic, and were speaking of lists that knew their length, of
+terms that knew their types, of collections of elements that were
+heterogeneous, and about the other magical beings of their home.  And
+they set out to build a natural environment for these beings on the
+republic, namely the GADTs that we know and love, to remind them of
+home a little. And they maintained all the careful balances that were
+needed with the other ecosystems of the republic, like the Type Inference,
+and the Coverage Checker, and the Constructs of the Core Calculus, and so
+on.
+
+But then dispatches from another far-away land came to the republic,
+written by an author whose name has been lost in the great sea of
+anonymity and might remain so for all time. They went something like this.
+
+\rm
+
+TODO. \textcolor{red}{This is where I am! Haven't finished revising from here on.}
 
 <!--
 ```makam
@@ -12,8 +38,8 @@ System F?
 
 ADVISOR. It is a subset of System F$_\omega$, actually -- so, the simply typed lambda
 calculus, plus prenex polymorphism, plus simple type constructors of the form `type *
-... * type -> type`. The `prop` sort of propositions is a bit special, since we can only
-add rules to its inhabitants, but otherwise it is just a normal type.
+... * type -> type`. The `prop` sort of propositions is a bit special, since its terms
+represent computations too, but otherwise it is just a normal type.
 
 STUDENT. I see. So, that is quite similar to base Haskell -- without the recent extensions
 with kind definitions \citep{yorgey2012giving} or Type-in-Type \citep{weirich2013system}

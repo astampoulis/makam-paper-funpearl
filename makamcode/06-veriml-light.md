@@ -13,7 +13,7 @@ we want to try out. Shall we get to it?
 ADVISOR. Yes, it is time. So, what we are aiming to do is add a facility for type-safe, heterogeneous meta-programming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a separate object language in a type-safe manner.
 
 STUDENT. Exactly. We'd like our object language to be a formal logic, so our language will
-be similar to Beluga \citep{pientka2010beluga} or VeriML
+be similar to Beluga \citep{beluga-main-reference} or VeriML
 \citep{stampoulis2013veriml}. We'll have to be able to pattern match over the terms of the
 object language, too, so they are runtime entities.... But we don't need to do all of
 that; let's just do a basic version for now, and I can do the rest on my own.
