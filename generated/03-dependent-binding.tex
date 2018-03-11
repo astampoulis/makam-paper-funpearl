@@ -1,192 +1,140 @@
-\section{Where our heroes get out of the bind using ad-hoc
-polymorphism}\label{where-our-heroes-get-out-of-the-bind-using-ad-hoc-polymorphism}
+\section{Where the legend of the GADTs and the Ad-Hoc Polymorphism is
+recounted}\label{where-the-legend-of-the-gadts-and-the-ad-hoc-polymorphism-is-recounted}
 
-\heroSTUDENT{} No dependent types\ldots{} so what is the \foreignlanguage{greek}{λ}Prolog type system?
-Is it some version of System F?
+\identNormal\it
 
-\heroADVISOR{} It is a subset of System F\(_\omega\), actually -- so, the
-simply typed lambda calculus, plus prenex polymorphism, plus simple type
-constructors of the form
-\texttt{type\ *\ ...\ *\ type\ \ensuremath{\to}\ type}. The \texttt{prop}
-sort of propositions is a bit special, since we can only add rules to
-its inhabitants, but otherwise it is just a normal type.
+Once upon a time, our republic lacked one of the natural wonders that it
+is now well-known for, and which is now regularly enjoyed by tourists
+and inhabitants alike. I am talking of course about the Great Arboretum
+of Dangling Trees, known as GADTs for short. Then settlers from the
+far-away land of the Dependency started coming to the republic, and
+started speaking of Lists that Knew Their Length, of Terms that Knew
+Their Types, of Collections of Elements that were Heterogeneous, and
+about the other magical beings of their home. And they set out to build
+a natural environment for these beings on the republic, namely the GADTs
+that we know and love, to remind them of home a little. And their work
+was good and was admired by many.
 
-\heroSTUDENT{} I see. So, that is quite similar to base Haskell -- without the
-recent extensions with kind definitions \citep{yorgey2012giving} or
-Type-in-Type \citep{weirich2013system} -- and it is still possible to
-have dependently typed datatypes there through GADTs.
+A long time passed, and dispatches from another far-away land came to
+the republic, written by authors whose names are now lost in the sea of
+anonymity, and I fear might forever remain so. And the dispatches went
+something like this.
 
-\heroADVISOR{} How so?
+\rm
 
-\heroSTUDENT{} Well, you can use empty datatypes to encode type-level data, by
-exploiting the type parameters. For example, you could do type-level
-natural numbers with \texttt{NatZ\ ::\ *} and
-\texttt{NatS\ ::\ *\ \ensuremath{\to}\ *} and then use them as a
-``dependent'' index for vectors.
+\heroAUTHOR{} \ldots{} The type system in my land of \lamprolog that I speak
+of is a subset of System F\(_\omega\) that should be familiar to you --
+the simply typed lambda calculus, plus prenex polymorphism, plus simple
+type constructors of the form
+\texttt{type\ *\ ...\ *\ type\ \ensuremath{\to}\ type}. There is a
+\texttt{prop} sort for propositions, which is a normal type, but also a
+bit special: its terms are not just values, but are also computations,
+activated when queried upon.
 
-\heroADVISOR{} Oh, right, I forgot about that. Well, we could do the same
-thing in Makam then:
+However, the language of this land has a distinguishing feature, called
+Ad-Hoc Polymorphism. You see, the different rules that define a
+predicate in our language can \emph{specialize} their type variables.
+This can be used to define polymorphic predicates that behave
+differently for different types, like this, where we are essentially
+doing a \texttt{typecase} and we choose a rule depending on the
+\emph{type} of the argument (as opposed to its value):
 
 \begin{verbatim}
-natZ : type.  natS : type \ensuremath{\to} type.
-vector : type \ensuremath{\to} type \ensuremath{\to} type.
-vnil : vector natZ A.
-vcons : A \ensuremath{\to} vector N A \ensuremath{\to} vector (natS N) A.
+print : [A] A \ensuremath{\to} prop.
+print (I: int) :- (... code for printing integers ...)
+print (S: string) :- (... code for printing strings ...)
 \end{verbatim}
 
-\heroSTUDENT{} Oh, so \foreignlanguage{greek}{λ}Prolog supports GADTs? Pattern matching propagates type
-information and everything?
+The local dialects Teyjus
+\citep{teyjus-main-reference,teyjus-2-implementation} and Makam include
+this feature, while it is not encountered in other dialects like ELPI
+\citep{elpi-main-reference}. In the Makam dialect in particular, type
+variables are understood to be parametric by default. In order to make
+them ad-hoc and allow specializing them in rules, we need to denote them
+using the \texttt{{[}A{]}} notation.
 
-\heroADVISOR{} Well, it does not work quite the same way, but yes. The way it
-works in \foreignlanguage{greek}{λ}Prolog is through \emph{ad-hoc polymorphism}: polymorphic type
-variables can be unified at \emph{runtime} rather than at type-checking
-time. So before performing term-level unification, type-level
-unification is done, so uninstantiated type variables can be further
-determined; we can thus ``learn'' and propagate extra type information
-at runtime. So we could do \texttt{map} for vectors as follows:
+Of course, this feature has both to do with the statics as well as the
+dynamics of our language: and while dynamically it means something akin
+to a \texttt{typecase}, statically, it means that rules might specialize
+their type variables, and this remains so for type-checking the whole
+rule.
+
+But alas! Is it not type specialization during pattern matching that is
+an essential feature of the GADTs of your land? Maybe that means that we
+can use Ad-Hoc Polymorphism not just to do \texttt{typecase}, but also
+to work with GADTs in our land? Consider this! The venerable List that
+Knows Its Length:
 
 \begin{verbatim}
-vmap : [N] (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} vector N A \ensuremath{\to} vector N B \ensuremath{\to} prop.
+zero : type. succ : type \ensuremath{\to} type.
+vector : type \ensuremath{\to} type \ensuremath{\to} type.
+vnil : vector A zero.
+vcons : A \ensuremath{\to} vector A N \ensuremath{\to} vector A (succ N).
+\end{verbatim}
+
+And now for the essential \texttt{vmap}:
+
+\begin{verbatim}
+vmap : [N] (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} vector A N \ensuremath{\to} vector B N \ensuremath{\to} prop.
 vmap P vnil vnil.
 vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
 \end{verbatim}
 
-\heroSTUDENT{} Interesting. What is the \texttt{{[}N{]}} notation in the type
-of \texttt{vmap}?
-
-\heroADVISOR{} Well, type arguments for propositions are parametric by
-default, so that notation says that \texttt{N} is ad-hoc polymorphic --
-rules can specialize it further. And the reason Makam requires this
-annotation is that we are used to type arguments being parametric, and
-we can catch some errors that way -- for example this erroneous
-\texttt{foldl} is still well-typed if the type arguments are ad-hoc:
+In each rule, the first argument already specializes the \texttt{N} type
+-- in the first rule to \texttt{zero}, in the second, to
+\texttt{succ\ N}. And so erroneous rules that do not respect this
+specialization would not be accepted as a well-typed saying in our
+language:
 
 \begin{verbatim}
-foldl : (B \ensuremath{\to} A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} B \ensuremath{\to} list A \ensuremath{\to} B \ensuremath{\to} prop.
-foldl P S nil S.
-foldl P S (cons HD TL) S'' :- P HD S S', foldl P S' TL S''.
+vmap P vnil (vcons X XS) :- ...
 \end{verbatim}
 
-\heroSTUDENT{} Oh, the \texttt{HD} argument in the call to \texttt{P} should
-be second instead of first -- and this definition would only work when
-\texttt{A} and \texttt{B} are the same?
+And we should note that in this usage of Ad-Hoc Polymorphism for GADTs,
+it is only the increased precision of the statics that we care about.
+Dynamically, the rules for \texttt{vmap} can perform normal term-level
+unification, and only look at the constructors \texttt{vnil} and
+\texttt{vcons} to see whether each rule applies, rather than relying on
+the \texttt{typecase} aspects we spoke of before.
 
-\heroADVISOR{} Precisely, but we would only find out at runtime, if it was
-called with \texttt{A} and \texttt{B} being different.
-
-\heroSTUDENT{} I see. So is type-level unification a standard \foreignlanguage{greek}{λ}Prolog feature,
-or just Makam?
-
-\heroADVISOR{} It's hard to say. I think it was part of the original design by
-\citet{miller1988overview}, but I have not come upon any examples that
-actively use it so far -- for example, the book by
-\citet{miller2012programming} hardly mentions the feature, and the
-standard \foreignlanguage{greek}{λ}Prolog implementation, Teyjus \citep{nadathur1999system}, has
-a few issues related to polymorphic types that have not allowed me to
-test it there.
-
-\heroSTUDENT{} Well, let's see if it is actually useful for what we were
-trying to do. Maybe we can use this feature for a better encoding of
-\texttt{letrec}? We could do the \texttt{vector} equivalent of
-\texttt{bindmany}, carrying a type argument for the number of binders,
-so that we can reuse that for a \texttt{vector} of definitions:
+Coupling this with the binding constructs that I talked to you earlier
+about, we can build new magical beings, like the \emph{Bind that Knows
+Its Length}:
 
 \begin{verbatim}
-dbind : type \ensuremath{\to} type \ensuremath{\to} type \ensuremath{\to} type. 
-dbindbase : B \ensuremath{\to} dbind A natZ B.
-dbindnext : (A \ensuremath{\to} dbind A N B) \ensuremath{\to} dbind A (natS N) B.
-letrec : dbind term N (vector N term * term) \ensuremath{\to} term.
+vbindmany : (Var: type) (N: type) (Body: type) \ensuremath{\to} type.
+vbody : Body \ensuremath{\to} vbindmany Var zero Body.
+vbind : (Var \ensuremath{\to} vbindmany Var N Body) \ensuremath{\to} vbindmany Var (succ N) Body.
 \end{verbatim}
 
-\heroADVISOR{} That looks good, but I do not like this natural number trick --
-if we could define a new \texttt{nat} kind and specify it in the type of
-\texttt{dbind}, it would be fine, but as it stands\ldots{}. Well, here's
-an idea. The ``dependent'' index could be the right type of
-substitutions for the \texttt{n} variables we introduce, so an
-\texttt{n}-tuple of terms, rather than \texttt{n} itself:
+(Whereby I am using notation of the Makam dialect in my definition of
+\texttt{vbind} that allows me to name parameters, purely for the
+purposes of increased clarity.)
+
+And the \texttt{openmany} version for \texttt{vbindmany}, where the
+rules are exactly as before:
 
 \begin{verbatim}
-dbind : type \ensuremath{\to} type \ensuremath{\to} type \ensuremath{\to} type.
-dbindbase : B \ensuremath{\to} dbind A unit B.
-dbindnext : (A \ensuremath{\to} dbind A T B) \ensuremath{\to} dbind A (A * T) B.
+vopenmany : [N] vbindmany Var N Body \ensuremath{\to} (vector Var N \ensuremath{\to} Body \ensuremath{\to} prop) \ensuremath{\to} prop.
+vopenmany (vbody Body) Q :- Q vnil Body.
+vopenmany (vbind F) Q :-
+  (x:A \ensuremath{\to} vopenmany (F x) (fun xs \ensuremath{\Rightarrow} Q (vcons x xs))).
 \end{verbatim}
 
-\heroSTUDENT{} That should work. Should we also define the equivalent of
-\texttt{vector} with the same type of index?
-
-\heroADVISOR{} Sure. We could just use the tuple type \texttt{T} and do
-pattern-matching on whether it's equal to \texttt{A\ *\ B} or
-\texttt{unit}, but constructor-based pattern matching reads much better.
-Let's call it \texttt{subst} for substitutions:
+We can also showcase the \emph{Accurate Encoding of the Letrec}:
 
 \begin{verbatim}
-subst : type \ensuremath{\to} type \ensuremath{\to} type.
-nil : subst A unit.  cons : A \ensuremath{\to} subst A T \ensuremath{\to} subst A (A * T).
+vletrec : vbindmany term N (vector term N * term) \ensuremath{\to} term.
 \end{verbatim}
 
-\heroSTUDENT{} We are already using \texttt{nil} and \texttt{cons} for lists.
-Should we call the constructors something else?
+And that is the way that the land of \lamprolog supports GADTs, without
+needing the addition of any feature, all thanks to the existing support
+for Ad-Hoc Polymorphism.
 
-\heroADVISOR{} No, this works fine, and we can reuse the syntactic sugar for
-them. Makam allows overloading for all constants. It takes statically
-known type information into account for resolving variables and
-disambiguating between them. Sometimes you have to do a type ascription,
-but I find it works nicely in most cases.
+\identDialog
 
-\heroSTUDENT{} I see. So let me try my hand at writing the helper predicates
-that we'll need for \texttt{dbind} and \texttt{subst}. How do these
-look?
-
-\begin{verbatim}
-intromany : [T] dbind A T B \ensuremath{\to} (subst A T \ensuremath{\to} prop) \ensuremath{\to} prop.
-applymany : [T] dbind A T B \ensuremath{\to} subst A T \ensuremath{\to} B \ensuremath{\to} prop.
-openmany : [T] dbind A T B \ensuremath{\to} (subst A T \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} prop.
-assumemany : [T T'] (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} subst A T \ensuremath{\to} subst B T' \ensuremath{\to} prop \ensuremath{\to} prop.
-map : [T T'] (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} subst A T \ensuremath{\to} subst B T' \ensuremath{\to} prop.
-\end{verbatim}
-
-\heroADVISOR{} These look fine -- they're quite similar to the ones for
-\texttt{bindmany}. \texttt{assumemany} and \texttt{map} do not really
-capture the relationship between \texttt{T} and
-\texttt{T\textquotesingle{}}, which are the same tuples save for
-\texttt{A}s being replaced by \texttt{B}s\ldots{} but we don't have to
-complicate this further; I am sure we could capture that if needed with
-another dependent construction.
-
-\heroSTUDENT{} That's what I was thinking too. Let me see; I think most of
-these are almost identical to what we had before.
-
-\begin{verbatim}
-intromany (dbindbase F) P :- P [].
-intromany (dbindnext F) P :- (x:A \ensuremath{\to} intromany (F x) (pfun t \ensuremath{\Rightarrow} P (x :: t))).
-...
-\end{verbatim}
-
-\begin{scenecomment}
-(Our heroes copy-paste the code from before for the rest of the predicates,
-changing `\texttt{bindbase}' to `\texttt{dbindbase}' and `\texttt{bindnext}' to `\texttt{dbindnext}'.)
-\end{scenecomment}
-
-\heroADVISOR{} Alright, I think we should be able to do \texttt{letrec} now!
-
-\begin{verbatim}
-letrec : dbind term T (subst term T * term) \ensuremath{\to} term.
-typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (pfun xs defsbody \ensuremath{\Rightarrow} [Defs Body]
-    eq defsbody (Defs, Body),
-    assumemany typeof xs TS (map typeof Defs TS),
-    assumemany typeof xs TS (typeof Body T')).
-\end{verbatim}
-
-\heroSTUDENT{} What is \texttt{eq}?
-
-\heroADVISOR{} Oh, that's just to force unification with
-\texttt{(Defs,\ Body)} and get the elements of the tuple -- there's no
-destructuring \texttt{pfun}. \texttt{eq} is just defined as:
-
-\begin{verbatim}
-eq : A \ensuremath{\to} A \ensuremath{\to} prop.  eq X X.
-\end{verbatim}
+\heroTODO{}
+\textcolor{red}{This is where I am! Haven't finished revising from here on.}
 
 \heroSTUDENT{} I see. Say, can we use the same dependency trick to do
 patterns?

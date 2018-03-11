@@ -13,7 +13,7 @@ we want to try out. Shall we get to it?
 ADVISOR. Yes, it is time. So, what we are aiming to do is add a facility for type-safe, heterogeneous meta-programming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a separate object language in a type-safe manner.
 
 STUDENT. Exactly. We'd like our object language to be a formal logic, so our language will
-be similar to Beluga \citep{pientka2010beluga} or VeriML
+be similar to Beluga \citep{beluga-main-reference} or VeriML
 \citep{stampoulis2013veriml}. We'll have to be able to pattern match over the terms of the
 object language, too, so they are runtime entities.... But we don't need to do all of
 that; let's just do a basic version for now, and I can do the rest on my own.
@@ -290,7 +290,7 @@ typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
 ```makam
 typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
-       (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
+       (lamdep _ (fun a => (liftdep (iopen_term (body (
          (object.varmeta f [object.varterm a]))))))))))))) T ?
 >> Yes:
 >> T := (pidep cext (fun t1 => pidep cext (fun t2 => (pidep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f => (pidep (ctyp (object.vartyp t1)) (fun a => (liftdep (cctx_typ [] (object.vartyp t2)))))))))).
@@ -300,10 +300,10 @@ typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
 (eq _FUNCTION 
        (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
-       (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
+       (lamdep _ (fun a => (liftdep (iopen_term (body (
          (object.varmeta f [object.varterm a]))))))))))))),
  typeof (appdep (appdep (appdep _FUNCTION (ityp object.nat)) (ityp object.nat))
-           (iopen_term (bindnext (fun x => bindbase (object.succ x))))) T) ?
+           (iopen_term (bind (fun x => body (object.succ x))))) T) ?
 >> Yes:
 >> T := pidep (ctyp object.nat) (fun a => liftdep (cctx_typ nil object.nat)).
 ```

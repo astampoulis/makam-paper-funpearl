@@ -59,7 +59,7 @@ typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
 unification variables.
 
 \heroSTUDENT{} I will need help with the lambda typing rule, though. What's
-the equivalent of extending the context as in \(\Gamma, x : \tau\) ?
+the equivalent of extending the context as in \(\Gamma, \; x : \tau\) ?
 
 \heroADVISOR{} Simple; we introduce a fresh constructor for terms and a new
 typing rule for it:
@@ -105,12 +105,11 @@ typeof (lam _ (fun x \ensuremath{\Rightarrow} app x x)) T' ?
 tuples to our language? Can we use something like a polymorphic list?
 
 \heroADVISOR{} Sure, \foreignlanguage{greek}{λ}Prolog has polymorphic types and higher-order
-predicates:
+predicates. Here's how lists are defined in the standard library:
 
 \begin{verbatim}
 list : type \ensuremath{\to} type.
-nil : list A.
-cons : A \ensuremath{\to} list A \ensuremath{\to} list A.
+nil : list A. cons : A \ensuremath{\to} list A \ensuremath{\to} list A.
 
 map : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} list A \ensuremath{\to} list B \ensuremath{\to} prop.
 map P nil nil.
@@ -122,14 +121,14 @@ doing this instead of LF, since you cannot use polymorphism there?
 
 \heroADVISOR{} Indeed. We will see, once we figure out what our language
 should be, one thing we could do is transcribe our definitions to LF,
-and then we could even use Beluga \citep{pientka2010beluga} to do all
-our metatheoretic proofs.
+and then we could even use Beluga \citep{beluga-main-reference} to do
+all of our metatheoretic proofs. Or maybe we could use Abella
+\citep{abella-main-reference} directly.
 
 \heroSTUDENT{} Sounds good. So, for tuples, this should work:
 
 \begin{verbatim}
-tuple : list term \ensuremath{\to} term.
-product : list typ \ensuremath{\to} typ.
+tuple : list term \ensuremath{\to} term. product : list typ \ensuremath{\to} typ.
 typeof (tuple ES) (product TS) :- map typeof ES TS.
 \end{verbatim}
 
@@ -154,8 +153,8 @@ eval (tuple ES) (tuple VS) :- map eval ES VS.
 \end{verbatim}
 
 \heroSTUDENT{} OK, let me try my hand at the beta-redex case. I'll just do
-call-by-value. And I think in \foreignlanguage{greek}{λ}Prolog function application is exactly
-capture-avoiding substitution, so this should be fine:
+call-by-value. I know that when using HOAS, function application is
+exactly capture-avoiding substitution, so this should be fine:
 
 \begin{verbatim}
 eval (app E E') V'' :- eval E (lam _ F), eval E' V', eval (F V') V''.

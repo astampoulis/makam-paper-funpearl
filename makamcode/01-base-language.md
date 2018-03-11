@@ -58,7 +58,7 @@ typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
 ADVISOR. Yes! That's exactly right. Makam uses capital letters for unification variables.
 
 STUDENT. I will need help with the lambda typing rule, though. What's the equivalent of
-extending the context as in $\Gamma, x : \tau$ ?
+extending the context as in $\Gamma, \; x : \tau$ ?
 
 ADVISOR. Simple; we introduce a fresh constructor for terms and a new typing rule for it:
 
@@ -98,12 +98,12 @@ typeof (lam _ (fun x => app x x)) T' ?
 STUDENT. Right. So let's see, what else can we do? How about adding tuples to our language?
 Can we use something like a polymorphic list?
 
-ADVISOR. Sure, λProlog has polymorphic types and higher-order predicates:
+ADVISOR. Sure, λProlog has polymorphic types and higher-order predicates. Here's how lists
+are defined in the standard library:
 
 ```makam-noeval
 list : type -> type.
-nil : list A.
-cons : A -> list A -> list A.
+nil : list A. cons : A -> list A -> list A.
 
 map : (A -> B -> prop) -> list A -> list B -> prop.
 map P nil nil.
@@ -115,13 +115,13 @@ LF, since you cannot use polymorphism there?
 
 ADVISOR. Indeed. We will see, once we figure out what our language should be, one thing we
 could do is transcribe our definitions to LF, and then we could even use Beluga
-\citep{pientka2010beluga} to do all our metatheoretic proofs.
+\citep{beluga-main-reference} to do all of our metatheoretic proofs. Or maybe we could
+use Abella \citep{abella-main-reference} directly.
 
 STUDENT. Sounds good. So, for tuples, this should work:
 
 ```makam
-tuple : list term -> term.
-product : list typ -> typ.
+tuple : list term -> term. product : list typ -> typ.
 typeof (tuple ES) (product TS) :- map typeof ES TS.
 ```
 
@@ -143,8 +143,8 @@ eval (lam T F) (lam T F).
 eval (tuple ES) (tuple VS) :- map eval ES VS.
 ```
 
-STUDENT. OK, let me try my hand at the beta-redex case. I'll just do call-by-value. And I
-think in λProlog function application is exactly capture-avoiding substitution, so
+STUDENT. OK, let me try my hand at the beta-redex case. I'll just do call-by-value. I know
+that when using HOAS, function application is exactly capture-avoiding substitution, so
 this should be fine:
 
 ```makam

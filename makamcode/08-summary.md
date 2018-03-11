@@ -18,9 +18,9 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   to the Makam implementation of λProlog. We also depended on a technicality for defining
   an essential predicate\footnote{\texttt{assumemany} uses what is technically referred to
   as a strong-hereditary Harrop formula, whereas Teyjus only supports weak-hereditary
-  Harrop formulas \citep{nadathur1999system}.}. As a result, we have not been able to
+  Harrop formulas \citep{teyjus-main-reference}.}. As a result, we have not been able to
   replicate these in the standard λProlog/Teyjus implementation
-  \citep{nadathur1999system}, though all the features we need are part of the original
+  \citep{teyjus-main-reference}, though all the features we need are part of the original
   λProlog language design \citep{miller1988overview}.
 
 - We defined a generic predicate to perform structural recursion using a very concise
