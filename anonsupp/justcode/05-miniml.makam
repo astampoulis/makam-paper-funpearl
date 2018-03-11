@@ -1,4 +1,5 @@
-%use "04-dbind".
+%use "04-gadts".
+tests: testsuite. %testsuite tests.
 
 forall : (typ -> typ) -> typ.
 lamt : (typ -> term) -> term.
@@ -34,12 +35,6 @@ datatype :
 
 tconstr : typeconstructor T -> subst typ T -> typ.
 
-%type (datatype_declaration
-  (fun tree => dbindnext (fun a => dbindbase
-    [ (* leaf *) [],
-      (* node *) [tconstr tree [a], a, tconstr tree [a]] ]))).
-(* >> (...) : datatype_declaration (typ * unit) (constructor * constructor * unit) *)
-
 constructor_info :
   typeconstructor Arity -> constructor -> dbind typ Arity (list typ) -> prop.
 
@@ -61,8 +56,8 @@ wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
       (wfprogram program')))).
 
 (x:typ -> y:typ -> applymany PolyType [x, y] (arrow y x)) ?
-(* >> Yes: *)
-(* >> PolyType = dbindnext (fun x => dbindnext (fun y => dbindbase (arrow y x))) *)
+>> Yes:
+>> PolyType := dbindnext (fun x => dbindnext (fun y => dbindbase (arrow y x))).
 
 constr : constructor -> list term -> term.
 typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
@@ -95,6 +90,7 @@ wfprogram
         (constr lcons [zero, constr lnil []]))
         (constr lcons [zero, constr lnil []]))
       )))))))))) ?
+>> Yes.
 
 patt_to_term (patt_constr Constructor Args) (constr Constructor Args') S' S :-
   pattlist_to_termlist Args Args' S' S.
@@ -131,4 +127,7 @@ eval (main E) (main V) :-
 
  wfprogram _PROGRAM,
  eval _PROGRAM FINAL) ?
+>> Yes:
+>> FINAL := datatype (datatype_declaration (fun llist => dbindnext (fun a => dbindbase (cons nil (cons (cons a (cons (tconstr llist (cons a nil)) nil)) nil))))) (fun llist => dbindnext (fun lnil => dbindnext (fun lcons => dbindbase (main (constr lcons (cons zero (cons (constr lnil nil) nil))))))).
+
 

@@ -1,4 +1,5 @@
 %use "06-synonyms".
+tests: testsuite. %testsuite tests.
 
 depindex, depclassifier, depvar : type.
 depclassify : depindex -> depclassifier -> prop.
@@ -67,9 +68,8 @@ depsubst_cases Var (ityp Replace)  (object.vartyp Var)  Replace.
 
 typeof (lamdep cext (fun t =>
          (liftdep (iterm (object.lam (object.vartyp t) (fun x => x)))))) T ?
-(* >> Yes!!!!! *)
-(* >> T := pidep cext (fun t => *)
-(* >>        liftdep (ctyp (object.arrow (object.vartyp t) (object.vartyp t)))) *)
+>> Yes:
+>> T := pidep cext (fun t => liftdep (ctyp (object.arrow (object.vartyp t) (object.vartyp t)))).
 
 iopen_term : bindmany object.term object.term -> depindex.
 cctx_typ : list object.typ -> object.typ -> depclassifier.
@@ -94,21 +94,18 @@ depsubst_cases Var (iopen_term XS_E) (object.varmeta Var ES) Result :-
 
 typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
-       (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
+       (lamdep _ (fun a => (liftdep (iopen_term (body (
          (object.varmeta f [object.varterm a]))))))))))))) T ?
-(* >> Yes: *)
-(* >> T := (pidep (cext (fun t1 => pidep (cext (fun t2 => *)
-(* >>      (pidep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f => *)
-(* >>      (pidep (ctyp (object.vartyp t1)) (fun a => *)
-(* >>      (liftdep (cctx_typ [] (object.vartyp t2)))))))))))) *)
+>> Yes:
+>> T := (pidep cext (fun t1 => pidep cext (fun t2 => (pidep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f => (pidep (ctyp (object.vartyp t1)) (fun a => (liftdep (cctx_typ [] (object.vartyp t2)))))))))).
 
 (eq _FUNCTION 
        (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [object.vartyp t1] (object.vartyp t2)) (fun f =>
-       (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
+       (lamdep _ (fun a => (liftdep (iopen_term (body (
          (object.varmeta f [object.varterm a]))))))))))))),
  typeof (appdep (appdep (appdep _FUNCTION (ityp object.nat)) (ityp object.nat))
-           (iopen_term (bindnext (fun x => bindbase (object.succ x))))) T) ?
-(* >> Yes: *)
-(* >> T := pidep (ctyp object.nat) (fun a => liftdep (cctx_typ nil object.nat)) *)
+           (iopen_term (bind (fun x => body (object.succ x))))) T) ?
+>> Yes:
+>> T := pidep (ctyp object.nat) (fun a => liftdep (cctx_typ nil object.nat)).
 

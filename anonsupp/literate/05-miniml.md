@@ -1,11 +1,11 @@
-(*
 # Where our heroes break into song and add more ML features
 
-*)
-
-%use "04-dbind".
-
-(*
+<!--
+```makam
+%use "04-gadts.md".
+tests: testsuite. %testsuite tests.
+```
+-->
 
 \begin{scenecomment}
 (Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)
@@ -16,15 +16,13 @@
 Types are well-formed by construction, an extra `$\vdash \tau \; \text{wf}$' judgment we won't do.''
 \end{verse}
 
-*)
-
+```makam
 forall : (typ -> typ) -> typ.
 lamt : (typ -> term) -> term.
 appt : term -> typ -> term.
 typeof (lamt E) (forall T) :- (a:typ -> typeof (E a) (T a)).
 typeof (appt E T) (TF T) :- typeof E (forall TF).
-
-(*
+```
 
 \begin{verse}
 ``We are now adding top-level programs, to get into datatype declarations. \\
@@ -32,8 +30,7 @@ We would rather do modules, but those would need quite a bit of deliberation. \\
 And we still have contextual types to do, those will require our full attention.''
 \end{verse}
 
-*)
-
+```makam
 program : type.
 wfprogram : program -> prop.
 
@@ -42,9 +39,9 @@ wfprogram (let E P) :- typeof E T, (x:term -> typeof x T -> wfprogram (P x)).
 
 main : term -> program.
 wfprogram (main E) :- typeof E _.
+```
 
-(*
-
+<!--
 First we add polymorphism, therefore extending our simply typed lambda calculus to System
 F. We will only consider the explicit polymorphism case for the time being, leaving type
 inference for later.
@@ -65,11 +62,9 @@ context.
 
 With these additions, we can give a polymorphic type to the identity function:
 
-*)
-
+```makam
 typeof (lamt (fun a => lam a (fun x => x))) T ?
-
-(*
+```
 
 Moving on towards a more ML-like language, we would like to add the option to declare algebraic
 datatypes. We must first introduce a notion of top-level programs, each composed of a
@@ -100,6 +95,7 @@ main : term -> program.
 wfprogram (main E) :-
   typeof E _.
 ```
+-->
 
 ---
 
@@ -108,21 +104,18 @@ for type constructors, like `list`, dependent on their arity; and a type for the
 constructors of a datatype. Also a type for constructor declarations, dependent on the
 number of constructors they introduce:
 
-*)
-
+```makam
 typeconstructor : type -> type.
 constructor : type.
 
 ctor_declaration : type -> type.
 nil : ctor_declaration unit.
 cons : list typ -> ctor_declaration T -> ctor_declaration (constructor * T).
-
-(*
+```
 
 STUDENT. Oh, so each constructor takes multiple arguments. Great. So datatype declarations would be something like this:
 
-*)
-
+```makam
 datatype_declaration : type -> type -> type.
 datatype_declaration : 
   (typeconstructor Arity -> dbind typ Arity (ctor_declaration Ctors)) ->
@@ -130,8 +123,7 @@ datatype_declaration :
 datatype :
   datatype_declaration Arity Ctors ->
   (typeconstructor Arity -> dbind constructor Ctors program) -> program.
-
-(*
+```
 
 ADVISOR. Right, so when declaring a datatype, we introduce a `typeconstructor` variable so
 that we can refer to the type recursively when we declare our constructors. And we also have
@@ -139,42 +131,36 @@ access to the right number of polymorphic variables, matching the `Arity` of the
 constructor. I like how you split out the declaration of the type itself from the "rest of the program" part, since this could become unwieldy otherwise.
 
 STUDENT. That's what I thought too. And I see why you made the type constructors carry their arities -- to keep types well-formed by construction. In order to be able to actually refer to the type constructors, though, don't we need a type former:
-*)
-
+```makam
 tconstr : typeconstructor T -> subst typ T -> typ.
-
-(*
+```
 
 ADVISOR. We do. Also keep in mind that in a richer type system, we probably would need an
 extra kind-checking predicate. But this will do for now. Let's just make sure this is fine --
 I'll write down the declaration of binary trees, to make sure we're not missing anything, and typecheck it with Makam.
 
-*)
-
+```makam-noeval
 %type (datatype_declaration
   (fun tree => dbindnext (fun a => dbindbase
     [ (* leaf *) [],
       (* node *) [tconstr tree [a], a, tconstr tree [a]] ]))).
-(* >> (...) : datatype_declaration (typ * unit) (constructor * constructor * unit) *)
-
-(*
+>> (...) : datatype_declaration (typ * unit) (constructor * constructor * unit)
+```
 
 STUDENT. Looks good. Should we proceed to the actual well-formedness for datatype
 declarations? I think we will need a predicate to keep track of information about a
 constructor -- which datatype it belongs to and what arguments it expects. That way we
 can carry that information in the assumptions context.
 
-*)
-
+```makam
 constructor_info :
   typeconstructor Arity -> constructor -> dbind typ Arity (list typ) -> prop.
+```
 
-(*
-
+<!--
 The order of this is wrong in the narrative, but we need the declaration here for Makam.
 
-*)
-
+```makam
 constructor_polytypes : [Arity Ctors PolyTypes]
   ctor_declaration Ctors -> subst typ Arity ->
   subst (dbind typ Arity (list typ)) PolyTypes -> prop.
@@ -183,13 +169,12 @@ constructor_polytypes [] _ [].
 constructor_polytypes (CtorType :: CtorTypes) TypVars (PolyType :: PolyTypes) :-
   applymany PolyType TypVars CtorType,
   constructor_polytypes CtorTypes TypVars PolyTypes.
-
-(*
+```
+-->
 
 ADVISOR. Yes, and we are mostly ready otherwise:
 
-*)
-
+```makam
 wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
   (dt:(typeconstructor T) -> ([PolyTypes]
     openmany (ConstructorDecls dt) (pfun tvars constructor_decls => (
@@ -197,8 +182,7 @@ wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
     openmany (Program' dt) (pfun constructors program' =>
       assumemany (constructor_info dt) constructors PolyTypes
       (wfprogram program')))).
-
-(*
+```
 
 STUDENT. This is a tricky piece of code. Let me stare at it for a while. (...) What is this new `constructor_polytypes` predicate?
 
@@ -211,13 +195,11 @@ introduce.
 STUDENT. I think I got it. Let me try to implement it.
 
 ADVISOR. Here's a hint.
-*)
-
+```makam
 (x:typ -> y:typ -> applymany PolyType [x, y] (arrow y x)) ?
-(* >> Yes: *)
-(* >> PolyType = dbindnext (fun x => dbindnext (fun y => dbindbase (arrow y x))) *)
-
-(*
+>> Yes:
+>> PolyType := dbindnext (fun x => dbindnext (fun y => dbindbase (arrow y x))).
+```
 
 \begin{scenecomment}
 (After a few attempts, Hagop comes up with the following definition.)
@@ -244,36 +226,32 @@ ADVISOR. Excellent! Let's add the term-level former for constructors, too.
 
 STUDENT. That is easy, compared to what we just did.
 
-*)
-
+```makam
 constr : constructor -> list term -> term.
 typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
   constructor_info TypConstr Constructor PolyType,
   applymany PolyType TypArgs Typs, map typeof Args Typs.
-
-(*
+```
 
 ADVISOR. You're getting the hang of this. Let's do something actually difficult, then; type synonyms.
 
+<!--
 Additional information.
 
 Patterns and their typing rule:
 
-*)
-
+```makam
 patt_constr : constructor -> pattlist T T' -> patt T T'.
 
 typeof (patt_constr Constructor Args) S' S (tconstr TypConstr TypArgs) :-
   constructor_info TypConstr Constructor PolyType,
   applymany PolyType TypArgs Typs,
   typeof Args S' S Typs.
-
-(*
+```
 
 Example: definition of lists and append.
 
-*)
-
+```makam
 wfprogram
   (datatype
     (datatype_declaration (fun llist => dbindnext (fun a => dbindbase (
@@ -293,13 +271,12 @@ wfprogram
         (constr lcons [zero, constr lnil []]))
         (constr lcons [zero, constr lnil []]))
       )))))))))) ?
-
-(*
+>> Yes.
+```
 
 The semantics:
 
-*)
-
+```makam
 patt_to_term (patt_constr Constructor Args) (constr Constructor Args') S' S :-
   pattlist_to_termlist Args Args' S' S.
 
@@ -320,13 +297,11 @@ eval (datatype D P') (datatype D P'') :-
 
 eval (main E) (main V) :-
   eval E V.
-
-(*
+```
 
 Example of evaluation:
 
-*)
-
+```makam
 (eq _PROGRAM (
 
     (datatype
@@ -341,6 +316,8 @@ Example of evaluation:
 
  wfprogram _PROGRAM,
  eval _PROGRAM FINAL) ?
+>> Yes:
+>> FINAL := datatype (datatype_declaration (fun llist => dbindnext (fun a => dbindbase (cons nil (cons (cons a (cons (tconstr llist (cons a nil)) nil)) nil))))) (fun llist => dbindnext (fun lnil => dbindnext (fun lcons => dbindbase (main (constr lcons (cons zero (cons (constr lnil nil) nil))))))).
 
-(*
-*)
+```
+-->
