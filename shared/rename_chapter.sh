@@ -11,4 +11,5 @@ FROM=$1
 TO=$2
 
 git mv makamcode/$1.md makamcode/$2.md
-sed -i -e 's/$1/$2/g' makamcode/*.md
+sed -i -e 's/$1/$2/g' makamcode/*.md main.tex
+

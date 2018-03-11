@@ -2,7 +2,7 @@
 
 <!--
 ```makam
-%use "04-gadts.md".
+%use "05-patterns.md".
 tests: testsuite. %testsuite tests.
 ```
 -->
