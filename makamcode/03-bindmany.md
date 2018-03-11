@@ -2,8 +2,8 @@
 
 <!--
 ```makam
-%use "01-base-language.md".
-test02 : testsuite. %testsuite test02.
+%use "02-stlc.md".
+tests : testsuite. %testsuite tests.
 ```
 -->
 

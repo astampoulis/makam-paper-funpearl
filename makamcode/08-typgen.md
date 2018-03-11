@@ -2,8 +2,8 @@
 
 <!--
 ```makam
-%use "05-type-synonyms.md".
-test07: testsuite. %testsuite test07.
+%use "06-synonyms.md".
+tests: testsuite. %testsuite tests.
 ```
 -->
 

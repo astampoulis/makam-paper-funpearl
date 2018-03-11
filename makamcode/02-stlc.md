@@ -2,7 +2,7 @@
 
 <!--
 ```makam
-test01 : testsuite. %testsuite test01.
+tests : testsuite. %testsuite tests.
 ```
 -->
 

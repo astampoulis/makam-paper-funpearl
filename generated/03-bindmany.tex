@@ -1,0 +1,247 @@
+\section{Where our heroes add parentheses and discover how to do
+multiple
+binding}\label{where-our-heroes-add-parentheses-and-discover-how-to-do-multiple-binding}
+
+\heroSTUDENT{} Still, I feel like we've been playing to the strengths of
+\foreignlanguage{greek}{λ}Prolog\ldots{}. Yes, single-variable binding, substitutions, and so on
+work nicely, but how about any other form of binding? Say, binding
+multiple variables at the same time? We are definitely going to need
+that for the language we have in mind. I was under the impression that
+HOAS encodings do not work for that -- for example, I was reading
+\citet{keuchel2016needle} recently and I remember reading something to
+that end.
+
+\heroADVISOR{} That's not really true; having first-class support for
+single-variable binders should be enough. But let's try it out, maybe
+adding multiple-argument functions for example -- I mean uncurried ones.
+Want to give it a try?
+
+\heroSTUDENT{} Let me see. We want the terms to look roughly like this:
+
+\begin{verbatim}
+lammany (fun x \ensuremath{\Rightarrow} fun y \ensuremath{\Rightarrow} tuple [y, x])
+\end{verbatim}
+
+For the type of \texttt{lammany}, I want to write something like this,
+but I know this is wrong.
+
+\begin{verbatim}
+lammany : (list term \ensuremath{\to} term) \ensuremath{\to} term.
+\end{verbatim}
+
+\heroADVISOR{} Yes, that doesn't quite work. It would introduce a fresh
+variable for \texttt{list}s, not a number of fresh variables for
+\texttt{term}s. HOAS functions are parametric, too, which means we
+cannot even get to the potential elements of the fresh \texttt{list}
+inside the \texttt{term}.
+
+\heroSTUDENT{} Right. So I don't know, instead we want to use a type that
+stands for \texttt{term\ \ensuremath{\to}\ term},
+\texttt{term\ \ensuremath{\to}\ term\ \ensuremath{\to}\ term}, and so on.
+Can we write \texttt{term\ \ensuremath{\to}\ ...\ \ensuremath{\to}\ term}?
+
+\heroADVISOR{} Well, not quite, but we have already defined something similar,
+a type that roughly stands for \texttt{term\ *\ ...\ *\ term}, and we
+did not need anything special for that\ldots{}
+
+\heroSTUDENT{} You mean the \texttt{list} type?
+
+\heroADVISOR{} Exactly. What do you think about this definition?
+
+\begin{verbatim}
+bindmanyterms : type.
+bindnil : term \ensuremath{\to} bindmanyterms.
+bindcons : (term \ensuremath{\to} bindmanyterms) \ensuremath{\to} bindmanyterms.
+\end{verbatim}
+
+\heroSTUDENT{} Hmm. That looks quite similar to lists; the parentheses in
+\texttt{cons} are different. \texttt{nil} gets an extra \texttt{term}
+argument, too\ldots{}
+
+\heroADVISOR{} Yes\ldots{} So what is happening here is that \texttt{bindcons}
+takes a single argument, introducing a binder; and \texttt{bindnil} is
+when we get to the body and don't need any more binders. Maybe we should
+name them accordingly.
+
+\heroSTUDENT{} Right, and could we generalize their types? Maybe that will
+help me get a better grasp of it. How is this?
+
+\begin{verbatim}
+bindmany : type \ensuremath{\to} type \ensuremath{\to} type.
+body : Body \ensuremath{\to} bindmany Variable Body.
+bind : (Variable \ensuremath{\to} bindmany Variable Body) \ensuremath{\to} bindmany Variable Body.
+\end{verbatim}
+
+\heroADVISOR{} This looks great! That is exactly what's in the Makam standard
+library actually. And we can now define \texttt{lammany} using it -- and
+our example term from before.
+
+\begin{verbatim}
+lammany : bindmany term term \ensuremath{\to} term.
+lammany (bind (fun x \ensuremath{\Rightarrow} bind (fun y \ensuremath{\Rightarrow} body (tuple [y,x]))))
+\end{verbatim}
+
+\heroSTUDENT{} I see. That is an interesting datatype. Is there some reference
+about it?
+
+\heroADVISOR{} Not that I know of, at least where it is called out as a
+reusable datatype -- though the construction is definitely part of PL
+folklore. After I started using this in Makam, I noticed similar
+constructions in the wild, for example in MTac \citep{ziliani2013mtac},
+for parametric HOAS implementation of telescopes in Coq.
+
+\heroSTUDENT{} Interesting. So how do we work with \texttt{bindmany}? What's
+the typing rule like?
+
+\heroADVISOR{} The rule is written like this, and I'll explain what goes into
+it:
+
+\begin{verbatim}
+arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
+typeof (lammany F) (arrowmany TS T) :-
+  openmany F (fun xs body \ensuremath{\Rightarrow}
+    assumemany typeof xs TS (typeof body T)).
+\end{verbatim}
+
+\heroSTUDENT{} Let me see if I can read this\ldots{} \texttt{openmany} somehow
+gives you fresh variables \texttt{xs} for the binders, and the
+\texttt{body} of the \texttt{lammany}; and then the
+\texttt{assumemany\ typeof} part is what corresponds to extending the
+\(\Gamma\) context with multiple typing assumptions?
+
+\heroADVISOR{} Yes, and then we typecheck the \texttt{body} in that local
+context that includes the fresh variables and the typing assumptions.
+But let's do one step at a time. \texttt{openmany} is simple; we iterate
+through the nested binders, introducing one fresh variable at a time. We
+also substitute each bound variable for the current fresh variable, so
+that when we get to the body, it only uses the fresh variables we
+introduced.
+
+\begin{verbatim}
+openmany : bindmany A B \ensuremath{\to} (list A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} prop.
+openmany (body Body) Q :- Q [] Body.
+openmany (bind F) Q :-
+  (x:A \ensuremath{\to} openmany (F x) (fun xs \ensuremath{\Rightarrow} Q (x :: xs))).
+\end{verbatim}
+
+\heroSTUDENT{} I see. I guess \texttt{assumemany} is similar, introducing one
+assumption at a time?
+
+\begin{verbatim}
+assumemany : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} list A \ensuremath{\to} list B \ensuremath{\to} prop \ensuremath{\to} prop.
+assumemany P [] [] Q :- Q.
+assumemany P (X :: XS) (T :: TS) Q :- (P X T \ensuremath{\to} assumemany P XS TS Q).
+\end{verbatim}
+
+\heroADVISOR{} Yes, exactly! Just a note though -- \lamprolog typically does
+not allow the definition of \texttt{assumemany}, where a non-concrete
+predicate like \texttt{P\ X\ Y} is used as an assumption, because of
+logical reasons. Makam is more lax, and so is ELPI, another recent
+\lamprolog implementation, and allows this form statically, though there
+are instantiations of \texttt{P} that will fail at run-time.
+
+\heroSTUDENT{} I see. But we could just manually inline
+\texttt{assumemany\ typeof} instead, so that's not a big problem, just
+more verbose. But can I try our typing rule out?
+
+\begin{verbatim}
+typeof (lammany (bind (fun x \ensuremath{\Rightarrow} bind (fun y \ensuremath{\Rightarrow} body (tuple [y, x]))))) T ?
+>> Yes:
+>> T := arrowmany [T1, T2] (product [T2, T1]).
+\end{verbatim}
+
+Great, I think I got the hang of this. We could definitely add a
+multiple-argument application construct \texttt{appmany} or define the
+rules for \texttt{eval} for these. But that would be easy; we can do it
+later. Something that worries me, though -- all these fancy higher-order
+abstract binders, how do we \ldots{} make them concrete? Say, how do we
+print them?
+
+\heroADVISOR{} That's actually quite easy. We just add a concrete name to
+them. A plain old \texttt{string}. Our typing rules etc. do not care
+about it, but we could use it for parsing concrete syntax into our
+abstract binding syntax, or for pretty-printing\ldots{}. Let's not get
+into that for the time being, but let's just say that we could have
+defined \texttt{bind} with an extra \texttt{string} argument,
+representing the concrete name; and then \texttt{openmany} would just
+ignore it.
+
+\begin{verbatim}
+bind : string \ensuremath{\to} (Var \ensuremath{\to} bindmany Var Body) \ensuremath{\to} bindmany Var Body.
+\end{verbatim}
+
+\heroSTUDENT{} Interesting. I would like to see more about this, but maybe
+some other time. I thought of another thing that could be challenging:
+mutually recursive \texttt{let\ rec}s?
+
+\heroADVISOR{} Sure. Let's take this term for example:
+
+\begin{verbatim}
+let rec f = f_def and g = g_def in body
+\end{verbatim}
+
+If we write this in a way where the binding structure is explicit, we
+would bind \texttt{f} and \texttt{g} simultaneously, and then write the
+definitions and the body in that scope:
+
+\begin{verbatim}
+letrec (fun f \ensuremath{\Rightarrow} fun g \ensuremath{\Rightarrow} ([f_def, g_def], body))
+\end{verbatim}
+
+\heroSTUDENT{} I think I know how to do this then! How does this look?
+
+\begin{verbatim}
+letrec : bindmany term (list term * term) \ensuremath{\to} term.
+\end{verbatim}
+
+\heroADVISOR{} Exactly! Want to try writing the typing rules?
+
+\heroSTUDENT{} Maybe something like this?
+
+\begin{verbatim}
+typeof (letrec XS_DefsBody) T' :-
+  openmany XS_DefsBody (fun xs (Defs, Body) \ensuremath{\Rightarrow}
+    assumemany typeof xs TS (map typeof Defs TS),
+    assumemany typeof xs TS (typeof Body T')).
+\end{verbatim}
+
+\heroADVISOR{} Almost! The parser isn't clever enough to tell that the
+predicate argument to \texttt{openmany} is, in fact, a predicate, so we
+can't use the normal predicate syntax for it. We can use the syntactic
+form \texttt{pfun} for writing anonymous predicates instead. Since this
+will be a predicate, you are also able to destructure parameters like
+you do here -- that doesn't work for normal functions in the general
+case, since they need to treat arguments parametrically. And there is an
+actual issue here: could you guess what it is? It has to do with which
+free variables a unification variable is allowed to capture.
+
+\heroSTUDENT{} Not really, but might have something to do with the fresh
+variables that \texttt{openmany} introduces?
+
+\heroADVISOR{} Yes. See, a unification variable is allowed to capture all the
+free variables in scope at the point where it is introduced. By default,
+all unification variables used in a rule get introduced when we check
+whether the rule fires. But here we need to say explicitly that certain
+unification variables need to be introduced when \texttt{openmany} gets
+to use the \texttt{pfun} argument, and has therefore introduced all the
+needed fresh variables. So we have to write the rule like this:
+
+\begin{verbatim}
+typeof (letrec XS_DefsBody) T' :-
+  openmany XS_DefsBody (pfun [XS Defs Body] XS (Defs, Body) \ensuremath{\Rightarrow}
+    assumemany typeof XS TS (map typeof Defs TS),
+    assumemany typeof XS TS (typeof Body T')).
+\end{verbatim}
+
+\heroSTUDENT{} Ah, I see. So the \texttt{{[}XS\ Defs\ Body{]}} notation is
+like existential quantification then.
+
+\heroADVISOR{} Exactly.
+
+\heroSTUDENT{} One thing I noticed with our representation of \texttt{letrec}
+is that we have to be careful so that the number of binders matches the
+number of definitions we give. Our typing rules disallow that, but I
+wonder if there's a way to have a more accurate representation for
+\texttt{letrec} that requires that to be the case?
+
+\heroADVISOR{} Funny you should ask that\ldots{} Let me tell you a story.
