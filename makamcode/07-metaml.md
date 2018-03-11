@@ -2,8 +2,8 @@
 
 <!--
 ```makam
-%use "05-type-synonyms.md".
-test06: testsuite. %testsuite test06.
+%use "06-synonyms.md".
+tests: testsuite. %testsuite tests.
 ```
 -->
 
@@ -92,7 +92,7 @@ term : type. typ : type. typeof : term -> typ -> prop.
 We don't have to copy-paste the code, we can import the previous file into a separate namespace. But let's add natural numbers too.
 
 ```makam
-%import "01-base-language.md" as object.
+%import "02-stlc.md" as object.
 %extend object.
 nat : typ. zero : term. succ : term -> term.
 typeof zero nat.

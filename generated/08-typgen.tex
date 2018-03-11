@@ -1,0 +1,154 @@
+\section{Where our heroes implement type generalization, tying loose
+ends}\label{where-our-heroes-implement-type-generalization-tying-loose-ends}
+
+\begin{verse}
+``We promised we'll do Hindley-Milner, we don't want you to be sad. \\
+This paper is coming to an end soon, and it wasn't all that bad. \\
+\hspace{1em}\vspace{-0.5em} \\
+We'll gather all unification variables, using structural recursion. \\
+And if you haven't guessed it yet, we'll use some term reflection.''
+\end{verse}
+
+\heroSTUDENT{} I have an idea for implementing type generalization for
+polymorphic \texttt{let} in the style of
+\citet{damas1984type,hindley1969principal,milner1978theory}. I remember
+the typing rule looks like this:
+
+\vspace{-1.2em}\begin{mathpar}
+\inferrule{\Gamma \vdash e : \tau \\ \vec{a} = \text{fv}(\tau) - \text{fv}(\Gamma) \\ \Gamma, x : \forall \vec{a}.\tau \vdash e' : \tau'}{\Gamma \vdash \text{let} \; x = e \; \text{in} \; e' : \tau'}
+\end{mathpar}
+
+\heroADVISOR{} Right, and we don't have any side-effectful operations, so, no
+need for a value restriction. Let's assume a predicate for generalizing
+the type, for now; the rest of the rule is easy:
+
+\begin{verbatim}
+generalize : typ \ensuremath{\to} typ \ensuremath{\to} prop.
+let : term \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
+typeof (let E F) T' :-
+  typeof E T, generalize T Tgen, (x:term \ensuremath{\to} typeof x Tgen \ensuremath{\to} typeof (F x) T').
+\end{verbatim}
+
+\heroSTUDENT{} Right, so for generalization, based on the typing rule, we need
+the following ingredients:
+
+\begin{itemize}
+\tightlist
+\item
+  something that picks out free variables from a type -- or, in our
+  setting, uninstantiated unification variables
+\item
+  something that picks out free variables from the local context
+\item
+  a way to turn something that includes unification variables into a
+  \texttt{forall} type
+\end{itemize}
+
+\noindent
+Those look like things that we should be able to do with our generic
+recursion and with the reflective predicates we've been using!
+
+\heroADVISOR{} Indeed! So, I've done this before, and I need to leave for home
+soon, so bear with me for a bit. There's this generic operation in the
+Makam standard library, called \texttt{generic.fold}. It is quite
+similar to \texttt{structural\_recursion}, but it does a fold through a
+term, carrying an accumulator through. Pretty standard, really, and its
+code is similar to what we did already. I'll use it to define a
+predicate that returns \emph{one} unification variable of the right type
+from a term, if at least one exists.
+
+\begin{verbatim}
+findunif : [A B] option B \ensuremath{\to} A \ensuremath{\to} option B \ensuremath{\to} prop.
+findunif (some X) _ (some X).
+findunif none (X : B) (some (X : B)) :- refl.isunif X.
+findunif In X Out :- generic.fold findunif In X Out.
+findunif : [A B] A \ensuremath{\to} B \ensuremath{\to} prop.  findunif T X :- findunif none T (some X).
+\end{verbatim}
+
+\heroSTUDENT{} Oh, the second rule is the important one -- it will only match
+when we encounter a unification variable of the same type as the one we
+require, thanks to type specialization.
+
+\heroADVISOR{} Exactly. Now we add a predicate that, given a specific
+unification variable and a specific term, replaces its occurrences with
+the term. I'll show you later why this operation is necessary. Here I'll
+need another reflective predicate, \texttt{refl.sameunif}, that succeeds
+when its two arguments are the same exact unification variable;
+\texttt{eq} would just unify them, which is not what we want.
+
+\begin{verbatim}
+replaceunif : [A B] A \ensuremath{\to} A \ensuremath{\to} B \ensuremath{\to} B \ensuremath{\to} prop.
+replaceunif Which ToWhat Where Result :- refl.isunif Where,
+  if (refl.sameunif Which Where) then (eq (dyn Result) (dyn ToWhat))
+  else (eq Result Where).
+replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
+  structural_recursion (replaceunif Which ToWhat) Where Result.
+\end{verbatim}
+
+\heroADVISOR{} And last, we'll need an auxiliary predicate that tells us
+whether a unification variable exists within a term. You can do that
+yourself; it's similar to the above.
+
+\heroSTUDENT{} Yes, I think I know how to do that.
+
+\begin{verbatim}
+hasunif : [A B] B \ensuremath{\to} bool \ensuremath{\to} A \ensuremath{\to} bool \ensuremath{\to} prop.
+hasunif _ true _ true.
+hasunif X false Y true :- refl.sameunif X Y.
+hasunif X In Y Out :- generic.fold (hasunif X) In Y Out.
+hasunif : [A B] A \ensuremath{\to} B \ensuremath{\to} prop. hasunif Term Var :- hasunif Var false Term true.
+\end{verbatim}
+
+\heroADVISOR{} OK, we are now mostly ready to implement \texttt{generalize}.
+We'll do this recursively. The base case is when there are no
+unification variables within a type left:
+
+\begin{verbatim}
+generalize T T :- not(findunif T X).
+\end{verbatim}
+
+\heroSTUDENT{} Ah, I see what you are getting at. For the recursive case, we
+will pick out the first unification variable that we come upon using
+\texttt{findunif}. We will generalize over it using \texttt{replaceunif}
+and then proceed to the rest. But don't we have to skip over the
+unification variables that are in the \(\Gamma\) environment?
+
+\heroADVISOR{} Well, that's the last hurdle. Let's assume a predicate that
+gives us all the types in the environment, and write the recursive case
+down:
+
+\begin{verbatim}
+get_types_in_environment : [A] A \ensuremath{\to} prop.
+generalize T Res :- 
+  findunif T Var, get_types_in_environment GammaTypes,
+  (x:typ \ensuremath{\to} (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
+  if (hasunif GammaTypes Var) then (eq Res (T'' Var)) else (eq Res (forall T'')).
+\end{verbatim}
+
+\heroSTUDENT{} Oh, clever. But what should
+\texttt{get\_types\_in\_environment} be? Don't we have to go back and
+thread a list of types through our \texttt{typeof} predicate, every time
+we introduce a new \texttt{typeof\ x\ T\ \ensuremath{\to}} assumption?
+
+\heroADVISOR{} Well, we came this far without rewriting our rules, so it's a
+shame to do that now! Maybe we'll be excused to use yet another
+reflective predicate that does what we want? There is a way to get a
+list of all the local assumptions for the \texttt{typeof} predicate; it
+turns out that all the rules and connectives are normal \foreignlanguage{greek}{λ}Prolog terms
+like any other, so there's not really much magic to it. And those
+assumptions will include just the types in \(\Gamma\)\ldots{}.
+
+\begin{verbatim}
+get_types_in_environment Assumptions :-
+  refl.assume_get (typeof : term \ensuremath{\to} typ \ensuremath{\to} prop) Assumptions.
+\end{verbatim}
+
+\heroSTUDENT{} Wait. It can't be.
+
+\begin{verbatim}
+typeof (let (lam _ (fun x \ensuremath{\Rightarrow} let x (fun y \ensuremath{\Rightarrow} y))) (fun id \ensuremath{\Rightarrow} id)) T ?
+>> Yes:
+>> T := forall (fun a \ensuremath{\Rightarrow} arrow a a).
+\end{verbatim}
+
+\heroADVISOR{} And yet, it can.

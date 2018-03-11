@@ -1,4 +1,5 @@
-%use "05-smallml".
+%use "05-miniml".
+tests: testsuite. %testsuite tests.
 
 type_synonym : dbind typ T typ -> (typeconstructor T -> program) -> program.
 type_synonym_info : typeconstructor T -> dbind typ T typ -> prop.
@@ -47,7 +48,7 @@ wfprogram (
     (tuple [])
   ))
 ))) ?
-(* >> Yes. *)
+>> Yes.
 
 wfprogram (
   (type_synonym (dbindnext (fun a => dbindbase (product [a, a])))
@@ -61,5 +62,5 @@ wfprogram (
     (tuple [])
   ))
 ))) ?
-(* >> Impossible. *)
+>> Impossible.
 

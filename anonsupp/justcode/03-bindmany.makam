@@ -1,39 +1,46 @@
 %use "02-stlc".
-
-bindmanyterms : type.
-bindnil : term -> bindmanyterms.
-bindcons : (term -> bindmanyterms) -> bindmanyterms.
+tests : testsuite. %testsuite tests.
 
 bindmany : type -> type -> type.
-bindbase : Body -> bindmany Variable Body.
-bindnext : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
+body : Body -> bindmany Variable Body.
+bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
 
 lammany : bindmany term term -> term.
+refl.typstring (lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))) "term" ?
+>> Yes.
 
-applymany : bindmany A B -> list A -> B -> prop.
-applymany (bindbase Body) [] Body.
-applymany (bindnext F) (HD :: TL) Body :- applymany (F HD) TL Body.
-
-intromany : bindmany A B -> (list A -> prop) -> prop.
-intromany (bindbase _) P :- P [].
-intromany (bindnext F) P :- (x:A -> intromany (F x) (fun tl => P (x :: tl))).
+openmany : bindmany A B -> (list A -> B -> prop) -> prop.
+openmany (body Body) Q :- Q [] Body.
+openmany (bind F) Q :-
+  (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
 
 assumemany : (A -> B -> prop) -> list A -> list B -> prop -> prop.
 assumemany P [] [] Q :- Q.
-assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
+assumemany P (X :: XS) (T :: TS) Q :- (P X T -> assumemany P XS TS Q).
 
 arrowmany : list typ -> typ -> typ.
+typeof (lammany F) (arrowmany TS T) :-
+  openmany F (fun xs body =>
+    assumemany typeof xs TS (typeof body T)).
 
-typeof (lammany F) (arrowmany TS T') :-
-  intromany F (pfun xs => ([Body]
-    applymany F xs Body, assumemany typeof xs TS (typeof Body T'))).
+applymany : bindmany A B -> list A -> B -> prop.
+applymany (body B) [] B.
+applymany (bind F) (X :: XS) B :-
+  applymany (F X) XS B.
 
-openmany : bindmany A B -> (list A -> B -> prop) -> prop.
-openmany F P :- intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
-
-typeof (lammany (bindnext (fun x => bindnext (fun y => bindbase (tuple [y, x]))))) T ?
-(* >> Yes: *)
-(* >> T := arrowmany [T1, T2] (product [T2, T1]) *)
+typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T ?
+>> Yes:
+>> T := arrowmany [T1, T2] (product [T2, T1]).
 
 letrec : bindmany term (list term * term) -> term.
+
+typeof (letrec XS_DefsBody) T' :-
+  openmany XS_DefsBody (pfun [XS Defs Body] XS (Defs, Body) =>
+    assumemany typeof XS TS (map typeof Defs TS),
+    assumemany typeof XS TS (typeof Body T')).
+
+typeof (letrec (bind (fun f => body ([lam T (fun x => app f (app f x))], f)))) T' ?
+>> Yes:
+>> T' := arrow T T,
+>> T := T.
 

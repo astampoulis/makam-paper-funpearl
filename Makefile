@@ -5,7 +5,7 @@ all: build
 
 build-to-tmp:
 	@ mkdir -p tmp/
-	@ ./convert_literate_files.sh makamcode generated
+	@ ./shared/convert_literate_files.sh makamcode generated
 	@ $(PDFLATEX) main.tex
 	@ $(BIBTEX) tmp/main.aux
 	@ $(PDFLATEX) main.tex
@@ -32,6 +32,6 @@ watch:
 	@ (find makamcode -name \*.md; find . -name main.tex) | entr make test docker-build
 
 test:
-	@ bash -c "set -ex; for i in 01 02 03 04 05 06 07; do echo \"run_tests test\$$i ? \" | makam makamcode/\$$i-*.md -; done"
+	@ ./shared/run_tests.sh
 
 .PHONY: all build build-to-tmp clean tmpclean watch test docker-build

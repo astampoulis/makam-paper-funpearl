@@ -2,8 +2,8 @@
 
 <!--
 ```makam
-%use "02-binding-forms.md".
-test03: testsuite. %testsuite test03.
+%use "03-bindmany.md".
+tests: testsuite. %testsuite tests.
 ```
 -->
 

@@ -2,8 +2,8 @@
 
 <!--
 ```makam
-%use "03-dependent-binding.md".
-test04: testsuite. %testsuite test04.
+%use "04-gadts.md".
+tests: testsuite. %testsuite tests.
 ```
 -->
 

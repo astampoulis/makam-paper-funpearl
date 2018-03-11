@@ -1,18 +1,43 @@
 %use "03-bindmany".
+tests: testsuite. %testsuite tests.
 
-natZ : type.  natS : type -> type.
+zero : type. succ : type -> type.
 vector : type -> type -> type.
-vnil : vector natZ A.
-vcons : A -> vector N A -> vector (natS N) A.
+vnil : vector A zero.
+vcons : A -> vector A N -> vector A (succ N).
 
-vmap : [N] (A -> B -> prop) -> vector N A -> vector N B -> prop.
+vmap : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop.
 vmap P vnil vnil.
 vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
 
-dbind : type -> type -> type -> type. 
-dbindbase : B -> dbind A natZ B.
-dbindnext : (A -> dbind A N B) -> dbind A (natS N) B.
-letrec : dbind term N (vector N term * term) -> term.
+vbindmany : (Var: type) (N: type) (Body: type) -> type.
+vbody : Body -> vbindmany Var zero Body.
+vbind : (Var -> vbindmany Var N Body) -> vbindmany Var (succ N) Body.
+
+vopenmany : [N] vbindmany Var N Body -> (vector Var N -> Body -> prop) -> prop.
+vopenmany (vbody Body) Q :- Q vnil Body.
+vopenmany (vbind F) Q :-
+  (x:A -> vopenmany (F x) (fun xs => Q (vcons x xs))).
+
+vletrec : vbindmany term N (vector term N * term) -> term.
+
+vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
+vapplymany (vbody Body) vnil Body.
+vapplymany (vbind F) (vcons X XS) Body :- vapplymany (F X) XS Body.
+
+vassumemany : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop -> prop.
+vassumemany P vnil vnil Q :- Q.
+vassumemany P (vcons X XS) (vcons Y YS) Q :- (P X Y -> vassumemany P XS YS Q).
+
+typeof (vletrec XS_DefsBody) T' :-
+  vopenmany XS_DefsBody (pfun [XS Defs Body] XS (Defs, Body) =>
+    vassumemany typeof XS TS (vmap typeof Defs TS),
+    vassumemany typeof XS TS (typeof Body T')).
+
+typeof (vletrec (vbind (fun f => vbody (vcons (lam T (fun x => app f (app f x))) vnil, f)))) T' ?
+>> Yes:
+>> T' := arrow T T,
+>> T := T.
 
 dbind : type -> type -> type -> type.
 dbindbase : B -> dbind A unit B.
@@ -112,6 +137,6 @@ eval (case_or_else Scrutinee Pattern Body Else) V :-
   zero)),
  typeof _PRED T,
  eval (app _PRED zero) PRED0, eval (app _PRED (succ (succ zero))) PRED2) ?
-(* >> Yes: *)
-(* >> T := arrow nat nat, PRED0 := zero, PRED2 := succ zero *)
+>> Yes:
+>> T := arrow nat nat, PRED0 := zero, PRED2 := succ zero.
 
