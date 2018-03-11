@@ -1,30 +1,4 @@
-# Where the legend of the GADTs is recounted
-
-\it
-
-Once upon a time, the great republic of Haskell lacked one of the
-natural wonders that it is now well-known for, and which is now regularly
-visited by tourists and inhabitants alike. I am talking of course
-about the Great Arboretum of Dangling Trees, known as GADTs for short.
-
-Then settlers from the far-away land of the Dependency started coming
-to the republic, and were speaking of lists that knew their length, of
-terms that knew their types, of collections of elements that were
-heterogeneous, and about the other magical beings of their home.  And
-they set out to build a natural environment for these beings on the
-republic, namely the GADTs that we know and love, to remind them of
-home a little. And they maintained all the careful balances that were
-needed with the other ecosystems of the republic, like the Type Inference,
-and the Coverage Checker, and the Constructs of the Core Calculus, and so
-on.
-
-But then dispatches from another far-away land came to the republic,
-written by an author whose name has been lost in the great sea of
-anonymity and might remain so for all time. They went something like this.
-
-\rm
-
-TODO. \textcolor{red}{This is where I am! Haven't finished revising from here on.}
+# Where the legend of the GADTs and the Ad-Hoc Polymorphism is recounted
 
 <!--
 ```makam
@@ -33,160 +7,154 @@ test03: testsuite. %testsuite test03.
 ```
 -->
 
-STUDENT. No dependent types... so what is the λProlog type system? Is it some version of
-System F?
+\identNormal\it
 
-ADVISOR. It is a subset of System F$_\omega$, actually -- so, the simply typed lambda
-calculus, plus prenex polymorphism, plus simple type constructors of the form `type *
-... * type -> type`. The `prop` sort of propositions is a bit special, since its terms
-represent computations too, but otherwise it is just a normal type.
+Once upon a time, our republic lacked one of the natural wonders that it is now well-known for, and
+which is now regularly enjoyed by tourists and inhabitants alike. I am talking of course about the
+Great Arboretum of Dangling Trees, known as GADTs for short. Then settlers from the far-away land of
+the Dependency started coming to the republic, and started speaking of Lists that Knew Their Length,
+of Terms that Knew Their Types, of Collections of Elements that were Heterogeneous, and about the
+other magical beings of their home.  And they set out to build a natural environment for these
+beings on the republic, namely the GADTs that we know and love, to remind them of home a little. And
+their work was good and was admired by many.
 
-STUDENT. I see. So, that is quite similar to base Haskell -- without the recent extensions
-with kind definitions \citep{yorgey2012giving} or Type-in-Type \citep{weirich2013system}
--- and it is still possible to have dependently typed datatypes there through GADTs.
+A long time passed, and dispatches from another far-away land came to the republic, written by authors
+whose names are now lost in the sea of anonymity, and I fear might forever remain so. And the
+dispatches went something like this.
 
-ADVISOR. How so?
+\rm
 
-STUDENT. Well, you can use empty datatypes to encode type-level data, by exploiting the
-type parameters. For example, you could do type-level natural numbers with `NatZ :: *` and `NatS :: * -> *` and then use them as a "dependent" index for vectors.
+AUTHOR. ... The type system in my land of \lamprolog that I speak of is a subset of System
+F$_\omega$ that should be familiar to you -- the simply typed lambda calculus, plus prenex
+polymorphism, plus simple type constructors of the form `type * ... * type -> type`. There is a
+`prop` sort for propositions, which is a normal type, but also a bit special: its terms are not just
+values, but are also computations, activated when queried upon.
 
-<!--
-```haskell
-data NatZ
-data NatS a
-data Vector n a =
-  VNil :: Vector NatZ a
-  VCons :: a -> Vector n a -> Vector (NatS a)
+However, the language of this land has a distinguishing feature, called Ad-Hoc Polymorphism. You
+see, the different rules that define a predicate in our language can *specialize* their type
+variables. This can be used to define polymorphic predicates that behave differently for different
+types, like this, where we are essentially doing a `typecase` and we choose a rule depending on the
+*type* of the argument (as opposed to its value):
+
 ```
--->
+print : [A] A -> prop.
+print (I: int) :- (... code for printing integers ...)
+print (S: string) :- (... code for printing strings ...)
+```
 
-ADVISOR. Oh, right, I forgot about that. Well, we could do the same thing in Makam then:
+The local dialects Teyjus \citep{teyjus-main-reference,teyjus-2-implementation} and Makam include
+this feature, while it is not encountered in other dialects like ELPI
+\citep{elpi-main-reference}. In the Makam dialect in particular, type variables are understood to be
+parametric by default. In order to make them ad-hoc and allow specializing them in rules, we need to
+denote them using the `[A]` notation.
+
+Of course, this feature has both to do with the statics as well as the dynamics of our language: and
+while dynamically it means something akin to a `typecase`, statically, it means that rules might
+specialize their type variables, and this remains so for type-checking the whole rule.
+
+But alas! Is it not type specialization during pattern matching that is an essential feature of the
+GADTs of your land?  Maybe that means that we can use Ad-Hoc Polymorphism not just to do `typecase`,
+but also to work with GADTs in our land? Consider this! The venerable List that Knows Its Length:
 
 ```makam
-natZ : type.  natS : type -> type.
+zero : type. succ : type -> type.
 vector : type -> type -> type.
-vnil : vector natZ A.
-vcons : A -> vector N A -> vector (natS N) A.
+vnil : vector A zero.
+vcons : A -> vector A N -> vector A (succ N).
 ```
 
-STUDENT. Oh, so λProlog supports GADTs? Pattern matching propagates type information and
-everything?
-
-ADVISOR. Well, it does not work quite the same way, but yes. The way it works in λProlog
-is through *ad-hoc polymorphism*: polymorphic type variables can be unified at *runtime*
-rather than at type-checking time. So before performing term-level unification, type-level
-unification is done, so uninstantiated type variables can be further determined; we can
-thus "learn" and propagate extra type information at runtime. So we could do `map` for vectors as follows:
+And now for the essential `vmap`:
 
 ```makam
-vmap : [N] (A -> B -> prop) -> vector N A -> vector N B -> prop.
+vmap : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop.
 vmap P vnil vnil.
 vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
 ```
 
-STUDENT. Interesting. What is the `[N]` notation in the type of `vmap`?
-
-ADVISOR. Well, type arguments for propositions are parametric by default, so that notation
-says that `N` is ad-hoc polymorphic -- rules can specialize it further. And the reason
-Makam requires this annotation is that we are used to type arguments being parametric, and
-we can catch some errors that way -- for example this erroneous `foldl` is still well-typed
-if the type arguments are ad-hoc:
+In each rule, the first argument already specializes the `N` type -- in the first rule to `zero`,
+in the second, to `succ N`. And so erroneous rules that do not respect this specialization
+would not be accepted as a well-typed saying in our language:
 
 ```
-foldl : (B -> A -> B -> prop) -> B -> list A -> B -> prop.
-foldl P S nil S.
-foldl P S (cons HD TL) S'' :- P HD S S', foldl P S' TL S''.
+vmap P vnil (vcons X XS) :- ...
 ```
 
-STUDENT. Oh, the `HD` argument in the call to `P` should be second instead of first -- and
-this definition would only work when `A` and `B` are the same?
+And we should note that in this usage of Ad-Hoc Polymorphism for GADTs, it is only the increased
+precision of the statics that we care about. Dynamically, the rules for `vmap` can perform
+normal term-level unification, and only look at the constructors `vnil` and `vcons` to see
+whether each rule applies, rather than relying on the `typecase` aspects we spoke of before.
 
-ADVISOR. Precisely, but we would only find out at runtime, if it was called with `A` and
-`B` being different.
-
-STUDENT. I see. So is type-level unification a standard λProlog feature, or just
-Makam?
-
-ADVISOR. It's hard to say. I think it was part of the original design by
-\citet{miller1988overview}, but I have not come upon any examples that actively use it so
-far -- for example, the book by \citet{miller2012programming} hardly mentions the feature,
-and the standard λProlog implementation, Teyjus \citep{nadathur1999system}, has a few
-issues related to polymorphic types that have not allowed me to test it there.
-
-STUDENT. Well, let's see if it is actually useful for what we were trying to do. Maybe we
-can use this feature for a better encoding of `letrec`? We could do the `vector`
-equivalent of `bindmany`, carrying a type argument for the number of binders, so that we
-can reuse that for a `vector` of definitions:
+Coupling this with the binding constructs that I talked to you earlier about, we can build
+new magical beings, like the *Bind that Knows Its Length*:
 
 ```makam
-dbind : type -> type -> type -> type. 
-dbindbase : B -> dbind A natZ B.
-dbindnext : (A -> dbind A N B) -> dbind A (natS N) B.
-letrec : dbind term N (vector N term * term) -> term.
+vbindmany : (Var: type) (N: type) (Body: type) -> type.
+vbody : Body -> vbindmany Var zero Body.
+vbind : (Var -> vbindmany Var N Body) -> vbindmany Var (succ N) Body.
 ```
 
-ADVISOR. That looks good, but I do not like this natural number trick -- if we could
-define a new `nat` kind and specify it in the type of `dbind`, it would be fine, but as it
-stands.... Well, here's an idea. The "dependent" index could be the right type of substitutions
-for the `n` variables we introduce, so an `n`-tuple of terms, rather than `n` itself:
+(Whereby I am using notation of the Makam dialect in my definition of `vbind` that allows me to name
+parameters, purely for the purposes of increased clarity.)
 
+And the `openmany` version for `vbindmany`, where the rules are exactly as before:
+
+```makam
+vopenmany : [N] vbindmany Var N Body -> (vector Var N -> Body -> prop) -> prop.
+vopenmany (vbody Body) Q :- Q vnil Body.
+vopenmany (vbind F) Q :-
+  (x:A -> vopenmany (F x) (fun xs => Q (vcons x xs))).
+```
+
+We can also showcase the *Accurate Encoding of the Letrec*:
+
+```makam
+vletrec : vbindmany term N (vector term N * term) -> term.
+```
+
+And that is the way that the land of \lamprolog supports GADTs, without needing the addition
+of any feature, all thanks to the existing support for Ad-Hoc Polymorphism.
+
+\identDialog
+
+<!--
+```makam
+vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
+vapplymany (vbody Body) vnil Body.
+vapplymany (vbind F) (vcons X XS) Body :- vapplymany (F X) XS Body.
+
+vassumemany : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop -> prop.
+vassumemany P vnil vnil Q :- Q.
+vassumemany P (vcons X XS) (vcons Y YS) Q :- (P X Y -> vassumemany P XS YS Q).
+
+typeof (vletrec XS_DefsBody) T' :-
+  vopenmany XS_DefsBody (pfun [XS Defs Body] XS (Defs, Body) =>
+    vassumemany typeof XS TS (vmap typeof Defs TS),
+    vassumemany typeof XS TS (typeof Body T')).
+
+typeof (vletrec (vbind (fun f => vbody (vcons (lam T (fun x => app f (app f x))) vnil, f)))) T' ?
+>> Yes:
+>> T' := arrow T T,
+>> T := T.
+```
+-->
+
+TODO. \textcolor{red}{This is where I am! Haven't finished revising from here on.}
+
+<!--
 ```makam
 dbind : type -> type -> type -> type.
 dbindbase : B -> dbind A unit B.
 dbindnext : (A -> dbind A T B) -> dbind A (A * T) B.
-```
 
-STUDENT. That should work. Should we also define the equivalent of `vector` with the same
-type of index?
-
-ADVISOR. Sure. We could just use the tuple type `T` and do pattern-matching on whether
-it's equal to `A * B` or `unit`, but constructor-based pattern matching reads much
-better. Let's call it `subst` for substitutions:
-
-```makam
 subst : type -> type -> type.
 nil : subst A unit.  cons : A -> subst A T -> subst A (A * T).
-```
 
-STUDENT. We are already using `nil` and `cons` for lists. Should we call the constructors
-something else?
-
-ADVISOR. No, this works fine, and we can reuse the syntactic sugar for them. Makam allows
-overloading for all constants. It takes statically known type information into account for
-resolving variables and disambiguating between them. Sometimes you have to do a type
-ascription, but I find it works nicely in most cases.
-
-STUDENT. I see. So let me try my hand at writing the helper predicates that we'll need for `dbind` and `subst`. How do these look?
-
-```makam
 intromany : [T] dbind A T B -> (subst A T -> prop) -> prop.
 applymany : [T] dbind A T B -> subst A T -> B -> prop.
 openmany : [T] dbind A T B -> (subst A T -> B -> prop) -> prop.
 assumemany : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop -> prop.
 map : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop.
-```
 
-ADVISOR. These look fine -- they're quite similar to the ones for `bindmany`. `assumemany`
-and `map` do not really capture the relationship between `T` and `T'`, which are the same
-tuples save for `A`s being replaced by `B`s... but we don't have to complicate this
-further; I am sure we could capture that if needed with another dependent construction.
-
-STUDENT. That's what I was thinking too. Let me see; I think most of these are almost
-identical to what we had before.
-
-```makam-noeval
-intromany (dbindbase F) P :- P [].
-intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
-...
-```
-
-\begin{scenecomment}
-(Our heroes copy-paste the code from before for the rest of the predicates,
-changing `\texttt{bindbase}' to `\texttt{dbindbase}' and `\texttt{bindnext}' to `\texttt{dbindnext}'.)
-\end{scenecomment}
-
-<!--
-```makam
 intromany (dbindbase F) P :- P [].
 intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
 
@@ -201,11 +169,7 @@ assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
 
 map P [] [].
 map P (X :: XS) (Y :: YS) :- P X Y, map P XS YS.
-```
--->
 
-ADVISOR. Alright, I think we should be able to do `letrec` now!
-```makam
 letrec : dbind term T (subst term T * term) -> term.
 typeof (letrec XS_DefsBody) T' :-
   openmany XS_DefsBody (pfun xs defsbody => [Defs Body]
@@ -213,15 +177,7 @@ typeof (letrec XS_DefsBody) T' :-
     assumemany typeof xs TS (map typeof Defs TS),
     assumemany typeof xs TS (typeof Body T')).
 ```
-
-STUDENT. What is `eq`?
-
-ADVISOR. Oh, that's just to force unification with `(Defs, Body)` and get the elements of
-the tuple -- there's no destructuring `pfun`. `eq` is just defined as:
-
-```
-eq : A -> A -> prop.  eq X X.
-```
+-->
 
 STUDENT. I see. Say, can we use the same dependency trick to do patterns?
 

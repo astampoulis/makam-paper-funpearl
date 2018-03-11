@@ -84,6 +84,9 @@
 \newcommand\heroAUDIENCE[0]{\hero{AUDIENCE}}
 \newcommand\heroAUTHOR[0]{\hero{ANONYMOUS AUTHOR}}
 \newenvironment{scenecomment}{\em\noindent}{}
+\newcommand\identDialog[0]{\setlength{\leftskip}{1em}\setlength{\parindent}{-1em}}
+\newcommand\identNormal[0]{\setlength{\leftskip}{0em}\setlength{\parindent}{0em}}
+\newenvironment{normalident}{\identNormal}{\identDialog}
 
 % =====
 % used for highlighting from pandoc
@@ -149,10 +152,9 @@ literate development.
 \maketitle
 
 {
-  % Hanging Indent
-  \setlength{\leftskip}{1em}
-  \setlength{\parindent}{-1em}
   \setlength{\parskip}{3pt}
+  % Hanging Indent
+  \identDialog{}
 
   % No Indent
   % \setlength{\parindent}{0em}

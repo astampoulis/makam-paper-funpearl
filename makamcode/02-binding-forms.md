@@ -241,4 +241,4 @@ that the number of binders matches the number of definitions we give. Our typing
 that, but I wonder if there's a way to have a more accurate representation for `letrec` that
 requires that to be the case?
 
-ADVISOR. Funny you should ask that... Let me tell you something surprising.
+ADVISOR. Funny you should ask that... Let me tell you a story.
