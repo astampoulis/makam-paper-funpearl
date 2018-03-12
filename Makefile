@@ -6,6 +6,7 @@ all: build
 build-to-tmp:
 	@ mkdir -p tmp/
 	@ ./shared/convert_literate_files.sh makamcode generated
+	@ shuf -n1 /usr/share/dict/words > generated/randomword.tex
 	@ $(PDFLATEX) main.tex
 	@ $(BIBTEX) tmp/main.aux
 	@ $(PDFLATEX) main.tex

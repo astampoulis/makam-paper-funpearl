@@ -2,7 +2,7 @@
 
 <!--
 ```makam
-%use "05-miniml.md".
+%use "06-miniml.md".
 tests: testsuite. %testsuite tests.
 ```
 -->

@@ -238,7 +238,7 @@ ADVISOR. Exactly.
 
 STUDENT. One thing I noticed with our representation of `letrec` is that we have to be careful so
 that the number of binders matches the number of definitions we give. Our typing rules disallow
-that, but I wonder if there's a way to have a more accurate representation for `letrec` that
-requires that to be the case?
+that, but I wonder if there's a way to have a more accurate representation for `letrec` which
+includes that requirement?
 
 ADVISOR. Funny you should ask that... Let me tell you a story.

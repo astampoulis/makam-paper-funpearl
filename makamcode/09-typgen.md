@@ -2,7 +2,7 @@
 
 <!--
 ```makam
-%use "06-synonyms.md".
+%use "07-synonyms.md".
 tests: testsuite. %testsuite tests.
 ```
 -->

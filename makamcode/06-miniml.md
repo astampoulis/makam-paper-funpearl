@@ -2,10 +2,12 @@
 
 <!--
 ```makam
-%use "04-gadts.md".
+%use "05-patterns.md".
 tests: testsuite. %testsuite tests.
 ```
 -->
+
+\input{generated/todo}
 
 \begin{scenecomment}
 (Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)
@@ -243,10 +245,10 @@ Patterns and their typing rule:
 ```makam
 patt_constr : constructor -> pattlist T T' -> patt T T'.
 
-typeof (patt_constr Constructor Args) S' S (tconstr TypConstr TypArgs) :-
+typeof_patt (patt_constr Constructor Args) (tconstr TypConstr TypArgs) S S' :-
   constructor_info TypConstr Constructor PolyType,
   applymany PolyType TypArgs Typs,
-  typeof Args S' S Typs.
+  typeof_pattlist Args Typs S S'.
 ```
 
 Example: definition of lists and append.
@@ -263,7 +265,7 @@ wfprogram
       (dbindnext (fun append => dbindbase (
       [ lamt (fun a => lam (tconstr llist [a]) (fun l1 => lam _ (fun l2 =>
         case_or_else l1
-          (patt_constr lcons [patt_var, patt_var])
+          (patt_constr lcons (pcons patt_var (pcons patt_var pnil)))
             (dbindnext (fun hd => dbindnext (fun tl => dbindbase (
             constr lcons [hd, app (app (appt append _) tl) l2]))))
           l2))) ],

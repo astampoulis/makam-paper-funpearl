@@ -77,8 +77,10 @@
 \newcommand\tightlist[0]{\itemsep1pt\parskip0pt\parsep0pt}
 \renewcommand\thesection{\textbf{CHAPTER \arabic{section}}}
 \renewcommand\thesubsection{\textbf{SECTION \arabic{section}.\arabic{subsection}}}
+\newcommand\todo[1]{\textcolor[rgb]{0.75,0.00,0.00}{#1}}
 \newcommand\hero[1]{\textit{#1}.}
-\newcommand\heroTODO[0]{\textbf{\textcolor[rgb]{0.75,0.00,0.00}{TODO}}.}
+\newcommand\heroTODO[0]{\textbf{\todo{TODO}}.}
+\newcommand\heroNEEDFEEDBACK[0]{\textbf{\todo{Need Feedback}}:}
 \newcommand\heroSTUDENT[0]{\hero{HAGOP}}
 \newcommand\heroADVISOR[0]{\hero{ROZA}}
 \newcommand\heroAUDIENCE[0]{\hero{AUDIENCE}}
@@ -160,6 +162,8 @@ literate development.
 
   % No Indent
   % \identNormal{}
+
+  {\large \todo{Version identifier: \textbf{\input{generated/randomword}}}}
   
   \input{generated/01-introduction}
   
@@ -169,15 +173,17 @@ literate development.
   
   \input{generated/04-gadts}
   
-  \input{generated/05-miniml}
-  
-  \input{generated/06-synonyms}
-  
-  \input{generated/07-metaml}
-  
-  \input{generated/08-typgen}
+  \input{generated/05-patterns}
 
-  \input{generated/09-summary}
+  \input{generated/06-miniml}
+  
+  \input{generated/07-synonyms}
+  
+  \input{generated/08-metaml}
+  
+  \input{generated/09-typgen}
+
+  \input{generated/10-summary}
 
   \identNormal{}
 }
