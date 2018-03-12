@@ -7,181 +7,294 @@ tests: testsuite. %testsuite tests.
 ```
 -->
 
-TODO. \textcolor{red}{This is where I am! Haven't finished revising from here on.}
+\begin{scenecomment}
+(Our hero Roza had a meeting with another student, so Hagop is back at his
+office, trying to work out on his own how to encode patterns. He is fairly
+confident at this point that having explicit support for single-variable
+binding is enough to model most complicated forms of binding, especially when making use of
+polymorphism and GADTs.)
+\end{scenecomment}
+
+\identNormal
+STUDENT. OK, so let's implement simple patterns and pattern-matching like in ML... First let's determine
+the right binding structure. For a branch like:
+
+```
+| cons(hd, tl) -> ... hd .. tl ...
+```
+
+the pattern introduces 2 variables, `hd` and `tl`, which the body of the branch can refer to. But we can't really refer to those variables in the pattern itself, at least for simple patterns... (There are cases where that's not the case, like or-patterns in some ML dialects, or in dependent pattern matching, where consequent uses of the same variable perform an exact match rather than unification, but let's not worry about those cases right now, I am sure we could handle them too if we needed to.) So basically, once we know what variables a pattern introduces, we can bind them and give them names all at the same time. So we need something like this:
+
+```
+branch(pattern, bind [# variables of P].body)
+```
+
+Or, in Makam, the above branch will be something like:
+
+```
+branch(
+  patt_cons patt_var patt_var,
+  bind (fun hd => bind (fun tl => body (.. hd .. tl ..))))
+```
+
+One way that I have started thinking about binding is that it is just a way to introduce a notion of
+sharing into abstract syntax trees, so that we can refer to the same thing a number of times. And
+basically for these simple patterns, the sharing happens from the side of the pattern into the
+branch body, not within the pattern itself.
+
+With the above, I am thinking that the type of `branch` should be something
+like:
+
+```
+branch : (Pattern: patt N) (Vars_Body: vbindmany term N term) -> ...
+```
+
+Wait, before I get into the weeds let me just set up some things. First, let's add a simple base
+type, say `nat`s, to have something to work with as an example. I'll prefix their names with `o` for
+"object language", so as to avoid ambiguity. And I will also add a `case_or_else` construct,
+standing for a single-branch pattern-match construct. It should be easy to extend to a
+multiple-branch construct, but I want to keep things as simple as possible. I'll inline what I had written for `branch` above into the definition of `case_or_else`.
+
+```makam
+onat : typ. ozero : term. osucc : term -> term.
+typeof ozero onat. typeof (osucc N) onat :- typeof N onat.
+eval ozero ozero. eval (osucc E) (osucc V) :- eval E V.
+```
+
+```
+case_or_else :
+  (Scrutinee: term)
+  (Patt: patt N) (Vars_Body: vbindmany term N term)
+  (Else: term) -> term.
+```
+
+Now for the typing rule -- it will be something like this:
+
+```
+typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
+  typeof Scrutinee T,
+  typeof_patt Pattern T VarTypes,
+  vopenmany Vars_Body (pfun vars body =>
+    vassumemany typeof vars VarTypes (typeof body BodyT)),
+  typeof Else BodyT.
+```
+
+Right, so when checking a pattern, we'll have to determine both what type of scrutinee it matches,
+as well as the types of the variables that it contains. We will also need `vassumemany` that is just
+like `assumemany` from before, but takes `vector` arguments instead of `list`.
+
+```
+typeof_patt : [N] patt N -> typ -> vector typ N -> prop.
+vassumemany : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop -> prop.
+(...)
+```
+
+Now, I can just go ahead and define the patterns, together with their
+typing relation, `typeof_patt`.
+
+Let me just work one by one for each pattern.
+
+```
+patt_var : patt (succ zero).
+typeof_patt patt_var T (vcons T vnil).
+```
+
+OK, that's how we'll write pattern variables, introducing a single variable of a specific `typ` into the body of the branch. And the following should be good for the `onat`s I defined earlier.
+
+```
+patt_ozero : patt zero.
+typeof_patt patt_ozero onat vnil.
+
+patt_osucc : patt N -> patt N.
+typeof_patt (patt_osucc P) onat VarTypes :- typeof_patt P onat VarTypes.
+```
+
+Wildcard patterns will match any value, and should not introduce a variable into the body of the branch.
+
+```
+patt_wild : patt zero.
+typeof_patt patt_wild T vnil.
+```
+
+OK, and let's do patterns for our n-tuples... I guess I'll need a
+type for lists of patterns too.
+
+```
+patt_tuple : pattlist N -> patt N.
+typeof_patt (patt_tuple PS) (product TS) VarTypes :-
+  typeof_pattlist PS TS VarTypes.
+pattlist : (N: type) -> type.
+pnil : patt zero.
+pcons : patt N -> pattlist N' -> pattlist (N + N').
+```
+
+Uh-oh...  don't think I can do that `N + N'` really. In this `pcons` case, my pattern basically
+looks like `(P, ...PS)`; and I want the overall pattern to have as many variables as `P` and `PS`
+combined. But the GADTs support in \lamprolog seems to be quite basic, I do not think there's any
+notion of type-level functions like plus...
+
+However... maybe I can work around that, if I add change `patt` to include an "accumulator" argument, say `NBefore`. Each constructor for patterns will now define how many pattern variables it adds to that accumulator, yielding `NAfter`, rather than defining how many pattern variables it includes... like this:
+
+```makam
+patt, pattlist : (NBefore: type) (NAfter: type) -> type.
+patt_var : patt N (succ N).
+patt_ozero : patt N N.
+patt_osucc : patt N N' -> patt N N'.
+patt_wild : patt N N.
+patt_tuple : pattlist N N' -> patt N N'.
+
+pnil : pattlist N N.
+pcons : patt N N' -> pattlist N' N'' -> pattlist N N''.
+```
+
+Yes. I think that should work. I got a little editing to do in my existing predicates to use this
+representation instead. For top-level patterns, we should always start with the accumulator being `zero`...
 
 <!--
 ```makam
-dbind : type -> type -> type -> type.
-dbindbase : B -> dbind A unit B.
-dbindnext : (A -> dbind A T B) -> dbind A (A * T) B.
-
-subst : type -> type -> type.
-nil : subst A unit.  cons : A -> subst A T -> subst A (A * T).
-
-intromany : [T] dbind A T B -> (subst A T -> prop) -> prop.
-applymany : [T] dbind A T B -> subst A T -> B -> prop.
-openmany : [T] dbind A T B -> (subst A T -> B -> prop) -> prop.
-assumemany : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop -> prop.
-map : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop.
-
-intromany (dbindbase F) P :- P [].
-intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
-
-applymany (dbindbase Body) [] Body.
-applymany (dbindnext F) (X :: XS) Body :- applymany (F X) XS Body.
-
-openmany F P :-
-  intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
-
-assumemany P [] [] Q :- Q.
-assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
-
-map P [] [].
-map P (X :: XS) (Y :: YS) :- P X Y, map P XS YS.
-
-letrec : dbind term T (subst term T * term) -> term.
-typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (pfun xs defsbody => [Defs Body]
-    eq defsbody (Defs, Body),
-    assumemany typeof xs TS (map typeof Defs TS),
-    assumemany typeof xs TS (typeof Body T')).
+vsnoc : [N] vector A N -> A -> vector A (succ N) -> prop.
+vsnoc vnil Y (vcons Y vnil).
+vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
 ```
 -->
 
-STUDENT. I see. Say, can we use the same dependency trick to do patterns?
-
-ADVISOR. We should be able to... the linearity is going to be a bit tricky, but I am
-fairly confident that having explicit support in our metalanguage just for single-variable
-binding is enough to model most complicated forms of binding, when we also make use of
-polymorphism and GADTs.
-
-STUDENT. Makes sense. Well, I think I have an idea for patterns: we can have a type
-argument to keep track of what variables they introduce. Since within a pattern we can
-only refer to a variable once... no actual binding needs to take place. But we can use the type argument to bind the right number of pattern variables into the body of a branch.
-
-ADVISOR. That is true.... One way I think about binding is that it is just a way to
-introduce a notion of sharing into abstract syntax trees, so that we can refer to the same thing a number of times. And you're right that for patterns, the sharing happens from the side of the pattern into the branch body, not within the pattern itself.
-
-STUDENT. Though there is some of that in dependent pattern matching, where you can reuse a
-pattern variable and an exact matching takes place rather than unification....
-
-ADVISOR. ...Right. But let's not worry about that right now; let's just do simple
-patterns. So at the top level, a pattern will just have a single "tuple type" argument
-with the variables it used. I am thinking that for sub-patterns, we will need two
-arguments. One for all the variables that *can* be used, initially matching the type
-argument of the top-level pattern; another argument, for the variables that
-*remain* to be used after this sub-pattern is traversed.
-
-STUDENT. I don't get that yet. Wait, let me first add natural numbers as a base type so
-that we have a simple example.
-
 ```makam
-nat : typ. zero : term. succ : term -> term.
-typeof zero nat. typeof (succ N) nat :- typeof N nat.
-eval zero zero. eval (succ E) (succ V) :- eval E V.
+case_or_else :
+  (Scrutinee: term)
+  (Patt: patt zero N) (Vars_Body: vbindmany term N term)
+  (Else: term) -> term.
 ```
 
-ADVISOR. Good idea. OK, so here's what I meant:
+I think I'll also have to change `typeof_patt`, so that it includes an accumulator argument of its
+own:
 
 ```makam
-patt : type -> type -> type.
-patt_var : patt (term * T) T.
-patt_zero : patt T T.
-patt_succ : patt T T' -> patt T T'.
-```
+typeof_patt : [NBefore NAfter]
+  patt NBefore NAfter -> typ ->
+  vector typ NBefore -> vector typ NAfter -> prop.
 
-STUDENT. Hmm. So, you said the first argument is what variables are "available" when we go
-into the sub-pattern, second is what we're "left with"... so in the variable case, we "use
-up" one variable. In the zero case, we don't use any. And for successors, we just
-propagate the variables.
-
-ADVISOR. Exactly. Could you do tuples?
-
-STUDENT. Let me see, I think I'll need a helper type for multiple patterns....
-
-```makam
-pattlist : type -> type -> type.
-nil : pattlist T T.
-cons : patt T1 T2 -> pattlist T2 T3 -> pattlist T1 T3.
-patt_tuple : pattlist T T' -> patt T T'.
-```
-
-ADVISOR. Exactly! And here's an interesting one: wildcards.
-
-```makam
-patt_wild : patt T T.
-```
-
-STUDENT. Oh, because that does not really introduce any pattern variables that we can
-use. So if I understand this correctly, top-level patterns should always use up all their variables -- they should end with the second argument being `unit`, right?
-
-ADVISOR. Exactly, so this should be fine for a single-branch pattern-match construct:
-
-```makam
-case_or_else : term -> patt T unit -> dbind term T term -> term -> term.
-```
-
-STUDENT. Let me parse that... the first argument is the scrutinee, the second is the
-pattern... the third is the branch body, with the pattern variables introduced. Oh, and
-the last argument is the `else` case.
-
-ADVISOR. Right. And I think something like this should work for the typing judgment. Let
-me write a few cases.
-
-```makam
-typeof : [T T' Ttyp T'typ] patt T T' -> subst typ T'typ -> subst typ Ttyp -> typ -> prop.
-typeof patt_var S' (cons T S') T.
-typeof patt_wild S S T.
-typeof patt_zero S S nat.
-typeof (patt_succ P) S' S nat :- typeof P S' S nat.
-```
-
-STUDENT. I see, so given a pattern and the types of the variables following the
-sub-pattern, we produce the types of all the variables and the type of the pattern
-itself. Makes sense. I'll do tuples:
-
-```makam
-typeof : [T T' Ttyp T'typ]
-  pattlist T T' -> subst typ T'typ -> subst typ Ttyp -> list typ -> prop.
-typeof (patt_tuple PS) S' S (product TS) :- typeof PS S' S TS.
-typeof [] S S [].
-typeof (P :: PS) S3 S1 (T :: TS) :- typeof PS S3 S2 TS, typeof P S2 S1 T.
-```
-
-ADVISOR. Looks good. Can you do the typing rule for the case statement?
-
-STUDENT. How does this look?
-
-```makam
-typeof (case_or_else Scrutinee Pattern Body Else) T' :-
+typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
   typeof Scrutinee T,
-  typeof Pattern nil TS T,
-  openmany Body (pfun xs body => assumemany typeof xs TS (typeof body T')),
-  typeof Else T'.
+  typeof_patt Pattern T vnil VarTypes,
+  vopenmany Vars_Body (pfun vars body =>
+    vassumemany typeof vars VarTypes (typeof body BodyT)),
+  typeof Else BodyT.
 ```
 
-ADVISOR. That's great! This was a little tricky, but still, not too bad. Actually, I know
-of one thing that is surprisingly simple to do: the evaluation rule. We just have to
-convert a pattern into a term, where we replace the pattern variables with *meta-level*
-unification variables -- then we can just reuse meta-level unification to do the actual
-pattern match!
-
-STUDENT. Oh, that would be nice. So not only do we get variable substitutions for free, we
-also get unification for free in some cases!
-
-ADVISOR. Exactly. So something like this should work:
+Alright, let's proceed to the typing rules for patterns themselves:
 
 ```makam
-patt_to_term : [T T'] patt T T' -> term -> subst term T' -> subst term T -> prop.
-patt_to_term patt_var X Subst (X :: Subst).
-patt_to_term patt_wild _ Subst Subst.
-patt_to_term patt_zero zero Subst Subst.
-patt_to_term (patt_succ PN) (succ EN) Subst' Subst :- patt_to_term PN EN Subst' Subst.
+typeof_patt patt_var T VarTypes VarTypes' :-
+  vsnoc VarTypes T VarTypes'.
 ```
 
-STUDENT. I see, interesting! So in each rule we introduce the unification variables that
-we need, like `X` for the variable case, and store them in the substitution that we will
-use with the pattern body.
+OK, here I need `vsnoc` to add an element to the end of a vector.
+That should yield the correct order for the types of pattern variables;
+I am visiting the pattern left-to-right after all.
+
+```makam
+vsnoc : [N] vector A N -> A -> vector A (succ N) -> prop.
+vsnoc vnil Y (vcons Y vnil).
+vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
+```
+
+The rest should be easy to adapt...
+
+\begin{scenecomment}
+(Our hero finishes adapting the rest of the rules for \texttt{typeof\_patt},
+which are available in the unabridged version of this story. After
+trying a few queries, he is convinced that his implementation of
+pattern matching works well. The next day, he shows his work to Roza.)
+\end{scenecomment}
+
+<!--
+```makam
+typeof_patt patt_ozero onat VarTypes VarTypes.
+
+typeof_patt (patt_osucc P) onat VarTypes VarTypes' :-
+  typeof_patt P onat VarTypes VarTypes'.
+
+typeof_patt patt_wild T VarTypes VarTypes.
+
+typeof_pattlist : [NBefore NAfter]
+  pattlist NBefore NAfter -> list typ ->
+  vector typ NBefore -> vector typ NAfter -> prop.
+
+typeof_pattlist pnil [] VarTypes VarTypes.
+typeof_pattlist (pcons P PS) (T :: TS) VarTypes VarTypes' :-
+  typeof_patt P T VarTypes VarTypes',
+  typeof_pattlist PS TS VarTypes' VarTypes''.
+
+typeof_patt (patt_tuple PS) (product TS) VarTypes VarTypes' :-
+  typeof_pattlist PS TS VarTypes VarTypes'.
+
+(eq _PRED (lam _ (fun n => case_or_else n
+  (patt_osucc patt_var) (vbind (fun pred => vbody pred))
+  ozero)),
+ typeof _PRED T) ?
+>> Yes:
+>> T := arrow onat onat.
+```
+-->
+
+\identDialog
+
+ADVISOR. That's great! I understand that this was a little tricky, but still, it was not too bad, right? Actually, I know
+of one thing that is quite simple to do: the evaluation rule. On paper we typically write something roughly like:
+
+\vspace{-1.5em}
+\begin{mathpar}
+\inferrule{\texttt{match}(p, v) \leadsto \sigma \\ e[\sigma/xs] \Downarrow v'}
+          {\texttt{case\_or\_else}(p, xs.e, e') \Downarrow v'}
+
+\inferrule{\texttt{match}(p, v) \not\leadsto \\ e' \Downarrow v'}
+          {\texttt{case\_or\_else}(v, p \mapsto xs.e, e') \Downarrow v'}
+\end{mathpar}
+
+So `match` tries to unify a pattern with a term, and yields a substitution $\sigma$ for the pattern variables if successful, which is then applied to the body of the branch. If there is no `match` to be found, then we use the `else` branch.
+
+STUDENT. Hmm... so do we need two predicates, one for the case where the `match` is successful, and one to check that a pattern *does not* match a scrutinee?
+
+ADVISOR. Actually we could have a single `match` predicate. And we can use the logical `if-then-else` construct for the two cases, which we have not seen so far. Let me write down the evaluation rule, and I'll explain:
+
+```makam
+match : [NBefore NAfter]
+  (Pattern: patt NBefore NAfter) (Scrutinee: term)
+  (SubstBefore: vector term NBefore) (SubstAfter: vector term NAfter) ->
+  prop.
+eval (case_or_else Scrutinee Pattern Body Else) V' :-
+  eval Scrutinee V,
+  if (match Pattern V vnil Subst)
+  then (vapplymany Body Subst Body', eval Body' V')
+  else (eval Else V').
+```
+
+The `if-then-else` construct behaves as follows: when there is at least one way to prove the
+condition, it proceeds to the `then` branch, otherwise it goes to the `else` branch. Pretty standard
+really. It is one thing that the Prolog cut statement, `!`, is useful for, but I find that using cut
+makes for less readable code. \citet{kiselyov05backtracking} is worth reading for alternatives to
+the cut statement and the semantics of `if`-`then`-`else` and `not` in logic programming, and Makam
+follows that paper closely.
+
+STUDENT. I see. Now, I noticed a `vapplymany` predicate -- what is that?
+
+ADVISOR. That is a standard library predicate. It is used to perform simultaneous substitution for all the variables in our multiple binding type, `vbindmany`. Or another way to say it, it's the equivalent of HOAS function application for `vbindmany`:
+
+```makam
+vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
+vapplymany (vbody Body) vnil Body.
+vapplymany (vbind F) (vcons E ES) Body :- vapplymany (F E) ES Body.
+```
+
+STUDENT. I see... OK, I think I know how to continue. I will write a few of the `match` rules down.
+
+```makam
+match patt_var X Subst Subst' :- vsnoc Subst X Subst'.
+match patt_wild X Subst Subst.
+match patt_ozero ozero Subst Subst.
+match (patt_osucc P) (osucc V) Subst Subst' :-
+  match P V Subst Subst'.
+```
 
 \begin{scenecomment}
 (Our heroes also write down the rules for multiple patterns and tuples, which are
@@ -190,51 +303,25 @@ available in the unabridged version of this story.)
 
 <!--
 ```makam
-pattlist_to_termlist : [T T'] pattlist T T' -> list term -> subst term T' -> subst term T -> prop.
+matchlist : [NBefore NAfter]
+  (Pattern: pattlist NBefore NAfter) (Scrutinee: list term)
+  (SubstBefore: vector term NBefore) (SubstAfter: vector term NAfter) ->
+  prop.
+match (patt_tuple PS) (tuple VS) Subst Subst' :-
+  matchlist PS VS Subst Subst'.
 
-patt_to_term (patt_tuple PS) (tuple ES) Subst' Subst :-
-  pattlist_to_termlist PS ES Subst' Subst.
+matchlist pnil [] Subst Subst.
+matchlist (pcons P PS) (V :: VS) Subst Subst'' :-
+  match P V Subst Subst', matchlist PS VS Subst' Subst''.
 
-pattlist_to_termlist [] [] Subst Subst.
-pattlist_to_termlist (P :: PS) (T :: TS) Subst3 Subst1 :-
-  pattlist_to_termlist PS TS Subst3 Subst2,
-  patt_to_term P T Subst2 Subst1.
+(eq _PRED (lam _ (fun n => case_or_else n
+  (patt_osucc patt_var) (vbind (fun pred => vbody pred))
+  ozero)),
+ typeof _PRED T,
+ eval (app _PRED ozero) PRED0, eval (app _PRED (osucc (osucc ozero))) PRED2) ?
+>> Yes:
+>> T := arrow onat onat, PRED0 := ozero, PRED2 := osucc ozero.
 ```
 -->
 
-ADVISOR. We should be good to write the evaluation rule now.
-
-```makam
-eval (case_or_else Scrutinee Pattern Body Else) V :-
-  patt_to_term Pattern TermWithUnifvars [] Unifvars,
-  if (eq Scrutinee TermWithUnifvars)  (* reuse unification from the meta-language *)
-  then (applymany Body Unifvars Body', eval Body' V)
-  else (eval Else V).
-```
-
-STUDENT. I see! So, if meta-level unification is successful, we have a match, and we
-substitute the instantiations we found for the pattern variables into the body. But you
-are using if-then-else? We haven't used that so far.
-
-ADVISOR. Oh yes, I forgot to mention that. It behaves as follows: when there is at least
-one way to prove the condition, it proceeds to the `then` branch, otherwise it goes to the
-`else` branch. Pretty standard really. It is one thing that the Prolog cut statement, `!`,
-is useful for, but cut introduces all sorts of trouble. \citet{kiselyov05backtracking} is
-worth reading for alternatives to the cut statement and the semantics of
-`if`-`then`-`else` and `not` in logic programming, and Makam follows that closely.
-
-STUDENT. Noted in my to-read list. But let us try pattern matching out! How about
-predecessors for natural numbers? I'll write a query that type-checks and evaluates a
-couple of cases.
-
-```makam
-(eq _PRED (lam _ (fun n => case_or_else n
-  (patt_succ patt_var) (dbindnext (fun pred => dbindbase pred))
-  zero)),
- typeof _PRED T,
- eval (app _PRED zero) PRED0, eval (app _PRED (succ (succ zero))) PRED2) ?
->> Yes:
->> T := arrow nat nat, PRED0 := zero, PRED2 := succ zero.
-```
-
-ADVISOR. Seems to be working fine!
+NEEDFEEDBACK. \todo{I have switched to a more incremental presentation here, adding more explanation, since it seems that we lost a few reviewers here last time. However, this makes this section too long; it looks like the centerpiece of the paper, but it shouldn't be. (For example, there's a blog post with a similar encoding from a few years back.) Between this and algebraic datatypes, we will definitely need to cut something in order to have more in-depth explanations, but I'm not sure what. Thoughts?}

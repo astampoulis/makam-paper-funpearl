@@ -24,7 +24,7 @@ dispatches went something like this.
 
 \rm
 
-AUTHOR. ... The type system in my land of \lamprolog that I speak of is a subset of System
+AUTHOR. ... In my land of \lamprolog that I speak of, the type system is a subset of System
 F$_\omega$ that should be familiar to you -- the simply typed lambda calculus, plus prenex
 polymorphism, plus simple type constructors of the form `type * ... * type -> type`. There is a
 `prop` sort for propositions, which is a normal type, but also a bit special: its terms are not just
@@ -116,6 +116,14 @@ of any feature, all thanks to the existing support for Ad-Hoc Polymorphism.
 
 \identDialog
 
+NEEDFEEDBACK. \todo{This section is new, trying to explain the relationship
+between Ad-Hoc Polymorphism and GADTs with a little more detail, as
+this is one of the two main novel parts of the paper (the other one is
+the way we encode structural recursion). Reviewers had asked for a
+more careful exposition of this in the previous version. This also
+tries to address the criticism that the dialog format was getting
+tiring after a while; especially in the more difficult parts.}
+
 <!--
 ```makam
 vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
@@ -135,5 +143,46 @@ typeof (vletrec (vbind (fun f => vbody (vcons (lam T (fun x => app f (app f x)))
 >> Yes:
 >> T' := arrow T T,
 >> T := T.
+```
+-->
+
+<!--
+TODO. Get rid of dbind once we've replaced all uses in following chapters.
+
+```makam
+dbind : type -> type -> type -> type.
+dbindbase : B -> dbind A unit B.
+dbindnext : (A -> dbind A T B) -> dbind A (A * T) B.
+
+subst : type -> type -> type.
+nil : subst A unit.  cons : A -> subst A T -> subst A (A * T).
+
+intromany : [T] dbind A T B -> (subst A T -> prop) -> prop.
+applymany : [T] dbind A T B -> subst A T -> B -> prop.
+openmany : [T] dbind A T B -> (subst A T -> B -> prop) -> prop.
+assumemany : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop -> prop.
+map : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop.
+
+intromany (dbindbase F) P :- P [].
+intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
+
+applymany (dbindbase Body) [] Body.
+applymany (dbindnext F) (X :: XS) Body :- applymany (F X) XS Body.
+
+openmany F P :-
+  intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
+
+assumemany P [] [] Q :- Q.
+assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
+
+map P [] [].
+map P (X :: XS) (Y :: YS) :- P X Y, map P XS YS.
+
+letrec : dbind term T (subst term T * term) -> term.
+typeof (letrec XS_DefsBody) T' :-
+  openmany XS_DefsBody (pfun xs defsbody => [Defs Body]
+    eq defsbody (Defs, Body),
+    assumemany typeof xs TS (map typeof Defs TS),
+    assumemany typeof xs TS (typeof Body T')).
 ```
 -->

@@ -1,0 +1,180 @@
+\section{Where our heroes break into song and add more ML
+features}\label{where-our-heroes-break-into-song-and-add-more-ml-features}
+
+\input{generated/todo}
+
+\begin{scenecomment}
+(Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)
+\end{scenecomment}
+
+\begin{verse}
+``Explicit System F polymorphism is easy, at some point we'll do Hindley-Milner too. \\
+Types are well-formed by construction, an extra `$\vdash \tau \; \text{wf}$' judgment we won't do.''
+\end{verse}
+
+\begin{verbatim}
+forall : (typ \ensuremath{\to} typ) \ensuremath{\to} typ.
+lamt : (typ \ensuremath{\to} term) \ensuremath{\to} term.
+appt : term \ensuremath{\to} typ \ensuremath{\to} term.
+typeof (lamt E) (forall T) :- (a:typ \ensuremath{\to} typeof (E a) (T a)).
+typeof (appt E T) (TF T) :- typeof E (forall TF).
+\end{verbatim}
+
+\begin{verse}
+``We are now adding top-level programs, to get into datatype declarations. \\
+We would rather do modules, but those would need quite a bit of deliberation. \\
+And we still have contextual types to do, those will require our full attention.''
+\end{verse}
+
+\begin{verbatim}
+program : type.
+wfprogram : program \ensuremath{\to} prop.
+
+let : term \ensuremath{\to} (term \ensuremath{\to} program) \ensuremath{\to} program.
+wfprogram (let E P) :- typeof E T, (x:term \ensuremath{\to} typeof x T \ensuremath{\to} wfprogram (P x)).
+
+main : term \ensuremath{\to} program.
+wfprogram (main E) :- typeof E _.
+\end{verbatim}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+\heroADVISOR{} I think we are ready to do polymorphic algebraic datatypes now.
+We'll add a type for type constructors, like \texttt{list}, dependent on
+their arity; and a type for the constructors of a datatype. Also a type
+for constructor declarations, dependent on the number of constructors
+they introduce:
+
+\begin{verbatim}
+typeconstructor : type \ensuremath{\to} type.
+constructor : type.
+
+ctor_declaration : type \ensuremath{\to} type.
+nil : ctor_declaration unit.
+cons : list typ \ensuremath{\to} ctor_declaration T \ensuremath{\to} ctor_declaration (constructor * T).
+\end{verbatim}
+
+\heroSTUDENT{} Oh, so each constructor takes multiple arguments. Great. So
+datatype declarations would be something like this:
+
+\begin{verbatim}
+datatype_declaration : type \ensuremath{\to} type \ensuremath{\to} type.
+datatype_declaration : 
+  (typeconstructor Arity \ensuremath{\to} dbind typ Arity (ctor_declaration Ctors)) \ensuremath{\to}
+  datatype_declaration Arity Ctors.
+datatype :
+  datatype_declaration Arity Ctors \ensuremath{\to}
+  (typeconstructor Arity \ensuremath{\to} dbind constructor Ctors program) \ensuremath{\to} program.
+\end{verbatim}
+
+\heroADVISOR{} Right, so when declaring a datatype, we introduce a
+\texttt{typeconstructor} variable so that we can refer to the type
+recursively when we declare our constructors. And we also have access to
+the right number of polymorphic variables, matching the \texttt{Arity}
+of the constructor. I like how you split out the declaration of the type
+itself from the ``rest of the program'' part, since this could become
+unwieldy otherwise.
+
+\heroSTUDENT{} That's what I thought too. And I see why you made the type
+constructors carry their arities -- to keep types well-formed by
+construction. In order to be able to actually refer to the type
+constructors, though, don't we need a type former:
+
+\begin{verbatim}
+tconstr : typeconstructor T \ensuremath{\to} subst typ T \ensuremath{\to} typ.
+\end{verbatim}
+
+\heroADVISOR{} We do. Also keep in mind that in a richer type system, we
+probably would need an extra kind-checking predicate. But this will do
+for now. Let's just make sure this is fine -- I'll write down the
+declaration of binary trees, to make sure we're not missing anything,
+and typecheck it with Makam.
+
+\begin{verbatim}
+%type (datatype_declaration
+  (fun tree \ensuremath{\Rightarrow} dbindnext (fun a \ensuremath{\Rightarrow} dbindbase
+    [ (* leaf *) [],
+      (* node *) [tconstr tree [a], a, tconstr tree [a]] ]))).
+>> (...) : datatype_declaration (typ * unit) (constructor * constructor * unit)
+\end{verbatim}
+
+\heroSTUDENT{} Looks good. Should we proceed to the actual well-formedness for
+datatype declarations? I think we will need a predicate to keep track of
+information about a constructor -- which datatype it belongs to and what
+arguments it expects. That way we can carry that information in the
+assumptions context.
+
+\begin{verbatim}
+constructor_info :
+  typeconstructor Arity \ensuremath{\to} constructor \ensuremath{\to} dbind typ Arity (list typ) \ensuremath{\to} prop.
+\end{verbatim}
+
+\heroADVISOR{} Yes, and we are mostly ready otherwise:
+
+\begin{verbatim}
+wfprogram (datatype (datatype_declaration ConstructorDecls) Program') :-
+  (dt:(typeconstructor T) \ensuremath{\to} ([PolyTypes]
+    openmany (ConstructorDecls dt) (pfun tvars constructor_decls \ensuremath{\Rightarrow} (
+      constructor_polytypes constructor_decls tvars PolyTypes)),
+    openmany (Program' dt) (pfun constructors program' \ensuremath{\Rightarrow}
+      assumemany (constructor_info dt) constructors PolyTypes
+      (wfprogram program')))).
+\end{verbatim}
+
+\heroSTUDENT{} This is a tricky piece of code. Let me stare at it for a while.
+(\ldots{}) What is this new \texttt{constructor\_polytypes} predicate?
+
+\heroADVISOR{} I'm using that in order to re-abstract over the type
+variables\ldots{}. See, in the constructor declaration, we've introduced
+a number of type variables. We need to abstract over them, in order to
+get the polymorphic type of each constructor for the rest of the
+program. Note that \texttt{PolyTypes} can't capture the type variables
+\texttt{tvars} we introduce.
+
+\heroSTUDENT{} I think I got it. Let me try to implement it.
+
+\heroADVISOR{} Here's a hint.
+
+\begin{verbatim}
+(x:typ \ensuremath{\to} y:typ \ensuremath{\to} applymany PolyType [x, y] (arrow y x)) ?
+>> Yes:
+>> PolyType := dbindnext (fun x \ensuremath{\Rightarrow} dbindnext (fun y \ensuremath{\Rightarrow} dbindbase (arrow y x))).
+\end{verbatim}
+
+\begin{scenecomment}
+(After a few attempts, Hagop comes up with the following definition.)
+\end{scenecomment}
+
+\begin{verbatim}
+constructor_polytypes : [Arity Ctors PolyTypes]
+  ctor_declaration Ctors \ensuremath{\to} subst typ Arity \ensuremath{\to}
+  subst (dbind typ Arity (list typ)) PolyTypes \ensuremath{\to} prop.
+
+constructor_polytypes [] _ [].
+constructor_polytypes (CtorType :: CtorTypes) TypVars (PolyType :: PolyTypes) :-
+  applymany PolyType TypVars CtorType,
+  constructor_polytypes CtorTypes TypVars PolyTypes.
+\end{verbatim}
+
+\heroSTUDENT{} I see what you were getting at. I think this is an interesting
+use of \texttt{applymany}: we are using it in the opposite direction
+than what we have used it so far. We are giving it \texttt{TypVars} and
+\texttt{CtorType} as inputs, and then we get \texttt{PolyType}, with all
+the needed binders, as an output. And since the way we're using it,
+\texttt{PolyType} cannot capture the \texttt{TypVars}, it all works out
+correctly!
+
+\heroADVISOR{} Excellent! Let's add the term-level former for constructors,
+too.
+
+\heroSTUDENT{} That is easy, compared to what we just did.
+
+\begin{verbatim}
+constr : constructor \ensuremath{\to} list term \ensuremath{\to} term.
+typeof (constr Constructor Args) (tconstr TypConstr TypArgs) :-
+  constructor_info TypConstr Constructor PolyType,
+  applymany PolyType TypArgs Typs, map typeof Args Typs.
+\end{verbatim}
+
+\heroADVISOR{} You're getting the hang of this. Let's do something actually
+difficult, then; type synonyms.

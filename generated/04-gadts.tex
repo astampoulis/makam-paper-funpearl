@@ -22,10 +22,10 @@ something like this.
 
 \rm
 
-\heroAUTHOR{} \ldots{} The type system in my land of \lamprolog that I speak
-of is a subset of System F\(_\omega\) that should be familiar to you --
-the simply typed lambda calculus, plus prenex polymorphism, plus simple
-type constructors of the form
+\heroAUTHOR{} \ldots{} In my land of \lamprolog that I speak of, the type
+system is a subset of System F\(_\omega\) that should be familiar to you
+-- the simply typed lambda calculus, plus prenex polymorphism, plus
+simple type constructors of the form
 \texttt{type\ *\ ...\ *\ type\ \ensuremath{\to}\ type}. There is a
 \texttt{prop} sort for propositions, which is a normal type, but also a
 bit special: its terms are not just values, but are also computations,
@@ -132,3 +132,12 @@ needing the addition of any feature, all thanks to the existing support
 for Ad-Hoc Polymorphism.
 
 \identDialog
+
+\heroNEEDFEEDBACK{}
+\todo{This section is new, trying to explain the relationship
+between Ad-Hoc Polymorphism and GADTs with a little more detail, as
+this is one of the two main novel parts of the paper (the other one is
+the way we encode structural recursion). Reviewers had asked for a
+more careful exposition of this in the previous version. This also
+tries to address the criticism that the dialog format was getting
+tiring after a while; especially in the more difficult parts.}
