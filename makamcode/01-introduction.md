@@ -31,7 +31,7 @@ able to handle what we have in mind nicely, and we should not need to spend more
 STUDENT. Sounds great! Anything I can read up on Makam then?
 
 ADVISOR. Not much, unfortunately... But I know the language and its standard library quite well, so
-let's work on this together, it'll be fun. I'll show you how things work along the way!
+let's work on this together; it'll be fun. I'll show you how things work along the way!
 
 \begin{scenecomment}
 (Our heroes install Makam from --elided for blind reviewing-- and figure out how to run the REPL.)

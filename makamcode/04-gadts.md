@@ -28,11 +28,11 @@ AUTHOR. ... In my land of \lamprolog that I speak of, the type system is a subse
 F$_\omega$ that should be familiar to you -- the simply typed lambda calculus, plus prenex
 polymorphism, plus simple type constructors of the form `type * ... * type -> type`. There is a
 `prop` sort for propositions, which is a normal type, but also a bit special: its terms are not just
-values, but are also computations, activated when queried upon.
+values but are also computations, activated when queried upon.
 
 However, the language of this land has a distinguishing feature, called Ad-Hoc Polymorphism. You
 see, the different rules that define a predicate in our language can *specialize* their type
-variables. This can be used to define polymorphic predicates that behave differently for different
+arguments. This can be used to define polymorphic predicates that behave differently for different
 types, like this, where we are essentially doing a `typecase` and we choose a rule depending on the
 *type* of the argument (as opposed to its value):
 
@@ -53,7 +53,7 @@ while dynamically it means something akin to a `typecase`, statically, it means 
 specialize their type variables, and this remains so for type-checking the whole rule.
 
 But alas! Is it not type specialization during pattern matching that is an essential feature of the
-GADTs of your land?  Maybe that means that we can use Ad-Hoc Polymorphism not just to do `typecase`,
+GADTs of your land?  Maybe that means that we can use Ad-Hoc Polymorphism not just to do `typecase`
 but also to work with GADTs in our land? Consider this! The venerable List that Knows Its Length:
 
 ```makam
@@ -73,7 +73,7 @@ vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
 
 In each rule, the first argument already specializes the `N` type -- in the first rule to `zero`,
 in the second, to `succ N`. And so erroneous rules that do not respect this specialization
-would not be accepted as a well-typed saying in our language:
+would not be accepted as well-typed sayings in our language:
 
 ```
 vmap P vnil (vcons X XS) :- ...
@@ -81,7 +81,7 @@ vmap P vnil (vcons X XS) :- ...
 
 And we should note that in this usage of Ad-Hoc Polymorphism for GADTs, it is only the increased
 precision of the statics that we care about. Dynamically, the rules for `vmap` can perform
-normal term-level unification, and only look at the constructors `vnil` and `vcons` to see
+normal term-level unification and only look at the constructors `vnil` and `vcons` to see
 whether each rule applies, rather than relying on the `typecase` aspects we spoke of before.
 
 Coupling this with the binding constructs that I talked to you earlier about, we can build
@@ -93,10 +93,11 @@ vbody : Body -> vbindmany Var zero Body.
 vbind : (Var -> vbindmany Var N Body) -> vbindmany Var (succ N) Body.
 ```
 
-(Whereby I am using notation of the Makam dialect in my definition of `vbind` that allows me to name
+(Whereby I am using notation of the Makam dialect in my definition of `vbindmany` that allows me to name
 parameters, purely for the purposes of increased clarity.)
 
-And the `openmany` version for `vbindmany`, where the rules are exactly as before:
+In the `openmany` version for `vbindmany`, the rules are exactly as before, though the static
+type is more precise:
 
 ```makam
 vopenmany : [N] vbindmany Var N Body -> (vector Var N -> Body -> prop) -> prop.
@@ -135,9 +136,9 @@ vassumemany P vnil vnil Q :- Q.
 vassumemany P (vcons X XS) (vcons Y YS) Q :- (P X Y -> vassumemany P XS YS Q).
 
 typeof (vletrec XS_DefsBody) T' :-
-  vopenmany XS_DefsBody (pfun [XS Defs Body] XS (Defs, Body) =>
-    vassumemany typeof XS TS (vmap typeof Defs TS),
-    vassumemany typeof XS TS (typeof Body T')).
+  vopenmany XS_DefsBody (pfun xs (Defs, Body) =>
+    vassumemany typeof xs TS (vmap typeof Defs TS),
+    vassumemany typeof xs TS (typeof Body T')).
 
 typeof (vletrec (vbind (fun f => vbody (vcons (lam T (fun x => app f (app f x))) vnil, f)))) T' ?
 >> Yes:

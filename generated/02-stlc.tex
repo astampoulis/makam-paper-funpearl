@@ -25,11 +25,12 @@ arrow : typ \ensuremath{\to} typ \ensuremath{\to} typ.
 
 \heroSTUDENT{} So we add constructors to a type at any point; we do not list
 them out when we define it like in Haskell. But how about lambdas? I
-have heard that \foreignlanguage{greek}{λ}Prolog supports higher-order abstract syntax, which
-should make those really easy to add, too, right?
+have heard that \foreignlanguage{greek}{λ}Prolog supports higher-order abstract syntax
+\citep{hoas-standard-reference}, which should make those really easy to
+add, too, right?
 
-\heroADVISOR{} Yes, functions at the meta-level are parametric, so they
-correspond exactly to single variable binding -- they cannot perform any
+\heroADVISOR{} Yes, functions at the meta level are parametric, so they
+correspond exactly to single-variable binding -- they cannot perform any
 computation, and thus we do not have to worry about exotic terms. So
 this works fine for Church-style lambdas:
 
@@ -61,7 +62,7 @@ unification variables.
 \heroSTUDENT{} I will need help with the lambda typing rule, though. What's
 the equivalent of extending the context as in \(\Gamma, \; x : \tau\) ?
 
-\heroADVISOR{} Simple; we introduce a fresh constructor for terms and a new
+\heroADVISOR{} Simple: we introduce a fresh constructor for terms and a new
 typing rule for it:
 
 \begin{verbatim}

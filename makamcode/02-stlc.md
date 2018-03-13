@@ -28,10 +28,10 @@ arrow : typ -> typ -> typ.
 
 STUDENT. So we add constructors to a type at any point; we do not list them out when we
 define it like in Haskell. But how about lambdas? I have heard that λProlog supports
-higher-order abstract syntax, which should make those really easy to add, too, right?
+higher-order abstract syntax \citep{hoas-standard-reference}, which should make those really easy to add, too, right?
 
-ADVISOR. Yes, functions at the meta-level are parametric, so they correspond exactly to
-single variable binding -- they cannot perform any computation, and thus we do not have to
+ADVISOR. Yes, functions at the meta level are parametric, so they correspond exactly to
+single-variable binding -- they cannot perform any computation, and thus we do not have to
 worry about exotic terms. So this works fine for Church-style lambdas:
 
 ```makam
@@ -60,7 +60,7 @@ ADVISOR. Yes! That's exactly right. Makam uses capital letters for unification v
 STUDENT. I will need help with the lambda typing rule, though. What's the equivalent of
 extending the context as in $\Gamma, \; x : \tau$ ?
 
-ADVISOR. Simple; we introduce a fresh constructor for terms and a new typing rule for it:
+ADVISOR. Simple: we introduce a fresh constructor for terms and a new typing rule for it:
 
 ```makam
 typeof (lam T1 E) (arrow T1 T2) :- (x:term -> typeof x T1 -> typeof (E x) T2).

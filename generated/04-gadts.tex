@@ -28,12 +28,12 @@ system is a subset of System F\(_\omega\) that should be familiar to you
 simple type constructors of the form
 \texttt{type\ *\ ...\ *\ type\ \ensuremath{\to}\ type}. There is a
 \texttt{prop} sort for propositions, which is a normal type, but also a
-bit special: its terms are not just values, but are also computations,
+bit special: its terms are not just values but are also computations,
 activated when queried upon.
 
 However, the language of this land has a distinguishing feature, called
 Ad-Hoc Polymorphism. You see, the different rules that define a
-predicate in our language can \emph{specialize} their type variables.
+predicate in our language can \emph{specialize} their type arguments.
 This can be used to define polymorphic predicates that behave
 differently for different types, like this, where we are essentially
 doing a \texttt{typecase} and we choose a rule depending on the
@@ -61,8 +61,8 @@ rule.
 
 But alas! Is it not type specialization during pattern matching that is
 an essential feature of the GADTs of your land? Maybe that means that we
-can use Ad-Hoc Polymorphism not just to do \texttt{typecase}, but also
-to work with GADTs in our land? Consider this! The venerable List that
+can use Ad-Hoc Polymorphism not just to do \texttt{typecase} but also to
+work with GADTs in our land? Consider this! The venerable List that
 Knows Its Length:
 
 \begin{verbatim}
@@ -83,7 +83,7 @@ vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
 In each rule, the first argument already specializes the \texttt{N} type
 -- in the first rule to \texttt{zero}, in the second, to
 \texttt{succ\ N}. And so erroneous rules that do not respect this
-specialization would not be accepted as a well-typed saying in our
+specialization would not be accepted as well-typed sayings in our
 language:
 
 \begin{verbatim}
@@ -93,7 +93,7 @@ vmap P vnil (vcons X XS) :- ...
 And we should note that in this usage of Ad-Hoc Polymorphism for GADTs,
 it is only the increased precision of the statics that we care about.
 Dynamically, the rules for \texttt{vmap} can perform normal term-level
-unification, and only look at the constructors \texttt{vnil} and
+unification and only look at the constructors \texttt{vnil} and
 \texttt{vcons} to see whether each rule applies, rather than relying on
 the \texttt{typecase} aspects we spoke of before.
 
@@ -108,11 +108,11 @@ vbind : (Var \ensuremath{\to} vbindmany Var N Body) \ensuremath{\to} vbindmany V
 \end{verbatim}
 
 (Whereby I am using notation of the Makam dialect in my definition of
-\texttt{vbind} that allows me to name parameters, purely for the
+\texttt{vbindmany} that allows me to name parameters, purely for the
 purposes of increased clarity.)
 
-And the \texttt{openmany} version for \texttt{vbindmany}, where the
-rules are exactly as before:
+In the \texttt{openmany} version for \texttt{vbindmany}, the rules are
+exactly as before, though the static type is more precise:
 
 \begin{verbatim}
 vopenmany : [N] vbindmany Var N Body \ensuremath{\to} (vector Var N \ensuremath{\to} Body \ensuremath{\to} prop) \ensuremath{\to} prop.

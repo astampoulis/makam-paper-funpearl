@@ -8,8 +8,7 @@ work nicely, but how about any other form of binding? Say, binding
 multiple variables at the same time? We are definitely going to need
 that for the language we have in mind. I was under the impression that
 HOAS encodings do not work for that -- for example, I was reading
-\citet{keuchel2016needle} recently and I remember reading something to
-that end.
+\citet{keuchel2016needle} recently and I remember something to that end.
 
 \heroADVISOR{} That's not really true; having first-class support for
 single-variable binders should be enough. But let's try it out, maybe
@@ -42,7 +41,7 @@ Can we write \texttt{term\ \ensuremath{\to}\ ...\ \ensuremath{\to}\ term}?
 
 \heroADVISOR{} Well, not quite, but we have already defined something similar,
 a type that roughly stands for \texttt{term\ *\ ...\ *\ term}, and we
-did not need anything special for that\ldots{}
+did not need anything special for that\ldots{}.
 
 \heroSTUDENT{} You mean the \texttt{list} type?
 
@@ -56,7 +55,7 @@ bindcons : (term \ensuremath{\to} bindmanyterms) \ensuremath{\to} bindmanyterms.
 
 \heroSTUDENT{} Hmm. That looks quite similar to lists; the parentheses in
 \texttt{cons} are different. \texttt{nil} gets an extra \texttt{term}
-argument, too\ldots{}
+argument, too\ldots{}.
 
 \heroADVISOR{} Yes\ldots{} So what is happening here is that \texttt{bindcons}
 takes a single argument, introducing a binder; and \texttt{bindnil} is
@@ -73,8 +72,8 @@ bind : (Variable \ensuremath{\to} bindmany Variable Body) \ensuremath{\to} bindm
 \end{verbatim}
 
 \heroADVISOR{} This looks great! That is exactly what's in the Makam standard
-library actually. And we can now define \texttt{lammany} using it -- and
-our example term from before.
+library, actually. And we can now define \texttt{lammany} using it --
+and our example term from before.
 
 \begin{verbatim}
 lammany : bindmany term term \ensuremath{\to} term.
@@ -104,7 +103,7 @@ typeof (lammany F) (arrowmany TS T) :-
 \end{verbatim}
 
 \heroSTUDENT{} Let me see if I can read this\ldots{} \texttt{openmany} somehow
-gives you fresh variables \texttt{xs} for the binders, and the
+gives you fresh variables \texttt{xs} for the binders, plus the
 \texttt{body} of the \texttt{lammany}; and then the
 \texttt{assumemany\ typeof} part is what corresponds to extending the
 \(\Gamma\) context with multiple typing assumptions?
@@ -133,12 +132,25 @@ assumemany P [] [] Q :- Q.
 assumemany P (X :: XS) (T :: TS) Q :- (P X T \ensuremath{\to} assumemany P XS TS Q).
 \end{verbatim}
 
-\heroADVISOR{} Yes, exactly! Just a note though -- \lamprolog typically does
+\heroADVISOR{} Yes, exactly! Just a note, though -- \lamprolog typically does
 not allow the definition of \texttt{assumemany}, where a non-concrete
 predicate like \texttt{P\ X\ Y} is used as an assumption, because of
 logical reasons. Makam is more lax, and so is ELPI, another recent
 \lamprolog implementation, and allows this form statically, though there
 are instantiations of \texttt{P} that will fail at run-time.
+
+\heroNEEDFEEDBACK{}
+\todo{I am considering abandoning `assumemany` in favor of using a specialized `assume\_types\_of`. We could avoid the above explanation in that case; also this would make the development in this chapter work in other \lamprolog dialects, and also keep our \lamprolog experts from raising an issue at departing from the logical reading of \lamprolog so early in the text. The specialized predicate would look as follows.}
+
+\begingroup\color{todo}
+
+\begin{verbatim}
+assume_types_of : list term \ensuremath{\to} list typ \ensuremath{\to} prop \ensuremath{\to} prop.
+assume_types_of [] [] Q :- Q.
+assume_types_of (X :: XS) (T :: TS) Q :- (typeof X T \ensuremath{\to} assume_types_of P XS TS Q).
+\end{verbatim}
+
+\endgroup
 
 \heroSTUDENT{} I see. But we could just manually inline
 \texttt{assumemany\ typeof} instead, so that's not a big problem, just
@@ -181,7 +193,7 @@ let rec f = f_def and g = g_def in body
 \end{verbatim}
 
 If we write this in a way where the binding structure is explicit, we
-would bind \texttt{f} and \texttt{g} simultaneously, and then write the
+would bind \texttt{f} and \texttt{g} simultaneously and then write the
 definitions and the body in that scope:
 
 \begin{verbatim}
@@ -200,9 +212,9 @@ letrec : bindmany term (list term * term) \ensuremath{\to} term.
 
 \begin{verbatim}
 typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (fun xs (Defs, Body) \ensuremath{\Rightarrow}
-    assumemany typeof xs TS (map typeof Defs TS),
-    assumemany typeof xs TS (typeof Body T')).
+  openmany XS_DefsBody (fun xs (defs, body) \ensuremath{\Rightarrow}
+    assumemany typeof xs TS (map typeof defs TS),
+    assumemany typeof xs TS (typeof body T')).
 \end{verbatim}
 
 \heroADVISOR{} Almost! The parser isn't clever enough to tell that the
@@ -210,38 +222,33 @@ predicate argument to \texttt{openmany} is, in fact, a predicate, so we
 can't use the normal predicate syntax for it. We can use the syntactic
 form \texttt{pfun} for writing anonymous predicates instead. Since this
 will be a predicate, you are also able to destructure parameters like
-you do here -- that doesn't work for normal functions in the general
-case, since they need to treat arguments parametrically. And there is an
-actual issue here: could you guess what it is? It has to do with which
-free variables a unification variable is allowed to capture.
-
-\heroSTUDENT{} Not really, but might have something to do with the fresh
-variables that \texttt{openmany} introduces?
-
-\heroADVISOR{} Yes. See, a unification variable is allowed to capture all the
-free variables in scope at the point where it is introduced. By default,
-all unification variables used in a rule get introduced when we check
-whether the rule fires. But here we need to say explicitly that certain
-unification variables need to be introduced when \texttt{openmany} gets
-to use the \texttt{pfun} argument, and has therefore introduced all the
-needed fresh variables. So we have to write the rule like this:
+you did here on \texttt{(defs,\ body)} -- that doesn't work for normal
+functions in the general case, since they need to treat arguments
+parametrically. This works by performing unification of the parameter
+with the given term -- so \texttt{defs} and \texttt{body} need to be
+unification variables. So we have to write the rule like this:
 
 \begin{verbatim}
 typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (pfun [XS Defs Body] XS (Defs, Body) \ensuremath{\Rightarrow}
-    assumemany typeof XS TS (map typeof Defs TS),
-    assumemany typeof XS TS (typeof Body T')).
+  openmany XS_DefsBody (pfun xs (Defs, Body) \ensuremath{\Rightarrow}
+    assumemany typeof xs TS (map typeof Defs TS),
+    assumemany typeof xs TS (typeof Body T')).
 \end{verbatim}
 
-\heroSTUDENT{} Ah, I see. So the \texttt{{[}XS\ Defs\ Body{]}} notation is
-like existential quantification then.
+\heroNEEDFEEDBACK{}
+\todo{There is a subtle thing going on here, having to do with the free variables that a unification variable
+can capture. In the above, `Defs` and `Body` can capture the free variables in `xs`; but `T'` cannot, since it is introduced
+at the top-level, rather than nested inside the call to `openmany` as `Defs` and `Body` are. I previously had an explanation like
+this: "A unification variable is allowed to capture all the free variables in scope at the
+point where it is introduced. By default, all unification variables used in a rule get introduced when we
+check whether the rule fires. But here certain unification variables are
+introduced when `openmany` gets to use the `pfun` argument and has therefore introduced all the needed fresh variables,
+so they can capture the free variables introduced by `openmany`." Too confusing/only needed for existing \lamprolog users?}
 
-\heroADVISOR{} Exactly.
-
-\heroSTUDENT{} One thing I noticed with our representation of \texttt{letrec}
-is that we have to be careful so that the number of binders matches the
-number of definitions we give. Our typing rules disallow that, but I
-wonder if there's a way to have a more accurate representation for
-\texttt{letrec} which includes that requirement?
+\heroSTUDENT{} Ah, I see. One thing I noticed with our representation of
+\texttt{letrec} is that we have to be careful so that the number of
+binders matches the number of definitions we give. Our typing rules
+disallow that, but I wonder if there's a way to have a more accurate
+representation for \texttt{letrec} which includes that requirement?
 
 \heroADVISOR{} Funny you should ask that\ldots{} Let me tell you a story.

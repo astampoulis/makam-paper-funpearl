@@ -20,20 +20,20 @@ For a branch like:
 
 the pattern introduces 2 variables, \texttt{hd} and \texttt{tl}, which
 the body of the branch can refer to. But we can't really refer to those
-variables in the pattern itself, at least for simple patterns\ldots{}
-(There are cases where that's not the case, like or-patterns in some ML
-dialects, or in dependent pattern matching, where consequent uses of the
-same variable perform an exact match rather than unification, but let's
-not worry about those cases right now, I am sure we could handle them
-too if we needed to.) So basically, once we know what variables a
-pattern introduces, we can bind them and give them names all at the same
-time. So we need something like this:
+variables in the pattern itself, at least for simple
+patterns\footnote{There are cases where that's not the case, like in or-patterns in some ML dialects, or in dependent pattern matching, where consequent uses of the same variable perform an exact match rather than unification. We choose to omit the handling of cases like those in the present work for presentation purposes.}\ldots{}.
+So we could, equivalently, just capture what variables a pattern
+introduces, and bind them all at the same time before the body of the
+branch. So we need something like this:
 
 \begin{verbatim}
-branch(pattern, bind [# variables of P].body)
+branch(pattern P, bind [variables in P].body)
 \end{verbatim}
 
-Or, in Makam, the above branch will be something like:
+Actually, we do not even need to give names to the variables in the
+\texttt{P} pattern. We can just record how many pattern variables we
+need -- and then bind the same number of variables, preserving the same
+order. So we could write the above branch in Makam like this:
 
 \begin{verbatim}
 branch(
@@ -41,11 +41,8 @@ branch(
   bind (fun hd \ensuremath{\Rightarrow} bind (fun tl \ensuremath{\Rightarrow} body (.. hd .. tl ..))))
 \end{verbatim}
 
-One way that I have started thinking about binding is that it is just a
-way to introduce a notion of sharing into abstract syntax trees, so that
-we can refer to the same thing a number of times. And basically for
-these simple patterns, the sharing happens from the side of the pattern
-into the branch body, not within the pattern itself.
+where \texttt{hd} corresponds to the first occurence of
+\texttt{patt\_var}, and \texttt{tl} to the second one.
 
 With the above, I am thinking that the type of \texttt{branch} should be
 something like:
@@ -57,7 +54,7 @@ branch : (Pattern: patt N) (Vars_Body: vbindmany term N term) \ensuremath{\to} .
 Wait, before I get into the weeds let me just set up some things. First,
 let's add a simple base type, say \texttt{nat}s, to have something to
 work with as an example. I'll prefix their names with \texttt{o} for
-``object language'', so as to avoid ambiguity. And I will also add a
+``object language,'' so as to avoid ambiguity. And I will also add a
 \texttt{case\_or\_else} construct, standing for a single-branch
 pattern-match construct. It should be easy to extend to a
 multiple-branch construct, but I want to keep things as simple as
@@ -91,8 +88,8 @@ typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
 Right, so when checking a pattern, we'll have to determine both what
 type of scrutinee it matches, as well as the types of the variables that
 it contains. We will also need \texttt{vassumemany} that is just like
-\texttt{assumemany} from before, but takes \texttt{vector} arguments
-instead of \texttt{list}.
+\texttt{assumemany} from before but which takes \texttt{vector}
+arguments instead of \texttt{list}.
 
 \begin{verbatim}
 typeof_patt : [N] patt N \ensuremath{\to} typ \ensuremath{\to} vector typ N \ensuremath{\to} prop.
@@ -122,7 +119,7 @@ patt_osucc : patt N \ensuremath{\to} patt N.
 typeof_patt (patt_osucc P) onat VarTypes :- typeof_patt P onat VarTypes.
 \end{verbatim}
 
-Wildcard patterns will match any value, and should not introduce a
+A wildcard pattern will match any value and should not introduce a
 variable into the body of the branch.
 
 \begin{verbatim}
@@ -130,7 +127,7 @@ patt_wild : patt zero.
 typeof_patt patt_wild T vnil.
 \end{verbatim}
 
-OK, and let's do patterns for our n-tuples\ldots{} I guess I'll need a
+OK, and let's do patterns for our n-tuples\ldots{}. I guess I'll need a
 type for lists of patterns too.
 
 \begin{verbatim}
@@ -146,16 +143,15 @@ Uh-oh\ldots{} don't think I can do that
 \texttt{N\ +\ N\textquotesingle{}} really. In this \texttt{pcons} case,
 my pattern basically looks like \texttt{(P,\ ...PS)}; and I want the
 overall pattern to have as many variables as \texttt{P} and \texttt{PS}
-combined. But the GADTs support in \lamprolog seems to be quite basic, I
+combined. But the GADTs support in \lamprolog seems to be quite basic. I
 do not think there's any notion of type-level functions like
-plus\ldots{}
+plus\ldots{}.
 
-However\ldots{} maybe I can work around that, if I add change
-\texttt{patt} to include an ``accumulator'' argument, say
-\texttt{NBefore}. Each constructor for patterns will now define how many
-pattern variables it adds to that accumulator, yielding \texttt{NAfter},
-rather than defining how many pattern variables it includes\ldots{} like
-this:
+However\ldots{} maybe I can work around that, if I change \texttt{patt}
+to include an ``accumulator'' argument, say \texttt{NBefore}. Each
+constructor for patterns will now define how many pattern variables it
+adds to that accumulator, yielding \texttt{NAfter}, rather than defining
+how many pattern variables it includes\ldots{} like this:
 
 \begin{verbatim}
 patt, pattlist : (NBefore: type) (NAfter: type) \ensuremath{\to} type.
@@ -169,7 +165,7 @@ pnil : pattlist N N.
 pcons : patt N N' \ensuremath{\to} pattlist N' N'' \ensuremath{\to} pattlist N N''.
 \end{verbatim}
 
-Yes. I think that should work. I got a little editing to do in my
+Yes, I think that should work. I have a little editing to do in my
 existing predicates to use this representation instead. For top-level
 patterns, we should always start with the accumulator being
 \texttt{zero}\ldots{}
@@ -197,7 +193,7 @@ typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
   typeof Else BodyT.
 \end{verbatim}
 
-Alright, let's proceed to the typing rules for patterns themselves:
+All right, let's proceed to the typing rules for patterns themselves:
 
 \begin{verbatim}
 typeof_patt patt_var T VarTypes VarTypes' :-
@@ -214,7 +210,7 @@ vsnoc vnil Y (vcons Y vnil).
 vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
 \end{verbatim}
 
-The rest should be easy to adapt\ldots{}
+The rest should be easy to adapt\ldots{}.
 
 \begin{scenecomment}
 (Our hero finishes adapting the rest of the rules for \texttt{typeof\_patt},
@@ -238,13 +234,13 @@ something roughly like:
           {\texttt{case\_or\_else}(e_1, p \mapsto xs.e_2, e_3) \Downarrow v_3}
 \end{mathpar}
 
-So \texttt{match} tries to unify a pattern with a term, and yields a
+So \texttt{match} tries to unify a pattern with a term and yields a
 substitution \(\sigma\) for the pattern variables if successful, which
 is then applied to the body of the branch. If there is no \texttt{match}
 to be found, then we use the \texttt{else} branch.
 
 \heroSTUDENT{} Hmm\ldots{} so do we need two predicates, one for the case
-where the \texttt{match} is successful, and one to check that a pattern
+where the \texttt{match} is successful and one to check that a pattern
 \emph{does not} match a scrutinee?
 
 \heroADVISOR{} Actually we could have a single \texttt{match} predicate. And
@@ -266,7 +262,7 @@ eval (case_or_else Scrutinee Pattern Body Else) V' :-
 
 The \texttt{if-then-else} construct behaves as follows: when there is at
 least one way to prove the condition, it proceeds to the \texttt{then}
-branch, otherwise it goes to the \texttt{else} branch. Pretty standard
+branch, otherwise it goes to the \texttt{else} branch. Pretty standard,
 really. It is one thing that the Prolog cut statement, \texttt{!}, is
 useful for, but I find that using cut makes for less readable code.
 \citet{kiselyov05backtracking} is worth reading for alternatives to the
@@ -277,7 +273,7 @@ programming, and Makam follows that paper closely.
 \heroSTUDENT{} I see. Now, I noticed a \texttt{vapplymany} predicate -- what
 is that?
 
-\heroADVISOR{} That is a standard library predicate. It is used to perform
+\heroADVISOR{} That is a standard-library predicate. It is used to perform
 simultaneous substitution for all the variables in our multiple binding
 type, \texttt{vbindmany}. Or another way to say it, it's the equivalent
 of HOAS function application for \texttt{vbindmany}:

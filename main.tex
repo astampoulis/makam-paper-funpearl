@@ -77,10 +77,7 @@
 \newcommand\tightlist[0]{\itemsep1pt\parskip0pt\parsep0pt}
 \renewcommand\thesection{\textbf{CHAPTER \arabic{section}}}
 \renewcommand\thesubsection{\textbf{SECTION \arabic{section}.\arabic{subsection}}}
-\newcommand\todo[1]{\textcolor[rgb]{0.75,0.00,0.00}{#1}}
 \newcommand\hero[1]{\textit{#1}.}
-\newcommand\heroTODO[0]{\textbf{\todo{TODO}}.}
-\newcommand\heroNEEDFEEDBACK[0]{\textbf{\todo{Need Feedback}}:}
 \newcommand\heroSTUDENT[0]{\hero{HAGOP}}
 \newcommand\heroADVISOR[0]{\hero{ROZA}}
 \newcommand\heroAUDIENCE[0]{\hero{AUDIENCE}}
@@ -89,6 +86,11 @@
 \newcommand\identDialog[0]{\setlength{\leftskip}{1em}\setlength{\parindent}{-1em}}
 \newcommand\identNormal[0]{\setlength{\leftskip}{0em}\setlength{\parindent}{0em}}
 \newenvironment{normalident}{\identNormal}{\identDialog}
+
+\definecolor{todo}{rgb}{0.75,0.00,0.00}
+\newcommand\todo[1]{\textcolor{todo}{#1}}
+\newcommand\heroTODO[0]{\textbf{\todo{TODO}}.}
+\newcommand\heroNEEDFEEDBACK[0]{\textbf{\todo{Need Feedback}}:}
 
 % =====
 % used for highlighting from pandoc
