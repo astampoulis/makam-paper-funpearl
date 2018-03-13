@@ -231,11 +231,11 @@ quite simple to do: the evaluation rule. On paper we typically write
 something roughly like:
 
 \vspace{-1.5em}\begin{mathpar}
-\inferrule{\texttt{match}(p, v) \leadsto \sigma \\ e[\sigma/xs] \Downarrow v'}
-          {\texttt{case\_or\_else}(p, xs.e, e') \Downarrow v'}
+\inferrule{e_1 \Downarrow v_1 \\ \texttt{match}(p, v_1) \leadsto \sigma \\ e_2[\sigma/xs] \Downarrow v_2}
+          {\texttt{case\_or\_else}(e_1, p \mapsto xs.e_2, e_3) \Downarrow v_2}
 
-\inferrule{\texttt{match}(p, v) \not\leadsto \\ e' \Downarrow v'}
-          {\texttt{case\_or\_else}(v, p \mapsto xs.e, e') \Downarrow v'}
+\inferrule{e_1 \Downarrow v_1 \\ \texttt{match}(p, v_1) \not\leadsto \\ e_3 \Downarrow v_3}
+          {\texttt{case\_or\_else}(e_1, p \mapsto xs.e_2, e_3) \Downarrow v_3}
 \end{mathpar}
 
 So \texttt{match} tries to unify a pattern with a term, and yields a
