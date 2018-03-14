@@ -217,7 +217,9 @@ syntactic form `pfun` for writing anonymous predicates instead. Since this will 
 predicate, you are also able to destructure parameters like you did here on `(defs, body)` -- that doesn't work for
 normal functions in the general case, since they need to treat arguments parametrically.
 This works by performing unification of the parameter with the given term -- so `defs` and `body`
-need to be unification variables. So we have to write the rule like this:
+need to be unification variables\footnote{There is a subtlety here, having to do with the free variables that a unification variable
+can capture. A unification variable is allowed to capture all the free variables in scope at the
+point where it is introduced. \text{Defs} and \text{Body} are introduced as unification variables when we get to execute the \text{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \text{Defs} and \text{Body} can capture the \text{xs} variables that \text{openmany} introduces, whereas \text{T'} cannot. In \lamprolog terms, the \text{pfun} notation desugars to existential quantification of \text{Defs} and \text{Body}.}.
 
 ```makam
 typeof (letrec XS_DefsBody) T' :-
@@ -234,16 +236,7 @@ typeof (letrec (bind (fun f => body ([lam T (fun x => app f (app f x))], f)))) T
 ```
 -->
 
-NEEDFEEDBACK. \todo{There is a subtle thing going on here, having to do with the free variables that a unification variable
-can capture. In the above, `Defs` and `Body` can capture the free variables in `xs`; but `T'` cannot, since it is introduced
-at the top-level, rather than nested inside the call to `openmany` as `Defs` and `Body` are. I previously had an explanation like
-this: "A unification variable is allowed to capture all the free variables in scope at the
-point where it is introduced. By default, all unification variables used in a rule get introduced when we
-check whether the rule fires. But here certain unification variables are
-introduced when `openmany` gets to use the `pfun` argument and has therefore introduced all the needed fresh variables,
-so they can capture the free variables introduced by `openmany`." Too confusing/only needed for existing \lamprolog users?}
-
-STUDENT. Ah, I see. One thing I noticed with our representation of `letrec` is that we have to be careful so
+STUDENT. Ah, I see. Let me ask you something though: one thing I noticed with our representation of `letrec` is that we have to be careful so
 that the number of binders matches the number of definitions we give. Our typing rules disallow
 that, but I wonder if there's a way to have a more accurate representation for `letrec` which
 includes that requirement?

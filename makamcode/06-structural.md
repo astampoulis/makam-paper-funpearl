@@ -60,12 +60,12 @@ typeq A T :- typedef A T.
 
 wfprogram (lettype (arrow onat onat) (fun a =>
           (main (lam a (fun f => (app f ozero)))))) ?
->> (Complete and utter silence)
+>> (Complete silence)
 ```
 
 <!--
 ```makam
-typeq : (T1: typ) (T2: typ) -> prop.
+typeq : [Any] (T1: Any) (T2: Any) -> prop.
 ```
 -->
 
@@ -111,23 +111,15 @@ a trick to side-step this issue -- let's check that `T` and `T'` are not identic
 typeof E T :- not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
 ```
 
-`eq` is a standard-library predicate that simply attempts unification of the two arguments:
+By the way, `eq` is a standard-library predicate that simply attempts unification of the two arguments:
 
 ```
 eq : A -> A -> prop. eq X X.
 ```
 
-STUDENT. If we ever made a paper submission out of this, the reviewers would not be happy
-about this rule. But sure. We still need to define `typeq` now; maybe I'll do this by
-attempting to reduce both arguments to the same normal form.
-
-```
-typnf : A -> A -> prop.
-typeq T T' :- typnf T Tnf, typnf T' Tnf.
-```
-
-Oh, and we should add the
-conversion rule for `typeof_patt`, but that's almost identical as for terms. (...) I'll do `typnf` next.
+STUDENT. If we ever made a paper submission out of this, some reviewers would not be happy
+about this `typeof` rule. But sure. Oh, and we should add the
+conversion rule for `typeof_patt`, but that's almost identical as for terms. (...) I'll do `typeq` next.
 
 <!--
 ```makam
@@ -139,22 +131,28 @@ typeof_patt (P : patt A B) T S S' :-
 -->
 
 ```
-typnf A T' :- typedef A T, typnf T T'.
-typnf (arrow T1 T2) (arrow T1' T2') :-
-  typnf T1 T1', typnf T2 T2'.
-typnf (arrowmany TS T) (arrowmany TS' T') :-
-  map typnf TS TS', typnf T T'.
+typeq A T' :- typedef A T, typeq T T'.
+typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq (arrow T1 T2) (arrow T1' T2') :-
+  typeq T1 T1', typeq T2 T2'.
+typeq (arrowmany TS T) (arrowmany TS' T') :-
+  map typeq TS TS', typeq T T'.
 ...
 ```
 
-ADVISOR. Writing boilerplate is not fun, is it?
+ADVISOR. I see you learn quickly and wrote the symmetric case for `typedef`s so as to avoid looping! Still, writing boilerplate is not fun, is it?
 
-STUDENT. It is not. I wish we could just write the first rule `typnf`; it's the only important
-one, after all. All the other ones just propagate the structural recursion through. Also,
-whenever we add a new constructor for types, we'll have to remember to add a `typnf` rule
+STUDENT. It is not. I wish we could just write the first two rules; they're the important
+ones, after all. All the others just propagate the structural recursion through. Also,
+whenever we add a new constructor for types, we'll have to remember to add a `typeq` rule
 for it....
 
 ADVISOR. Right. Let's just use some magic instead.
+
+\begin{scenecomment}
+(Roza changes the type definition of `typeq` to `typeq : [Any] (T1: Any) (T2: Any) -> prop`,
+and adds a few lines:)
+\end{scenecomment}
 
 <!--
 ```makam
@@ -163,16 +161,10 @@ structural_recursion : [B] forall A (A -> A -> prop) -> B -> B -> prop.
 -->
 
 ```makam
-typnf : [A] A -> A -> prop.
-typnf A T' :- typedef A T, typnf T T'.
-(* typnf T T' :- structural_recursion @typnf T T'. *)
+typeq A T' :- typedef A T, typeq T T'.
+typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq T T' :- structural_recursion @typeq T T'.
 ```
-
-<!--
-```makam
-typeq T T' :- typnf T Tnf, typnf T' Tnf.
-```
--->
 
 \begin{scenecomment}
 (Hagop is suddenly feeling faint by what will obviously be the main point of the rest of this chapter.)
@@ -184,25 +176,22 @@ ADVISOR. Indeed. There is a little bit of trickery involved here, but you will s
 there is much less of it than you would expect, upon close reflection. `structural_recursion` is
 just a normal standard-library predicate like any other; it essentially applies a polymorphic predicate "structurally"
 to a term. Its implementation will be a little special of course. But let's just think about how you would
-write the rest of the rules of `typnf` generically, to perform structural recursion.
+write the rest of the rules of `typeq` generically, to perform structural recursion.
 
-STUDENT. OK. Well, for every top-level `typ` we visit, we essentially need to find any `typ`s contained in it,
-and apply `typnf` to them; and we would keep everything else the same.
-
-ADVISOR. Right, or equivalently, we can do this one constructor at a time: for everything that we visit, we
-keep the constructor the same, and recurse on its arguments. We'll eventually get to any `typ`s contained, even
-if they're inside some other type, like in a `list`. Something like:
+STUDENT. OK. Well, when looking at two `typ`s together, we have to make sure that their constructors are the same, and also any `typ`s they contain as arguments are recursively `typeq`ual. So something like this:
 
 ```
-typnf (Constructor Arguments) (Constructor Arguments') :- map typnf Arguments Arguments'.
+typeq (Constructor Arguments) (Constructor Arguments') :-
+  map typeq Arguments Arguments'.
 ```
 
-STUDENT. I see! That's why you made `typnf` polymorphic above; even if we start visiting a `typ` at the top-level,
-some of its constituents might be of different type.
+ADVISOR. Right. Note though, that the types of arguments might be different than `typ`. So even if we start comparing two types at the top-level, we might end up having to compare two lists of types that they contain -- imagine the case for `arrowmany` for example.
+
+STUDENT. I see! That's why you edited `typeq` to be polymorphic above; you have extended it to work on *any type* that might contain a `typ`.
 
 ADVISOR. Exactly. Now, the list of `Arguments` -- can you come up with a type for them?
 
-STUDENT. We can use the GADT of heterogeneous lists for them; not all the arguments of each constructor are of the
+STUDENT. We can use the GADT of heterogeneous lists for them; not all the arguments of each constructor need to be of the
 same type!
 
 ```makam
@@ -229,7 +218,7 @@ hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
 >> YS := hcons 1 (hcons "foo" hnil).
 ```
 
-STUDENT. Fair enough. So, going back to our generic rule -- is there a way to actually write it? Maybe there's a reflective predicate we can use, similar to how we used `refl.isunif` before to tell if a term is an uninstantiated unification variable?
+Looks good enough. So, going back to our generic rule -- is there a way to actually write it? Maybe there's a reflective predicate we can use, similar to how we used `refl.isunif` before to tell if a term is an uninstantiated unification variable?
 
 <!--
 Switch to a refl.headargs that returns a heterogeneous list.
@@ -256,30 +245,43 @@ headargs Term Head Arguments when not(refl.isunif Head) :-
 ADVISOR. Exactly -- there is `refl.headargs`. It relates a concrete term to its decomposition into a constructor and a list of arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `\texttt{compound\_{}name\_{}arguments}', which is quite similar.}. This is not an extra-logical feature, though: we could define `refl.headargs` without any special support, save for `refl.isunif`, if we maintained a discipline whenever we add a new constructor, roughly like this:
 
 ```
-refl.headargs : (Term: TermT) (Head: HeadT) (Args: hlist ArgsTS) -> prop.
+refl.headargs : (Term: TermT) (Constr: ConstrT) (Args: hlist ArgsTS) -> prop.
 
 arrowmany : (TS: list typ) (T: typ) -> typ.
-refl.headargs Term Head Args :-
+refl.headargs Term Constructor Args :-
   not(refl.isunif Term), eq Term (arrowmany TS T),
-  eq Head arrowmany, eq Args (hcons TS (hcons T hnil)).
+  eq Constructor arrowmany, eq Args (hcons TS (hcons T hnil)).
 ```
 
-STUDENT. I see. I think I can write the generic rule for `typnf` now then!
+STUDENT. I see. I think I can write the generic rule for `typeq` now then!
+
+```
+typeq T T' :-
+  refl.headargs T Constr Args,
+  refl.headargs T' Constr Args',
+  hmap @typeq Args Args'.
+```
+
+ADVISOR. That looks great! Simple, isn't it? You'll see that there are a few more cases that are needed for the generic case, though. Should we do that? We can roll our own reusable `structural_recursion` implementation -- that way we will dispel all magic from its use that I showed you earlier! I'll give you the type; you fill in the first case:
+
+```
+structural_recursion : [Any] 
+  (RecursivePred: forall A (A -> A -> prop))
+  (X: Any) (Y: Any) -> prop.
+```
+
+STUDENT. Let me see. Oh, so, the first argument is a predicate -- are we doing this in open-recursion style? I see. Well, I can adapt the case I just wrote above.
 
 ```makam
-typnf T T' :-
-  refl.headargs T Head Args,
-  hmap @typnf Args Args',
-  refl.headargs T' Head Args'.
+structural_recursion Rec X Y :-
+  refl.headargs X Constructor Arguments,
+  refl.headargs Y Constructor Arguments',
+  hmap Rec Arguments Arguments'.
 ```
 
-ADVISOR. Correct. We should now be able to proceed to defining the boilerplate generically. Let's do it as a reusable higher-order predicate for structural recursion. I'll give you the type; you fill in the first case:
+ADVISOR. Nice. Now, this assumes that `X` and `Y` are both concrete terms. What happens when `X` is concrete and `Y` isn't, or the other way around? Hint: you can use `refl.headargs` in the other direction, to reconstruct a term from a constructor and a list of arguments.
 
-```
-structural_recursion : [B] (forall A (A -> A -> prop)) -> B -> B -> prop.
-```
-
-STUDENT. Let me see. Oh, so, the first argument -- are we doing this in open-recursion style? Maybe that's the predicate for recursive calls. I need to deconstruct a term, apply the recursive call.... How is this?
+STUDENT. Let me think about that a bit. How is this?
 
 ```makam
 structural_recursion Rec X Y :-
@@ -288,39 +290,21 @@ structural_recursion Rec X Y :-
   refl.headargs Y Constructor Arguments'.
 ```
 
-AUDIENCE. I'm sure this was not your first attempt in the unabridged version of this story!
-
-ADVISOR. Wait, who said that? Anyway. That looks great! And you're right about using `refl.headargs` in the other direction, to reconstruct a new term with the same constructor and different arguments.
-
-STUDENT. Are we done?
-
-ADVISOR. Almost there! We just need to handle the case of the meta-level function type. It does not make sense to destructure functions using `refl.headargs`; so, that fails for functions, and we have to treat them specially:
+ADVISOR. That is exactly right. You need the symmetric case too, where `Y` is concrete and `X` isn't, but that's entirely similar. Also, there is another type of concrete terms in Makam: meta-level functions! It does not make sense to destructure functions using `refl.headargs`; so, that predicate `refl.headargs` fails for functions, and we have to treat them specially:
 
 ```makam
 structural_recursion Rec (X : A -> B) (Y : A -> B) :-
   (x:A -> structural_recursion Rec x x -> structural_recursion Rec (X x) (Y x)).
 ```
 
-```makam
-structural_recursion P X Y :- print (X, Y), refl.isunif X, not(refl.isunif Y), eq X Y.
-structural_recursion P X Y :- print (X, Y, "right"), refl.isunif Y, not(refl.isunif X), eq X Y.
-```
+STUDENT. Ah, I see! Here you *are* actually relying on the `typecase` aspect of ad-hoc polymorphism, right? To check if `X` and `Y` are of the meta-level function type.
 
-STUDENT. This is exciting; I hope it is part of the standard library of Makam. I can do `teq` in a few lines now!
-
-```
-typnf : [A] A -> A -> prop.
-typeq T T' :- not(eq T T'), typnf T Tnf, typnf T' Tnf.
-typnf A T' :- typedef A T, typnf T T'.
-typnf T T' :- structural_recursion @typnf T T'.
-```
-
-ADVISOR. That is exactly right! So, we've minimized the boilerplate, and we won't need any
+ADVISOR. Exactly. And you know what, that's all there is to it! So, we've minimized the boilerplate, and we won't need any
 adaptation when we add a new constructor -- even if we make use of all sorts of new and complicated types.
 
-STUDENT. That's right: we did not do anything special for the binding forms we defined.... quite a payoff for a small amount of code! But, wait, isn't `structural_recursion` missing a case: that of uninstantiated unification variables?
+STUDENT. That's right: we do not need to do anything special for the binding forms we defined, like `bindmany`.... quite a payoff for a small amount of code! But, wait, isn't `structural_recursion` missing a case: what happens if both `X` and `Y` are uninstantiated unification variables?
 
-ADVISOR. It is, but in my experience, it's better to define how to handle unification variables as needed, in each new structurally recursive predicate. In this case, we're only supposed to use `teq` with ground terms, so it's fine if we fail when we encounter a unification variable.
+ADVISOR. You are correct, it would fail in that case. But in my experience, it's better to define how to handle unification variables as needed, in each new structurally recursive predicate. In this case, we should never get into that situation based on how we have defined `typeq`.
 
 \begin{scenecomment}
 (Our heroes try out a few examples and convince themselves that this works OK and no endless loops happen when things don't typecheck correctly.)
@@ -344,10 +328,12 @@ typeof (lam (product [onat, onat])
 ```makam
 (a:typ -> typedef a (product [onat, onat]) -> typeq a (product [onat, onat])) ?
 >> Yes.
+
+(a:typ -> typedef a (product [onat, onat]) -> typeq (product [onat, onat]) a) ?
+>> Yes.
 ```
 
 ```makam
-%trace+ typnf.
 wfprogram (lettype (product [onat, onat]) (fun bintuple => main
        (lam bintuple
             (fun x => 
@@ -357,7 +343,6 @@ wfprogram (lettype (product [onat, onat]) (fun bintuple => main
     (tuple [tuple [ozero, ozero], ozero])
   )))) ?
 >> Yes.
-%trace- typnf.
 ```
 
 Let us make sure we do not diverge on type error:

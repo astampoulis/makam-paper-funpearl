@@ -68,7 +68,7 @@ typeq A T :- typedef A T.
 
 wfprogram (lettype (arrow onat onat) (fun a \ensuremath{\Rightarrow}
           (main (lam a (fun f \ensuremath{\Rightarrow} (app f ozero)))))) ?
->> (Complete and utter silence)
+>> (Complete silence)
 \end{verbatim}
 
 \heroADVISOR{} Time to \texttt{Ctrl-C} out of the infinite loop?
@@ -134,50 +134,49 @@ and \texttt{T\textquotesingle{}} are not identical:
 typeof E T :- not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
 \end{verbatim}
 
-\texttt{eq} is a standard-library predicate that simply attempts
-unification of the two arguments:
+By the way, \texttt{eq} is a standard-library predicate that simply
+attempts unification of the two arguments:
 
 \begin{verbatim}
 eq : A \ensuremath{\to} A \ensuremath{\to} prop. eq X X.
 \end{verbatim}
 
-\heroSTUDENT{} If we ever made a paper submission out of this, the reviewers
-would not be happy about this rule. But sure. We still need to define
-\texttt{typeq} now; maybe I'll do this by attempting to reduce both
-arguments to the same normal form.
+\heroSTUDENT{} If we ever made a paper submission out of this, some reviewers
+would not be happy about this \texttt{typeof} rule. But sure. Oh, and we
+should add the conversion rule for \texttt{typeof\_patt}, but that's
+almost identical as for terms. (\ldots{}) I'll do \texttt{typeq} next.
 
 \begin{verbatim}
-typnf : A \ensuremath{\to} A \ensuremath{\to} prop.
-typeq T T' :- typnf T Tnf, typnf T' Tnf.
-\end{verbatim}
-
-Oh, and we should add the conversion rule for \texttt{typeof\_patt}, but
-that's almost identical as for terms. (\ldots{}) I'll do \texttt{typnf}
-next.
-
-\begin{verbatim}
-typnf A T' :- typedef A T, typnf T T'.
-typnf (arrow T1 T2) (arrow T1' T2') :-
-  typnf T1 T1', typnf T2 T2'.
-typnf (arrowmany TS T) (arrowmany TS' T') :-
-  map typnf TS TS', typnf T T'.
+typeq A T' :- typedef A T, typeq T T'.
+typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq (arrow T1 T2) (arrow T1' T2') :-
+  typeq T1 T1', typeq T2 T2'.
+typeq (arrowmany TS T) (arrowmany TS' T') :-
+  map typeq TS TS', typeq T T'.
 ...
 \end{verbatim}
 
-\heroADVISOR{} Writing boilerplate is not fun, is it?
+\heroADVISOR{} I see you learn quickly and wrote the symmetric case for
+\texttt{typedef}s so as to avoid looping! Still, writing boilerplate is
+not fun, is it?
 
-\heroSTUDENT{} It is not. I wish we could just write the first rule
-\texttt{typnf}; it's the only important one, after all. All the other
-ones just propagate the structural recursion through. Also, whenever we
-add a new constructor for types, we'll have to remember to add a
-\texttt{typnf} rule for it\ldots{}.
+\heroSTUDENT{} It is not. I wish we could just write the first two rules;
+they're the important ones, after all. All the others just propagate the
+structural recursion through. Also, whenever we add a new constructor
+for types, we'll have to remember to add a \texttt{typeq} rule for
+it\ldots{}.
 
 \heroADVISOR{} Right. Let's just use some magic instead.
 
+\begin{scenecomment}
+(Roza changes the type definition of `typeq` to `typeq : [Any] (T1: Any) (T2: Any) \ensuremath{\to} prop`,
+and adds a few lines:)
+\end{scenecomment}
+
 \begin{verbatim}
-typnf : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
-typnf A T' :- typedef A T, typnf T T'.
-(* typnf T T' :- structural_recursion @typnf T T'. *)
+typeq A T' :- typedef A T, typeq T T'.
+typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq T T' :- structural_recursion @typeq T T'.
 \end{verbatim}
 
 \begin{scenecomment}
@@ -193,32 +192,33 @@ close reflection. \texttt{structural\_recursion} is just a normal
 standard-library predicate like any other; it essentially applies a
 polymorphic predicate ``structurally'' to a term. Its implementation
 will be a little special of course. But let's just think about how you
-would write the rest of the rules of \texttt{typnf} generically, to
+would write the rest of the rules of \texttt{typeq} generically, to
 perform structural recursion.
 
-\heroSTUDENT{} OK. Well, for every top-level \texttt{typ} we visit, we
-essentially need to find any \texttt{typ}s contained in it, and apply
-\texttt{typnf} to them; and we would keep everything else the same.
-
-\heroADVISOR{} Right, or equivalently, we can do this one constructor at a
-time: for everything that we visit, we keep the constructor the same,
-and recurse on its arguments. We'll eventually get to any \texttt{typ}s
-contained, even if they're inside some other type, like in a
-\texttt{list}. Something like:
+\heroSTUDENT{} OK. Well, when looking at two \texttt{typ}s together, we have
+to make sure that their constructors are the same, and also any
+\texttt{typ}s they contain as arguments are recursively
+\texttt{typeq}ual. So something like this:
 
 \begin{verbatim}
-typnf (Constructor Arguments) (Constructor Arguments') :- map typnf Arguments Arguments'.
+typeq (Constructor Arguments) (Constructor Arguments') :-
+  map typeq Arguments Arguments'.
 \end{verbatim}
 
-\heroSTUDENT{} I see! That's why you made \texttt{typnf} polymorphic above;
-even if we start visiting a \texttt{typ} at the top-level, some of its
-constituents might be of different type.
+\heroADVISOR{} Right. Note though, that the types of arguments might be
+different than \texttt{typ}. So even if we start comparing two types at
+the top-level, we might end up having to compare two lists of types that
+they contain -- imagine the case for \texttt{arrowmany} for example.
+
+\heroSTUDENT{} I see! That's why you edited \texttt{typeq} to be polymorphic
+above; you have extended it to work on \emph{any type} that might
+contain a \texttt{typ}.
 
 \heroADVISOR{} Exactly. Now, the list of \texttt{Arguments} -- can you come up
 with a type for them?
 
 \heroSTUDENT{} We can use the GADT of heterogeneous lists for them; not all
-the arguments of each constructor are of the same type!
+the arguments of each constructor need to be of the same type!
 
 \begin{verbatim}
 typenil : type. typecons : (T: type) (TS: type) \ensuremath{\to} type.
@@ -248,10 +248,10 @@ hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
 >> YS := hcons 1 (hcons "foo" hnil).
 \end{verbatim}
 
-\heroSTUDENT{} Fair enough. So, going back to our generic rule -- is there a
-way to actually write it? Maybe there's a reflective predicate we can
-use, similar to how we used \texttt{refl.isunif} before to tell if a
-term is an uninstantiated unification variable?
+Looks good enough. So, going back to our generic rule -- is there a way
+to actually write it? Maybe there's a reflective predicate we can use,
+similar to how we used \texttt{refl.isunif} before to tell if a term is
+an uninstantiated unification variable?
 
 \heroADVISOR{} Exactly -- there is \texttt{refl.headargs}. It relates a
 concrete term to its decomposition into a constructor and a list of
@@ -262,37 +262,54 @@ This is not an extra-logical feature, though: we could define
 new constructor, roughly like this:
 
 \begin{verbatim}
-refl.headargs : (Term: TermT) (Head: HeadT) (Args: hlist ArgsTS) \ensuremath{\to} prop.
+refl.headargs : (Term: TermT) (Constr: ConstrT) (Args: hlist ArgsTS) \ensuremath{\to} prop.
 
 arrowmany : (TS: list typ) (T: typ) \ensuremath{\to} typ.
-refl.headargs Term Head Args :-
+refl.headargs Term Constructor Args :-
   not(refl.isunif Term), eq Term (arrowmany TS T),
-  eq Head arrowmany, eq Args (hcons TS (hcons T hnil)).
+  eq Constructor arrowmany, eq Args (hcons TS (hcons T hnil)).
 \end{verbatim}
 
-\heroSTUDENT{} I see. I think I can write the generic rule for \texttt{typnf}
+\heroSTUDENT{} I see. I think I can write the generic rule for \texttt{typeq}
 now then!
 
 \begin{verbatim}
-typnf T T' :-
-  refl.headargs T Head Args,
-  hmap @typnf Args Args',
-  refl.headargs T' Head Args'.
+typeq T T' :-
+  refl.headargs T Constr Args,
+  refl.headargs T' Constr Args',
+  hmap @typeq Args Args'.
 \end{verbatim}
 
-\heroADVISOR{} Correct. We should now be able to proceed to defining the
-boilerplate generically. Let's do it as a reusable higher-order
-predicate for structural recursion. I'll give you the type; you fill in
-the first case:
+\heroADVISOR{} That looks great! Simple, isn't it? You'll see that there are a
+few more cases that are needed for the generic case, though. Should we
+do that? We can roll our own reusable \texttt{structural\_recursion}
+implementation -- that way we will dispel all magic from its use that I
+showed you earlier! I'll give you the type; you fill in the first case:
 
 \begin{verbatim}
-structural_recursion : [B] (forall A (A \ensuremath{\to} A \ensuremath{\to} prop)) \ensuremath{\to} B \ensuremath{\to} B \ensuremath{\to} prop.
+structural_recursion : [Any] 
+  (RecursivePred: forall A (A \ensuremath{\to} A \ensuremath{\to} prop))
+  (X: Any) (Y: Any) \ensuremath{\to} prop.
 \end{verbatim}
 
-\heroSTUDENT{} Let me see. Oh, so, the first argument -- are we doing this in
-open-recursion style? Maybe that's the predicate for recursive calls. I
-need to deconstruct a term, apply the recursive call\ldots{}. How is
-this?
+\heroSTUDENT{} Let me see. Oh, so, the first argument is a predicate -- are we
+doing this in open-recursion style? I see. Well, I can adapt the case I
+just wrote above.
+
+\begin{verbatim}
+structural_recursion Rec X Y :-
+  refl.headargs X Constructor Arguments,
+  refl.headargs Y Constructor Arguments',
+  hmap Rec Arguments Arguments'.
+\end{verbatim}
+
+\heroADVISOR{} Nice. Now, this assumes that \texttt{X} and \texttt{Y} are both
+concrete terms. What happens when \texttt{X} is concrete and \texttt{Y}
+isn't, or the other way around? Hint: you can use \texttt{refl.headargs}
+in the other direction, to reconstruct a term from a constructor and a
+list of arguments.
+
+\heroSTUDENT{} Let me think about that a bit. How is this?
 
 \begin{verbatim}
 structural_recursion Rec X Y :-
@@ -301,55 +318,38 @@ structural_recursion Rec X Y :-
   refl.headargs Y Constructor Arguments'.
 \end{verbatim}
 
-\heroAUDIENCE{} I'm sure this was not your first attempt in the unabridged
-version of this story!
-
-\heroADVISOR{} Wait, who said that? Anyway. That looks great! And you're right
-about using \texttt{refl.headargs} in the other direction, to
-reconstruct a new term with the same constructor and different
-arguments.
-
-\heroSTUDENT{} Are we done?
-
-\heroADVISOR{} Almost there! We just need to handle the case of the meta-level
-function type. It does not make sense to destructure functions using
-\texttt{refl.headargs}; so, that fails for functions, and we have to
-treat them specially:
+\heroADVISOR{} That is exactly right. You need the symmetric case too, where
+\texttt{Y} is concrete and \texttt{X} isn't, but that's entirely
+similar. Also, there is another type of concrete terms in Makam:
+meta-level functions! It does not make sense to destructure functions
+using \texttt{refl.headargs}; so, that predicate \texttt{refl.headargs}
+fails for functions, and we have to treat them specially:
 
 \begin{verbatim}
 structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) :-
   (x:A \ensuremath{\to} structural_recursion Rec x x \ensuremath{\to} structural_recursion Rec (X x) (Y x)).
 \end{verbatim}
 
-\begin{verbatim}
-structural_recursion P X Y :- print (X, Y), refl.isunif X, not(refl.isunif Y), eq X Y.
-structural_recursion P X Y :- print (X, Y, "right"), refl.isunif Y, not(refl.isunif X), eq X Y.
-\end{verbatim}
+\heroSTUDENT{} Ah, I see! Here you \emph{are} actually relying on the
+\texttt{typecase} aspect of ad-hoc polymorphism, right? To check if
+\texttt{X} and \texttt{Y} are of the meta-level function type.
 
-\heroSTUDENT{} This is exciting; I hope it is part of the standard library of
-Makam. I can do \texttt{teq} in a few lines now!
+\heroADVISOR{} Exactly. And you know what, that's all there is to it! So,
+we've minimized the boilerplate, and we won't need any adaptation when
+we add a new constructor -- even if we make use of all sorts of new and
+complicated types.
 
-\begin{verbatim}
-typnf : [A] A \ensuremath{\to} A \ensuremath{\to} prop.
-typeq T T' :- not(eq T T'), typnf T Tnf, typnf T' Tnf.
-typnf A T' :- typedef A T, typnf T T'.
-typnf T T' :- structural_recursion @typnf T T'.
-\end{verbatim}
+\heroSTUDENT{} That's right: we do not need to do anything special for the
+binding forms we defined, like \texttt{bindmany}\ldots{}. quite a payoff
+for a small amount of code! But, wait, isn't
+\texttt{structural\_recursion} missing a case: what happens if both
+\texttt{X} and \texttt{Y} are uninstantiated unification variables?
 
-\heroADVISOR{} That is exactly right! So, we've minimized the boilerplate, and
-we won't need any adaptation when we add a new constructor -- even if we
-make use of all sorts of new and complicated types.
-
-\heroSTUDENT{} That's right: we did not do anything special for the binding
-forms we defined\ldots{}. quite a payoff for a small amount of code!
-But, wait, isn't \texttt{structural\_recursion} missing a case: that of
-uninstantiated unification variables?
-
-\heroADVISOR{} It is, but in my experience, it's better to define how to
-handle unification variables as needed, in each new structurally
-recursive predicate. In this case, we're only supposed to use
-\texttt{teq} with ground terms, so it's fine if we fail when we
-encounter a unification variable.
+\heroADVISOR{} You are correct, it would fail in that case. But in my
+experience, it's better to define how to handle unification variables as
+needed, in each new structurally recursive predicate. In this case, we
+should never get into that situation based on how we have defined
+\texttt{typeq}.
 
 \begin{scenecomment}
 (Our heroes try out a few examples and convince themselves that this works OK and no endless loops happen when things don't typecheck correctly.)
