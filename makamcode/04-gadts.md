@@ -26,9 +26,11 @@ dispatches went something like this.
 
 AUTHOR. ... In my land of \lamprolog that I speak of, the type system is a subset of System
 F$_\omega$ that should be familiar to you -- the simply typed lambda calculus, plus prenex
-polymorphism, plus simple type constructors of the form `type * ... * type -> type`. There is a
-`prop` sort for propositions, which is a normal type, but also a bit special: its terms are not just
-values but are also computations, activated when queried upon.
+polymorphism, plus simple type constructors of the form `type * ... * type -> type`. There is also a
+limited form of rank-2 polymorphism, allowing types of the form `forall A T`, which are inhabited by
+unapplied polymorphic constants through the notation `@foo`. There is a `prop` sort for
+propositions, which is a normal type, but also a bit special: its terms are not just values but are
+also computations, activated when queried upon.
 
 However, the language of this land has a distinguishing feature, called Ad-Hoc Polymorphism. You
 see, the different rules that define a predicate in our language can *specialize* their type

@@ -2,12 +2,10 @@
 
 <!--
 ```makam
-%use "05-patterns.md".
+%use "06-structural.md".
 tests: testsuite. %testsuite tests.
 ```
 -->
-
-\input{generated/todo}
 
 \begin{scenecomment}
 (Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing, and Hagop is playing the oud.)

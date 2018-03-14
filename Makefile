@@ -32,7 +32,13 @@ tmpclean:
 watch:
 	@ (find makamcode -name \*.md; find . -name main.tex) | entr make test docker-build
 
+watch-test:
+	@ (find makamcode -name \*.md; find . -name main.tex) | entr make test
+
+watch-build:
+	@ (find makamcode -name \*.md; find . -name main.tex) | entr make docker-build
+
 test:
 	@ ./shared/run_tests.sh
 
-.PHONY: all build build-to-tmp clean tmpclean watch test docker-build
+.PHONY: all build build-to-tmp clean tmpclean watch test docker-build watch-test watch-build

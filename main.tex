@@ -86,6 +86,7 @@
 \newcommand\identDialog[0]{\setlength{\leftskip}{1em}\setlength{\parindent}{-1em}}
 \newcommand\identNormal[0]{\setlength{\leftskip}{0em}\setlength{\parindent}{0em}}
 \newenvironment{normalident}{\identNormal}{\identDialog}
+\newcommand\rulename[1]{\textsc{#1}}
 
 \definecolor{todo}{rgb}{0.75,0.00,0.00}
 \newcommand\todo[1]{\textcolor{todo}{#1}}
@@ -95,7 +96,7 @@
 % =====
 % used for highlighting from pandoc
 \DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
-\newenvironment{Shaded}{\begin{quote}}{\end{quote}}
+\newenvironment{Shaded}{\hspace{-0.5em}\begin{quote}}{\end{quote}}
 \newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{{#1}}}}
 \newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{{#1}}}
 \newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{{#1}}}
@@ -177,9 +178,9 @@ literate development.
   
   \input{generated/05-patterns}
 
-  \input{generated/06-miniml}
-  
-  \input{generated/07-synonyms}
+  \input{generated/06-structural}
+
+  \input{generated/07-miniml}
   
   \input{generated/08-metaml}
   

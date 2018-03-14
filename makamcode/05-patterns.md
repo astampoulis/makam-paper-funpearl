@@ -23,15 +23,13 @@ the right binding structure. For a branch like:
 | cons(hd, tl) -> ... hd .. tl ...
 ```
 
-the pattern introduces 2 variables, `hd` and `tl`, which the body of the branch can refer to. But we can't really refer to those variables in the pattern itself, at least for simple patterns\footnote{There are cases where that's not the case, like in or-patterns in some ML dialects, or in dependent pattern matching, where consequent uses of the same variable perform an exact match rather than unification. We choose to omit the handling of cases like those in the present work for presentation purposes.}.... So we could, equivalently, just capture what variables a pattern introduces, and bind them all at the same time before the body of the branch. So we need something like this:
+the pattern introduces 2 variables, `hd` and `tl`, which the body of the branch can refer to. But we can't really refer to those variables in the pattern itself, at least for simple patterns\footnote{There are cases where that's not the case, like in or-patterns in some ML dialects, or in dependent pattern matching, where consequent uses of the same variable perform an exact match rather than unification. We choose to omit the handling of cases like those in the present work for presentation purposes.}.... So there's no binding going on really within the pattern; instead, once we figure out how many variables a pattern introduces, we can do the actual binding all at once, when we get to the body of the branch:
 
 ```
-branch(pattern P, bind [variables in P].body)
+branch(pattern, bind [# of variables in pattern].body)
 ```
 
-Actually, we do not even need to give names to the variables in the `P` pattern. We can just
-record how many pattern variables we need -- and then bind the same number of variables, preserving
-the same order. So we could write the above branch in Makam like this:
+So we could write the above branch in Makam like this:
 
 ```
 branch(
@@ -39,10 +37,10 @@ branch(
   bind (fun hd => bind (fun tl => body (.. hd .. tl ..))))
 ```
 
-where `hd` corresponds to the first occurence of `patt_var`, and `tl` to the second one.
-
-With the above, I am thinking that the type of `branch` should be something
-like:
+We do have to keep the order of variables consistent somehow, so `hd`
+here should refer to the first occurrence of `patt_var`, and `tl` to
+the second. Based on these, I am thinking that the type of `branch`
+should be something like:
 
 ```
 branch : (Pattern: patt N) (Vars_Body: vbindmany term N term) -> ...
@@ -323,4 +321,19 @@ matchlist (pcons P PS) (V :: VS) Subst Subst'' :-
 ```
 -->
 
-NEEDFEEDBACK. \todo{I have switched to a more incremental presentation here, adding more explanation, since it seems that we lost a few reviewers here last time. However, this makes this section too long; it looks like the centerpiece of the paper, but it shouldn't be. (For example, there's a blog post with a similar encoding from a few years back.) Between this and algebraic datatypes, we will definitely need to cut something in order to have more in-depth explanations, but I'm not sure what. Thoughts?}
+STUDENT. Let's try this out with a simple example -- how about predecessor for natural
+numbers?
+
+```makam
+eval (case_or_else (osucc (osucc ozero))
+     (patt_osucc patt_var) (vbind (fun pred => vbody pred))
+     ozero)
+  V ?
+>> Yes:
+>> V := osucc ozero.
+```
+
+ADVISOR. Looks good! You seem to be getting the hang of this. How about we do something
+challenging then? Say, type synonyms?
+
+NEEDFEEDBACK. \todo{I have switched to a more incremental presentation here, adding more explanation, since it seems that we lost a few reviewers here last time. However, this makes this section too long; it looks like the centerpiece of the paper, but it shouldn't be. (For example, there's a blog post with a similar encoding from a few years back.) Between this and algebraic datatypes, we will definitely need to cut something in order to have more in-depth explanations, but I'm not sure what. Thoughts? Maybe we should drop the evaluation rule, since it's not introducing anything new other than `if`-`then`-`else` and `appmany`?}
