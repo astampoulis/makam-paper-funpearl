@@ -150,7 +150,7 @@ for it....
 ADVISOR. Right. Let's just use some magic instead.
 
 \begin{scenecomment}
-(Roza changes the type definition of `typeq` to `typeq : [Any] (T1: Any) (T2: Any) -> prop`,
+(Roza changes the type definition of \texttt{typeq} to \texttt{typeq : [Any] (T1: Any) (T2: Any) -> prop},
 and adds a few lines:)
 \end{scenecomment}
 

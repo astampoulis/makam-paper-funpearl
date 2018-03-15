@@ -1,6 +1,5 @@
-\section{Where our heroes tackle dependencies, contexts, and a new level
-of
-meta}\label{where-our-heroes-tackle-dependencies-contexts-and-a-new-level-of-meta}
+\section{Where our heroes tackle a new level of meta, dependencies, and
+contexts}\label{where-our-heroes-tackle-a-new-level-of-meta-dependencies-and-contexts}
 
 \heroSTUDENT{} I'm fairly confident by now that Makam should be able to handle
 the research idea we want to try out. Shall we get to it?
@@ -63,7 +62,8 @@ this case, our objects will be the types and terms of STLC -- actually,
 the open terms of STLC. But as a first example, we can just do something
 that is more standard, where we only need the closed terms as objects.
 How about the standard example of a staged \texttt{power} function?
-Here's a sketch:
+Here's a sketch, where I'm using \texttt{\textasciitilde{}I} for
+antiquotation:
 
 \begin{verbatim}
 let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
@@ -75,9 +75,8 @@ let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
       < stlc.lam (fun x \ensuremath{\Rightarrow} stlc.mult (stlc.app ~I x) x) >
 \end{verbatim}
 
-\heroADVISOR{} I see, you're using the \texttt{\textasciitilde{}I} notation
-for antiquotation. It's a plan. So, let's get to it. Should we write
-some of the system down on paper first?
+\heroADVISOR{} It's a plan. So, let's get to it. Should we write some of the
+system down on paper first?
 
 \heroSTUDENT{} Yes, that will be necessary. For this example, we need only the
 lifting construct and the \texttt{letobj} typing rules; we will work on
@@ -101,15 +100,22 @@ indices inside STLC terms, which means that we will have to
           {\Gamma; \dep{\Psi} \vdash \lift{\dep{o}} : \lift{\dep{c}}}
 
 \inferrule[Typeof-LetObj]
-          {\dep{\Psi} \odash \dep{o} : \dep{c} \\ \Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ \tau' = \tau[\dep{o}/\dep{i}]}
-          {\Gamma; \dep{\Psi} \vdash \texttt{letobj} \; \dep{i} = \dep{o} \; \texttt{in} \; e : \tau'}
+          {\Gamma; \dep{\Psi} \vdash e : \lift{\dep{c}} \\ \Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ i \not\in \text{fv}(\tau)}
+          {\Gamma; \dep{\Psi} \vdash \texttt{letobj} \; \dep{i} = e \; \texttt{in} \; e' : \tau}
 
 \inferrule[Classof-Antiquote]
           {\dep{i} : \dep{c} \in \Psi}
           {\Psi \odash \aq{\dep{i}} : \dep{c}}
+          
+\inferrule[Eval-LiftObj]
+          {\hspace{1em}}{\lift{\dep{o}} \Downarrow \lift{\dep{o}}}
+
+\inferrule[Eval-LetObj]
+          {e \Downarrow \lift{\dep{o}} \\ e'[\dep{o}/\dep{i}] \Downarrow v}
+          {\texttt{letobj} \; \dep{i} = e \; \texttt{in} \; e' \Downarrow v}
 
 \inferrule[SubstObj]{}{
-  \tau[\dep{o}/\dep{i}] = \tau' \; \text{defined by structural recursion, save for:} \; {\bf{\aq{\dep{i}}[\dep{o}/\dep{i}] = \dep{o}}}
+  e[\dep{o}/\dep{i}] = e' \; \text{defined by structural recursion, save for:} \; {\bf{\aq{\dep{i}}[\dep{o}/\dep{i}] = \dep{o}}}
 }
 \end{mathpar}
 
@@ -119,15 +125,18 @@ The typing rules should be quite simple to transcribe to Makam:
 object, class, index : type.
 classof : object \ensuremath{\to} class \ensuremath{\to} prop.
 classof_index : index \ensuremath{\to} class \ensuremath{\to} prop.
-subst_obj : (I_Typ: index \ensuremath{\to} typ) (O: object) (Typ_O'I: typ) \ensuremath{\to} prop.
+subst_obj : (I_E: index \ensuremath{\to} term) (O: object) (E_O'I: term) \ensuremath{\to} prop.
 
 liftobj : object \ensuremath{\to} term. liftclass : class \ensuremath{\to} typ.
 typeof (liftobj O) (liftclass C) :- classof O C.
 
-letdep : object \ensuremath{\to} (index \ensuremath{\to} term) \ensuremath{\to} term.
-typeof (letdep O EF) T' :-
-  classof O C, (i:index \ensuremath{\to} classof_index i C \ensuremath{\to} typeof (EF i) (TF i)),
-  subst_obj TF I T'.
+letobj : term \ensuremath{\to} (index \ensuremath{\to} term) \ensuremath{\to} term.
+typeof (letobj E EF') T :-
+  typeof E (liftclass C), (i:index \ensuremath{\to} classof_index i C \ensuremath{\to} typeof (EF' i) T).
+
+eval (liftobj O) (liftobj O).
+eval (letobj E I_E') V :-
+  eval E (liftobj O), subst_obj I_E' O E', eval E' V.
 \end{verbatim}
 
 \heroADVISOR{} Great. I'll add the object language in a separate namespace
@@ -143,9 +152,48 @@ aq : index \ensuremath{\to} term.
 %end.
 \end{verbatim}
 
+\heroSTUDENT{} Time to add STLC terms as \texttt{object}s, and their types as
+\texttt{class}es. We can then give the corresponding rule for
+\texttt{classof}. And I think that's it for the typing rules!
+
+\begin{verbatim}
+obj_term : stlc.term \ensuremath{\to} object. cls_typ : stlc.typ \ensuremath{\to} class.
+classof (obj_term E) (cls_typ T) :- stlc.typeof E T.
+stlc.typeof (stlc.aq I) T :- classof_index I (cls_typ T).
+\end{verbatim}
+
+\begin{scenecomment}
+(Hagop transcribes the example from before. Writing out the term is long, so finds himself
+wishing that Makam supported some way to write terms of object languages in their native syntax;
+curiously, he also finds himself wishing that he had a stack of blank pages.)
+\end{scenecomment}
+
+\begin{verbatim}
+typeof (..long term..) T ?
+>> Yes:
+>> T := arrow onat (liftclass (cls_typ (stlc.arrow stlc.onat stlc.onat))).
+\end{verbatim}
+
 \input{generated/todo}
 
-\heroSTUDENT{} (\ldots{})
+\heroADVISOR{} I will set up the structural recursion for \texttt{subst\_obj}
+now. I have a trick up my sleeve I haven't told you about yet!
+
+\begin{verbatim}
+subst_obj_aux, subst_obj_cases : [Any]
+  (Var: index) (Replace: object) (Where: Any) (Result: Any) \ensuremath{\to} prop.
+subst_obj I_Typ O Typ_O'I :-
+  (i:index \ensuremath{\to} subst_obj_aux i O (I_Typ i) Typ_O'I).
+
+subst_obj_aux Var Replace Where Result :-
+  if (refl.rules_apply (subst_obj_cases Var Replace Where Result))
+  then (subst_obj_cases Var Replace Where Res)
+  else (structural_recursion @(subst_obj_aux Var Replace) Where Res).
+
+subst_obj_cases Var (obj_term Replace) (stlc.aq Var) Replace.
+\end{verbatim}
+
+\heroSTUDENT{} Are we done?
 
 \begin{verbatim}
 wfclass : class \ensuremath{\to} prop.
@@ -208,13 +256,13 @@ hence the repeat of the same \texttt{typ} argument. Let's prepare for
 substitutions, too, in the same way.
 
 \begin{verbatim}
-depsubst_aux, depsubst_cases : [A] index \ensuremath{\to} object \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} prop.
+subst_obj_aux, depsubst_cases : [A] index \ensuremath{\to} object \ensuremath{\to} A \ensuremath{\to} A \ensuremath{\to} prop.
 depsubst_applies : [A] index \ensuremath{\to} A \ensuremath{\to} prop.
-depsubst F I Res :- (v:index \ensuremath{\to} depsubst_aux v I (F v) Res).
-depsubst_aux Var Replace Where Res :-
+depsubst F I Res :- (v:index \ensuremath{\to} subst_obj_aux v I (F v) Res).
+subst_obj_aux Var Replace Where Res :-
   if (depsubst_applies Var Where)
   then (depsubst_cases Var Replace Where Res)
-  else (structural_recursion (depsubst_aux Var Replace) Where Res).
+  else (structural_recursion (subst_obj_aux Var Replace) Where Res).
 \end{verbatim}
 
 \heroADVISOR{} Great! We only have one thing missing: we need to close the
@@ -317,7 +365,7 @@ typeof (varmeta V ES) T :- depclassify V (cctx_typ TS T), map stlc.typeof ES TS.
 %end.
 depsubst_applies Var (stlc.varmeta Var _).
 depsubst_cases Var (iopen_term XS_E) (stlc.varmeta Var ES) Result :-
-  applymany XS_E ES E', depsubst_aux Var (iopen_term XS_E) E' Result.
+  applymany XS_E ES E', subst_obj_aux Var (iopen_term XS_E) E' Result.
 \end{verbatim}
 
 \heroADVISOR{} That should be it; let's try this out! Let's do meta-level

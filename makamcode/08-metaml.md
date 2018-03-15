@@ -1,4 +1,4 @@
-# Where our heroes tackle dependencies, contexts, and a new level of meta
+# Where our heroes tackle a new level of meta, dependencies, and contexts
 
 <!--
 ```makam
@@ -58,7 +58,7 @@ similar to a homogeneous, multi-stage language like MetaML \citep{metaml-main-re
 our objects will be the types and terms of STLC -- actually, the open terms of STLC.
 But as a first example, we can just do something that is more standard, where we only need
 the closed terms as objects. How about the standard example of a staged `power` function?
-Here's a sketch:
+Here's a sketch, where I'm using `~I` for antiquotation:
 
 ```
 let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
@@ -70,7 +70,7 @@ let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
       < stlc.lam (fun x => stlc.mult (stlc.app ~I x) x) >
 ```
 
-ADVISOR. I see, you're using the `~I` notation for antiquotation. It's a plan. So, let's get to it. Should we write some of the system down on paper first?
+ADVISOR. It's a plan. So, let's get to it. Should we write some of the system down on paper first?
 
 STUDENT. Yes, that will be necessary. For this example, we need only the lifting construct and the
 `letobj` typing rules; we will work on dependent functions afterwards. Here are their typing
@@ -92,15 +92,22 @@ typing judgment $\dep{\Psi} \odash o : c$ accordingly.
           {\Gamma; \dep{\Psi} \vdash \lift{\dep{o}} : \lift{\dep{c}}}
 
 \inferrule[Typeof-LetObj]
-          {\dep{\Psi} \odash \dep{o} : \dep{c} \\ \Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ \tau' = \tau[\dep{o}/\dep{i}]}
-          {\Gamma; \dep{\Psi} \vdash \texttt{letobj} \; \dep{i} = \dep{o} \; \texttt{in} \; e : \tau'}
+          {\Gamma; \dep{\Psi} \vdash e : \lift{\dep{c}} \\ \Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ i \not\in \text{fv}(\tau)}
+          {\Gamma; \dep{\Psi} \vdash \texttt{letobj} \; \dep{i} = e \; \texttt{in} \; e' : \tau}
 
 \inferrule[Classof-Antiquote]
           {\dep{i} : \dep{c} \in \Psi}
           {\Psi \odash \aq{\dep{i}} : \dep{c}}
+          
+\inferrule[Eval-LiftObj]
+          {\hspace{1em}}{\lift{\dep{o}} \Downarrow \lift{\dep{o}}}
+
+\inferrule[Eval-LetObj]
+          {e \Downarrow \lift{\dep{o}} \\ e'[\dep{o}/\dep{i}] \Downarrow v}
+          {\texttt{letobj} \; \dep{i} = e \; \texttt{in} \; e' \Downarrow v}
 
 \inferrule[SubstObj]{}{
-  \tau[\dep{o}/\dep{i}] = \tau' \; \text{defined by structural recursion, save for:} \; {\bf{\aq{\dep{i}}[\dep{o}/\dep{i}] = \dep{o}}}
+  e[\dep{o}/\dep{i}] = e' \; \text{defined by structural recursion, save for:} \; {\bf{\aq{\dep{i}}[\dep{o}/\dep{i}] = \dep{o}}}
 }
 \end{mathpar}
 
@@ -110,15 +117,18 @@ The typing rules should be quite simple to transcribe to Makam:
 object, class, index : type.
 classof : object -> class -> prop.
 classof_index : index -> class -> prop.
-subst_obj : (I_Typ: index -> typ) (O: object) (Typ_O'I: typ) -> prop.
+subst_obj : (I_E: index -> term) (O: object) (E_O'I: term) -> prop.
 
 liftobj : object -> term. liftclass : class -> typ.
 typeof (liftobj O) (liftclass C) :- classof O C.
 
-letdep : object -> (index -> term) -> term.
-typeof (letdep O EF) T' :-
-  classof O C, (i:index -> classof_index i C -> typeof (EF i) (TF i)),
-  subst_obj TF I T'.
+letobj : term -> (index -> term) -> term.
+typeof (letobj E EF') T :-
+  typeof E (liftclass C), (i:index -> classof_index i C -> typeof (EF' i) T).
+
+eval (liftobj O) (liftobj O).
+eval (letobj E I_E') V :-
+  eval E (liftobj O), subst_obj I_E' O E', eval E' V.
 ```
 
 ADVISOR. Great. I'll add the object language in a separate namespace prefix -- we can use `\texttt{\%extend}' for going
@@ -140,8 +150,10 @@ We don't have to copy-paste the code, we can import the previous file into a sep
 %import "02-stlc.md" as stlc.
 %extend stlc.
 onat : typ. ozero : term. osucc : term -> term.
+mult : term -> term -> term.
 typeof ozero onat.
 typeof (osucc N) onat :- typeof N onat.
+typeof (mult N1 N2) onat :- typeof N1 onat, typeof N2 onat.
 eval ozero ozero.
 eval (osucc E) (osucc V) :- eval E V.
 aq : index -> term.
@@ -149,9 +161,139 @@ aq : index -> term.
 ```
 -->
 
+STUDENT. Time to add STLC terms as `object`s, and their types as `class`es. We can
+then give the corresponding rule for `classof`. And I think that's it for the typing rules!
+
+```makam
+obj_term : stlc.term -> object. cls_typ : stlc.typ -> class.
+classof (obj_term E) (cls_typ T) :- stlc.typeof E T.
+stlc.typeof (stlc.aq I) T :- classof_index I (cls_typ T).
+```
+
+\begin{scenecomment}
+(Hagop transcribes the example from before. Writing out the term is long, so finds himself
+wishing that Makam supported some way to write terms of object languages in their native syntax;
+curiously, he also finds himself wishing that he had a stack of blank pages.)
+\end{scenecomment}
+
+```
+typeof (..long term..) T ?
+>> Yes:
+>> T := arrow onat (liftclass (cls_typ (stlc.arrow stlc.onat stlc.onat))).
+```
+
+<!--
+```makam
+typeof (letrec
+  (bind (fun power => body ([
+    lam onat (fun n =>
+    case_or_else n
+      (patt_ozero) 
+        (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
+      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero))))
+    )], power)))) T ?
+>> Yes:
+>> T := arrow onat (liftclass (cls_typ (stlc.arrow stlc.onat stlc.onat))).
+```
+
+```makam
+typeof (letrec
+  (bind (fun power => body ([
+    lam onat (fun n =>
+    case_or_else n
+      (patt_ozero) 
+        (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
+    (case_or_else n
+      (patt_osucc (patt_osucc patt_var))
+        (* |-> *) (vbind (fun n' => vbody (
+           letobj (app power n')
+           (fun i =>
+             liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.app (stlc.aq i) (stlc.mult x x))))))))
+    (case_or_else n
+      (patt_osucc patt_var)
+        (* |-> *) (vbind (fun n' => vbody (
+           letobj (app power n')
+           (fun i =>
+             liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.mult x (stlc.app (stlc.aq i) x))))))))
+      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero))))
+    ))
+    )], power)))) T ?
+>> Yes:
+>> T := arrow onat (liftclass (cls_typ (stlc.arrow stlc.onat stlc.onat))).
+```
+-->
+
 \input{generated/todo}
 
-STUDENT. (...)
+ADVISOR. I will set up the structural recursion for `subst_obj` now. I have a trick
+up my sleeve I haven't told you about yet!
+
+<!--
+```makam
+%extend clause.
+demand_applies : prop -> list clause -> prop.
+demand_applies Goal (HD :: TL) <-
+  if applies Goal HD
+  then success
+  else demand_applies Goal TL.
+%end.
+
+%extend demand.
+applies : prop -> prop.
+applies Goal <- aux_demand clause.demand_applies Goal.
+%end.
+
+%extend refl.
+rules_apply : prop -> prop.
+rules_apply P :- demand.applies P.
+%end.
+```
+-->
+
+```makam
+subst_obj_aux, subst_obj_cases : [Any]
+  (Var: index) (Replace: object) (Where: Any) (Result: Any) -> prop.
+subst_obj I_Typ O Typ_O'I :-
+  (i:index -> subst_obj_aux i O (I_Typ i) Typ_O'I).
+
+subst_obj_aux Var Replace Where Result :-
+  if (refl.rules_apply (subst_obj_cases Var Replace Where Result))
+  then (subst_obj_cases Var Replace Where Res)
+  else (structural_recursion @(subst_obj_aux Var Replace) Where Res).
+
+subst_obj_cases Var (obj_term Replace) (stlc.aq Var) Replace.
+```
+
+STUDENT. Are we done?
+
+<!--
+```
+%trace+ eval.
+eval (app (letrec
+  (bind (fun power => body ([
+    lam onat (fun n =>
+    case_or_else n
+      (patt_ozero) 
+        (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
+    (case_or_else n
+      (patt_osucc (patt_osucc patt_var))
+        (* |-> *) (vbind (fun n' => vbody (
+           letobj (app power n')
+           (fun i =>
+             liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.app (stlc.aq i) (stlc.mult x x))))))))
+    (case_or_else n
+      (patt_osucc patt_var)
+        (* |-> *) (vbind (fun n' => vbody (
+           letobj (app power n')
+           (fun i =>
+             liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.mult x (stlc.app (stlc.aq i) x))))))))
+      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero))))
+    ))
+    )], power)))) (osucc (osucc (osucc ozero)))) V ?
+>> Yes:
+>> V := ozero.
+```
+-->
 
 ```
 wfclass : class -> prop.
@@ -233,13 +375,13 @@ output; hence the repeat of the same `typ` argument. Let's prepare for substitut
 in the same way.
 
 ```
-depsubst_aux, depsubst_cases : [A] index -> object -> A -> A -> prop.
+subst_obj_aux, depsubst_cases : [A] index -> object -> A -> A -> prop.
 depsubst_applies : [A] index -> A -> prop.
-depsubst F I Res :- (v:index -> depsubst_aux v I (F v) Res).
-depsubst_aux Var Replace Where Res :-
+depsubst F I Res :- (v:index -> subst_obj_aux v I (F v) Res).
+subst_obj_aux Var Replace Where Res :-
   if (depsubst_applies Var Where)
   then (depsubst_cases Var Replace Where Res)
-  else (structural_recursion (depsubst_aux Var Replace) Where Res).
+  else (structural_recursion (subst_obj_aux Var Replace) Where Res).
 ```
 
 ADVISOR. Great! We only have one thing missing: we need to close the loop, being able to refer to a dependent variable from within an object-level term or type. 
@@ -339,14 +481,14 @@ typeof (varmeta V ES) T :- depclassify V (cctx_typ TS T), map stlc.typeof ES TS.
 %end.
 depsubst_applies Var (stlc.varmeta Var _).
 depsubst_cases Var (iopen_term XS_E) (stlc.varmeta Var ES) Result :-
-  applymany XS_E ES E', depsubst_aux Var (iopen_term XS_E) E' Result.
+  applymany XS_E ES E', subst_obj_aux Var (iopen_term XS_E) E' Result.
 ```
 
 ADVISOR. That should be it; let's try this out! Let's do meta-level application, maybe?
 So, take a "function" body that needs a single argument, and an instantiation for that
 argument, and do the substitution at the meta-level. This will be sort of like inlining. And let's use unification variables wherever it makes sense, to push our rules to infer what they can for themselves!
 
-```-noeval
+```
 typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [stlc.vartyp t1] (stlc.vartyp t2)) (fun f =>
        (lamdep _ (fun a => (liftdep (iopen_term (bindbase (

@@ -236,6 +236,13 @@ typeof (letrec (bind (fun f => body ([lam T (fun x => app f (app f x))], f)))) T
 ```
 -->
 
+<!--
+```makam
+eval (letrec (bind (fun x => body ([Def x], Body x)))) V :-
+  eval (Body (Def (letrec (bind (fun x => body ([Def x], x)))))) V.
+```
+-->
+
 STUDENT. Ah, I see. Let me ask you something though: one thing I noticed with our representation of `letrec` is that we have to be careful so
 that the number of binders matches the number of definitions we give. Our typing rules disallow
 that, but I wonder if there's a way to have a more accurate representation for `letrec` which
