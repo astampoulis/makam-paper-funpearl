@@ -7,6 +7,8 @@ tests: testsuite. %testsuite tests.
 ```
 -->
 
+\input{generated/todo}
+
 STUDENT. I'm fairly confident by now that Makam should be able to handle the research idea
 we want to try out. Shall we get to it?
 

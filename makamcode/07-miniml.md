@@ -11,10 +11,10 @@ tests: testsuite. %testsuite tests.
 (Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing lyrics from the folk songs of her land, and Hagop is playing the oud. Their friend Lambros from next door joins them on the kemenche.)
 \end{scenecomment}
 
-\begin{verse}
+\begin{versy}
 ``System F is easy, / later we might do / Hindley-Milner too. \\
 Types are always valid / a `$\vdash \tau \; \text{wf}$' / judgement we won't do.''
-\end{verse}
+\end{versy}
 
 ```makam
 tforall : (typ -> typ) -> typ.
@@ -24,12 +24,12 @@ typeof (lamt E) (tforall T) :- (a:typ -> typeof (E a) (T a)).
 typeof (appt E T) T' :- typeof E (tforall TF), eq T' (TF T).
 ```
 
-\begin{verse}
+\begin{versy}
 ``The algebraic datatypes / caused all sorts of trouble \\
 in the previous version / and since it was a double- \\
 blind submission process / people do not know yet \\
 who the crazy person is / who writes papers in verse.''
-\end{verse}
+\end{versy}
 
 <!--
 ```makam
@@ -51,12 +51,12 @@ datadef : type. datatype_bind : (Into: type) -> type.
 datatype : (Def: datadef) (Rest: datatype_bind program) -> program.
 ```
 
-\begin{verse}
+\begin{versy}
 ``The types seem fairly easy / the constructors might be hard. \\
 So let's go step by step for now / or we'll be here next March. \\
 We won't support the poly-types / to keep the system simple, \\
 and arguments to constructors? / They'll all take just a single.''
-\end{verse}
+\end{versy}
 
 ```
    data nattree = Leaf of nat | Node of (nattree * nattree) ; rest
@@ -69,10 +69,10 @@ and arguments to constructors? / They'll all take just a single.''
      (bind_datatype nattree => bind (leaf node) => body rest)
 ```
 
-\begin{verse}
+\begin{versy}
 ``Sometimes it just is better / to avoid all those words. \\
 Just squint your eyes a little bit / and Hagop'll strum some chords.''
-\end{verse}
+\end{versy}
 
 ```makam
 mkdatadef : (typ -> list typ) -> datadef.
@@ -80,21 +80,21 @@ constructor : type.
 bind_datatype : (typ -> bindmany constructor A) -> datatype_bind A.
 ```
 
-\begin{verse}
+\begin{versy}
 ``We are avoiding GADTs / they're good, but up the ante. \\
 And we have MetaML to do / (in prose 'cause I'm no Dante.) \\
 We're almost there, we need to add / the \text{wfprogram} clause. \\
 But first we'll need an env. with types that / `constructor`s expose.''
-\end{verse}
+\end{versy}
 
 ```makam
 constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) -> prop.
 ```
 
-\begin{verse}
+\begin{versy}
 ``We go through the constructors / populating our new \text{prop}. \\
 \text{DT} stands for datatype / -- the page size's just too cropped.''
-\end{verse}
+\end{versy}
 
 ```makam
 wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
@@ -104,10 +104,10 @@ wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
     (wfprogram rest))).
 ```
 
-\begin{verse}
+\begin{versy}
 ``That's it, we're almost over / there's our wf-programs. \\
 We can't use the constructors though / remember \text{term}s and \text{patt}s ?''
-\end{verse}
+\end{versy}
 
 ```makam
 constr : (C: constructor) (Arg: term) -> term.
@@ -118,10 +118,10 @@ typeof_patt (patt_constr C Arg) Datatype S S' :-
   constructor_typ Datatype C ArgType, typeof_patt Arg ArgType S S'.
 ```
 
-\begin{verse}
+\begin{versy}
 ``That's all, there's no example / but if you download Makam \\
 trust me: you can run this code / and check that all tests pass.''
-\end{verse}
+\end{versy}
 
 <!--
 Additional information.
