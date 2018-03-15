@@ -82,7 +82,7 @@ replaceunif Which ToWhat Where Result :- refl.isunif Where,
   if (refl.sameunif Which Where) then (eq (dyn Result) (dyn ToWhat))
   else (eq Result Where).
 replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
-  structural_recursion (replaceunif Which ToWhat) Where Result.
+  structural_recursion @(replaceunif Which ToWhat) Where Result.
 \end{verbatim}
 
 \heroADVISOR{} And last, we'll need an auxiliary predicate that tells us
@@ -122,7 +122,7 @@ get_types_in_environment : [A] A \ensuremath{\to} prop.
 generalize T Res :- 
   findunif T Var, get_types_in_environment GammaTypes,
   (x:typ \ensuremath{\to} (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
-  if (hasunif GammaTypes Var) then (eq Res (T'' Var)) else (eq Res (forall T'')).
+  if (hasunif GammaTypes Var) then (eq Res (T'' Var)) else (eq Res (tforall T'')).
 \end{verbatim}
 
 \heroSTUDENT{} Oh, clever. But what should
@@ -148,7 +148,7 @@ get_types_in_environment Assumptions :-
 \begin{verbatim}
 typeof (let (lam _ (fun x \ensuremath{\Rightarrow} let x (fun y \ensuremath{\Rightarrow} y))) (fun id \ensuremath{\Rightarrow} id)) T ?
 >> Yes:
->> T := forall (fun a \ensuremath{\Rightarrow} arrow a a).
+>> T := tforall (fun a \ensuremath{\Rightarrow} arrow a a).
 \end{verbatim}
 
 \heroADVISOR{} And yet, it can.

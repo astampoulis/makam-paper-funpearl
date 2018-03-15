@@ -25,6 +25,7 @@ the rest on my own.
 \newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
 \newcommand\odash[0]{\ensuremath{\vdash_{\text{o}}}}
 \newcommand\wf[0]{\ensuremath{\; \text{wf}}}
+\newcommand\aq[1]{\ensuremath{\texttt{aq}(#1)}}
 
 ADVISOR. Sounds good. Still, we should use the generic
 dependently-typed framework that we have come up with. But before we
@@ -43,7 +44,7 @@ have dependent functions over the objects, where one object can depend on anothe
 We need the dependency so that, for example, we can take an object type `T` as an
 argument and return an object term of that exact type `T`.
 Dependent products should be similar, but we can skip them for now and just add
-a way to return an object as a meta-level value.
+a way to return (or "lift") an object $o$ as a meta-level value $\lift{o}$.
 
 ADVISOR. Good idea. We are getting into many levels of meta -- there's the meta-language
 we're using, Makam; there's the object language we are encoding, which is now becoming a meta-language
@@ -55,96 +56,82 @@ of natural numbers, equality predicates, and equality proofs, which would be qui
 \citet{licata2005formulation}; or it could even be the terms of the full meta-language itself, which would be more
 similar to a homogeneous, multi-stage language like MetaML \citep{metaml-main-reference}. But in this case,
 our objects will be the types and terms of STLC -- actually, the open terms of STLC.
+But as a first example, we can just do something that is more standard, where we only need
+the closed terms as objects. How about the standard example of a staged `power` function?
+Here's a sketch:
 
-ADVISOR. It's a plan. So, let's get to it. Should we write some of the system down on paper first?
+```
+let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
+  match n with
+    0 => < stlc.lam (fun x => 1) >
+  | S (S n') => letobj I = power n' in
+      < stlc.lam (fun x => stlc.app ~I (stlc.mult x x)) >
+  | S n' => letobj I = power n' in
+      < stlc.lam (fun x => stlc.mult (stlc.app ~I x) x) >
+```
 
-STUDENT. Yes, that will be necessary. Here are the typing rules for the new constructs in HMML, which depend
-on an appropriately defined typing judgment $\Psi \odash o : c$ for objects and a well-formedness judgment
-$\Psi \odash c \wf$ for classes. We use $\dep{i}$ for variables standing for objects, which we will call
-*indices*.
+ADVISOR. I see, you're using the `~I` notation for antiquotation. It's a plan. So, let's get to it. Should we write some of the system down on paper first?
+
+STUDENT. Yes, that will be necessary. For this example, we need only the lifting construct and the
+`letobj` typing rules; we will work on dependent functions afterwards. Here are their typing
+rules, which depend on an appropriately defined typing judgment $\Psi \odash o : c$ for objects. We
+use $\dep{i}$ for variables standing for objects, which we will call *indices*. And we will need
+a way to antiquote indices inside STLC terms, which means that we will have to *extend* the objects as well as their
+typing judgment $\dep{\Psi} \odash o : c$ accordingly. 
 
 \vspace{-1.5em}
 \begin{mathpar}
-\inferrule[Typeof-LamDep]
-          {\Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ \dep{\Psi} \odash \dep{c} \; \text{wf}}
-          {\Gamma; \dep{\Psi} \vdash \Lambda \dep{i} : \dep{c}.e : \Pi \dep{i} : \dep{c}.\tau}
+\begin{array}{ll}
+\rulename{Ob-Ob-Syntax}                                                   & \rulename{HMML-Syntax} \\
+\dep{o} ::= (\text{...closed terms of STLC, plus }\aq{\dep{i}}\text{...}) & e ::= \text{...} \; | \; \lift{\dep{o}} \; | \; \texttt{letobj} \; \dep{i} = \dep{o} \; \texttt{in} \; e \\
+\dep{o} ::= \text{(...types of STLC...)}                                  & \tau ::= \text{...} \; | \; \lift{\dep{c}}
+\end{array} \\
 
-\inferrule[Typeof-AppDep]
-          {\Gamma; \dep{\Psi} \vdash e : \Pi \dep{i} : \dep{c}.\tau \\ \dep{\Psi} \odash \dep{o} : \dep{c}}
-          {\Gamma; \dep{\Psi} \vdash e @ \dep{o} : \dep{\text{subst}}(\tau, [\dep{o}/\dep{i}])}
-
-\inferrule[Typeof-LiftDep]
+\inferrule[Typeof-LiftObj]
           {\dep{\Psi} \odash \dep{o} : \dep{c}}
           {\Gamma; \dep{\Psi} \vdash \lift{\dep{o}} : \lift{\dep{c}}}
+
+\inferrule[Typeof-LetObj]
+          {\dep{\Psi} \odash \dep{o} : \dep{c} \\ \Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ \tau' = \tau[\dep{o}/\dep{i}]}
+          {\Gamma; \dep{\Psi} \vdash \texttt{letobj} \; \dep{i} = \dep{o} \; \texttt{in} \; e : \tau'}
+
+\inferrule[Classof-Antiquote]
+          {\dep{i} : \dep{c} \in \Psi}
+          {\Psi \odash \aq{\dep{i}} : \dep{c}}
+
+\inferrule[SubstObj]{}{
+  \tau[\dep{o}/\dep{i}] = \tau' \; \text{defined by structural recursion, save for:} \; {\bf{\aq{\dep{i}}[\dep{o}/\dep{i}] = \dep{o}}}
+}
 \end{mathpar}
 
-Let's transcribe those to Makam. I'll just write them out and we will can
-go back and add all the needed declarations next.
-
-```
-lamdep : class -> (index -> term) -> term.
-pidep : class -> (index -> typ) -> typ.
-typeof (lamdep C EF) (pidep C TF) :-
-  (i:index -> classof_index i C -> typeof (EF i) (TF i)), wfclass C.
-
-appdep : term -> object -> term.
-typeof (appdep E O) T' :-
-  typeof E (pidep C TF), classof O C, subst_obj TF I T'.
-
-liftobj : object -> term. liftclass : class -> typ.
-typeof (liftobj O) (liftclass C) :- classof O C.
-```
-
-I have assumed distinguished sorts for objects, classes and indices. Indices will not have any
-global constructors; they are only to be introduced as variables locally. For objects and classes,
-we'll proceed to add constructors one by one. Also, we need predicates to stand for
+The typing rules should be quite simple to transcribe to Makam:
 
 ```makam
 object, class, index : type.
 classof : object -> class -> prop.
 classof_index : index -> class -> prop.
-wfclass : class -> prop.
-```
-
-ADVISOR. I know that we might need to treat indices specially later on, so it's good that they're a different sort. And since `object` and `index` are different
-types, we cannot use HOAS function application directly to compute the substitution $\tau[\dep{o}/\dep{i}]$ that shows up in the \rulename{Typeof-AppDep} rule.
-So that's why you made that into the `subst_obj` predicate, and use it when we have an HMML `typ` of the form $\dep{i}.\tau[\dep{i}]$ and we're substituting the index for an object $\dep{o}$:
-
-```makam
 subst_obj : (I_Typ: index -> typ) (O: object) (Typ_O'I: typ) -> prop.
-```
-
-STUDENT. Exactly. Hopefully, we won't have to write any unnecessary cases for `subst_obj`, though!
-
-<!--
-
-```makam
-lamdep : class -> (index -> term) -> term.
-pidep : class -> (index -> typ) -> typ.
-typeof (lamdep C EF) (pidep C TF) :-
-  (i:index -> classof_index i C -> typeof (EF i) (TF i)), wfclass C.
-
-appdep : term -> object -> term.
-typeof (appdep E O) T' :-
-  typeof E (pidep C TF), classof O C, subst_obj TF I T'.
 
 liftobj : object -> term. liftclass : class -> typ.
 typeof (liftobj O) (liftclass C) :- classof O C.
+
+letdep : object -> (index -> term) -> term.
+typeof (letdep O EF) T' :-
+  classof O C, (i:index -> classof_index i C -> typeof (EF i) (TF i)),
+  subst_obj TF I T'.
 ```
 
--->
-
 ADVISOR. Great. I'll add the object language in a separate namespace prefix -- we can use `\texttt{\%extend}' for going
-into a namespace -- and I'll just copy-paste our STLC code from earlier on.
+into a namespace -- and I'll just copy-paste our STLC code from earlier on. Let me also add our
+new antiquote as a new STLC term constructor!
 
 ```
 %extend stlc.
 term : type. typ : type. typeof : term -> typ -> prop.
 ...
+aq : index -> term.
 %end.
 ```
-
-\input{generated/todo}
 
 <!--
 We don't have to copy-paste the code, we can import the previous file into a separate namespace. But let's add natural numbers too.
@@ -157,12 +144,40 @@ typeof ozero onat.
 typeof (osucc N) onat :- typeof N onat.
 eval ozero ozero.
 eval (osucc E) (osucc V) :- eval E V.
+aq : index -> term.
 %end.
 ```
 -->
 
+\input{generated/todo}
+
+STUDENT. (...)
+
+```
+wfclass : class -> prop.
+
+lamdep : class -> (index -> term) -> term.
+pidep : class -> (index -> typ) -> typ.
+typeof (lamdep C EF) (pidep C TF) :-
+  (i:index -> classof_index i C -> typeof (EF i) (TF i)), wfclass C.
+
+appdep : term -> object -> term.
+typeof (appdep E O) T' :-
+  typeof E (pidep C TF), classof O C, subst_obj TF I T'.
+```
+
+\begin{mathpar}
+\inferrule[Typeof-LamObj]
+          {\Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ \dep{\Psi} \odash \dep{c} \; \text{wf}}
+          {\Gamma; \dep{\Psi} \vdash \Lambda \dep{i} : \dep{c}.e : \Pi \dep{i} : \dep{c}.\tau}
+
+\inferrule[Typeof-AppObj]
+          {\Gamma; \dep{\Psi} \vdash e : \Pi \dep{i} : \dep{c}.\tau \\ \dep{\Psi} \odash \dep{o} : \dep{c}}
+          {\Gamma; \dep{\Psi} \vdash e @ \dep{o} : \dep{\text{subst}}(\tau, [\dep{o}/\dep{i}])}
+\end{mathpar}
+
 <!-- flipped order in the narrative, we need to declare `wftyp` first.
-```makam
+```
 %extend stlc.
 wftyp : typ -> prop.
 lam : typ -> (term -> term) -> term.
@@ -174,7 +189,7 @@ typeof (lam T E) (arrow T T') :-
 
 STUDENT. Great! I'll make these into dependent indices now, including both types and terms.
 
-```makam
+```
 iterm : stlc.term -> object.     ityp : stlc.typ -> object.
 ctyp : stlc.typ -> class.  cext : class.
 depclassify (iterm E) (ctyp T) :- stlc.typeof E T.
@@ -198,7 +213,7 @@ wftyp_aux T T :- if (wftyp_applies T)
 
 <!-- warning: don't redeclare wftyp from above.
 
-```makam
+```
 %extend stlc.
 wftyp_aux : [A] A -> A -> prop.
 wftyp_cases, wftyp_applies : [A] A -> prop.
@@ -217,7 +232,7 @@ your structural recursion just needs to do a simple visit and it does not need t
 output; hence the repeat of the same `typ` argument. Let's prepare for substitutions, too,
 in the same way.
 
-```makam
+```
 depsubst_aux, depsubst_cases : [A] index -> object -> A -> A -> prop.
 depsubst_applies : [A] index -> A -> prop.
 depsubst F I Res :- (v:index -> depsubst_aux v I (F v) Res).
@@ -231,7 +246,7 @@ ADVISOR. Great! We only have one thing missing: we need to close the loop, being
 
 STUDENT. I got this.
 
-```makam
+```
 %extend stlc.
 varterm : index -> term.  vartyp : index -> typ.
 typeof (varterm V) T :- depclassify V (ctyp T).
@@ -246,7 +261,7 @@ depsubst_cases Var (ityp Replace)  (stlc.vartyp Var)  Replace.
 ADVISOR. This is exciting; let me try it out! I'll do a function that takes an
 object-level type and returns the object-level identity function for it.
 
-```makam-noeval
+```-noeval
 typeof (lamdep cext (fun t =>
          (liftdep (iterm (stlc.lam (stlc.vartyp t) (fun x => x)))))) T ?
 >> Yes!!!!!
@@ -255,7 +270,7 @@ typeof (lamdep cext (fun t =>
 ```
 
 <!--
-```makam
+```
 typeof (lamdep cext (fun t =>
          (liftdep (iterm (stlc.lam (stlc.vartyp t) (fun x => x)))))) T ?
 >> Yes:
@@ -278,7 +293,7 @@ ADVISOR. Right. So in our case, open STLC terms depend on a number of variables,
 
 STUDENT. Let me see. I think something like this is what we want:
 
-```makam
+```
 iopen_term : bindmany stlc.term stlc.term -> stlc.
 cctx_typ : list stlc.typ -> stlc.typ -> class.
 ```
@@ -286,14 +301,14 @@ cctx_typ : list stlc.typ -> stlc.typ -> class.
 ADVISOR. That looks right to me. I can write the classification and well-formedness rules for those.
 
 <!--
-```makam
+```
 foreach : [A] (A -> prop) -> list A -> prop.
 foreach P [].
 foreach P (HD :: TL) :- P HD, foreach P TL.
 ```
 -->
 
-```makam
+```
 depclassify (iopen_term XS_E) (cctx_typ TS T) :-
   openmany XS_E (pfun xs e =>
     assumemany stlc.typeof xs TS (stlc.typeof e T),
@@ -317,7 +332,7 @@ STUDENT. OK, and then we need to apply that substitution $\sigma$ when we substi
 actual open term for the metavariable. I know what to do:
 
 \vspace{-0.5em}
-```makam
+```
 %extend stlc.
 varmeta : index -> list term -> term.
 typeof (varmeta V ES) T :- depclassify V (cctx_typ TS T), map stlc.typeof ES TS.
@@ -331,7 +346,7 @@ ADVISOR. That should be it; let's try this out! Let's do meta-level application,
 So, take a "function" body that needs a single argument, and an instantiation for that
 argument, and do the substitution at the meta-level. This will be sort of like inlining. And let's use unification variables wherever it makes sense, to push our rules to infer what they can for themselves!
 
-```makam-noeval
+```-noeval
 typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [stlc.vartyp t1] (stlc.vartyp t2)) (fun f =>
        (lamdep _ (fun a => (liftdep (iopen_term (bindbase (
@@ -345,7 +360,7 @@ typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
 
 <!--
 
-```makam
+```
 typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [stlc.vartyp t1] (stlc.vartyp t2)) (fun f =>
        (lamdep _ (fun a => (liftdep (iopen_term (body (
@@ -354,7 +369,7 @@ typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
 >> T := (pidep cext (fun t1 => pidep cext (fun t2 => (pidep (cctx_typ [stlc.vartyp t1] (stlc.vartyp t2)) (fun f => (pidep (ctyp (stlc.vartyp t1)) (fun a => (liftdep (cctx_typ [] (stlc.vartyp t2)))))))))).
 ```
 
-```makam
+```
 (eq _FUNCTION 
        (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
        (lamdep (cctx_typ [stlc.vartyp t1] (stlc.vartyp t2)) (fun f =>

@@ -2,7 +2,7 @@
 
 <!--
 ```makam
-%use "06-structural.md".
+%use "07-miniml.md".
 tests: testsuite. %testsuite tests.
 ```
 -->
@@ -73,7 +73,7 @@ replaceunif Which ToWhat Where Result :- refl.isunif Where,
   if (refl.sameunif Which Where) then (eq (dyn Result) (dyn ToWhat))
   else (eq Result Where).
 replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
-  structural_recursion (replaceunif Which ToWhat) Where Result.
+  structural_recursion @(replaceunif Which ToWhat) Where Result.
 ```
 
 ADVISOR. And last, we'll need an auxiliary predicate that tells us whether a unification
@@ -107,7 +107,7 @@ get_types_in_environment : [A] A -> prop.
 generalize T Res :- 
   findunif T Var, get_types_in_environment GammaTypes,
   (x:typ -> (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
-  if (hasunif GammaTypes Var) then (eq Res (T'' Var)) else (eq Res (forall T'')).
+  if (hasunif GammaTypes Var) then (eq Res (T'' Var)) else (eq Res (tforall T'')).
 ```
 
 STUDENT. Oh, clever. But what should `get_types_in_environment` be? Don't we have to go
@@ -130,7 +130,7 @@ STUDENT. Wait. It can't be.
 ```makam
 typeof (let (lam _ (fun x => let x (fun y => y))) (fun id => id)) T ?
 >> Yes:
->> T := forall (fun a => arrow a a).
+>> T := tforall (fun a => arrow a a).
 ```
 
 ADVISOR. And yet, it can.
@@ -144,6 +144,6 @@ is a hack, if we need to do this we can show the above in two steps instead:)
   typeof (let (lam _ (fun x => let x (fun y => y)))
             (fun z => z)) T) ?
 >> Yes:
->> T := forall (fun a => arrow a (forall (fun b => b))).
+>> T := tforall (fun a => arrow a (tforall (fun b => b))).
 ```
 -->

@@ -23,6 +23,7 @@ I can do the rest on my own.
 \newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
 \newcommand\odash[0]{\ensuremath{\vdash_{\text{o}}}}
 \newcommand\wf[0]{\ensuremath{\; \text{wf}}}
+\newcommand\aq[1]{\ensuremath{\texttt{aq}(#1)}}
 
 \heroADVISOR{} Sounds good. Still, we should use the generic dependently-typed
 framework that we have come up with. But before we get to that, let's
@@ -42,8 +43,8 @@ this: we should have dependent functions over the objects, where one
 object can depend on another one. We need the dependency so that, for
 example, we can take an object type \texttt{T} as an argument and return
 an object term of that exact type \texttt{T}. Dependent products should
-be similar, but we can skip them for now and just add a way to return an
-object as a meta-level value.
+be similar, but we can skip them for now and just add a way to return
+(or ``lift'') an object \(o\) as a meta-level value \(\lift{o}\).
 
 \heroADVISOR{} Good idea. We are getting into many levels of meta -- there's
 the meta-language we're using, Makam; there's the object language we are
@@ -59,35 +60,96 @@ which would be quite similar to the Dependent ML formulation of
 meta-language itself, which would be more similar to a homogeneous,
 multi-stage language like MetaML \citep{metaml-main-reference}. But in
 this case, our objects will be the types and terms of STLC -- actually,
-the open terms of STLC.
-
-\heroADVISOR{} It's a plan. So, let's get to it. Should we write some of the
-system down on paper first?
-
-\heroSTUDENT{} Yes, that will be necessary. Here are the typing rules for the
-new constructs in HMML, which depend on an appropriately defined typing
-judgment \(\Psi \odash o : c\) for objects and a well-formedness
-judgment \(\Psi \odash c \wf\) for classes. We use \(\dep{i}\) for
-variables standing for objects, which we will call \emph{indices}.
-
-\vspace{-1.5em}\begin{mathpar}
-\inferrule[Typeof-LamDep]
-          {\Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ \dep{\Psi} \odash \dep{c} \; \text{wf}}
-          {\Gamma; \dep{\Psi} \vdash \Lambda \dep{i} : \dep{c}.e : \Pi \dep{i} : \dep{c}.\tau}
-
-\inferrule[Typeof-AppDep]
-          {\Gamma; \dep{\Psi} \vdash e : \Pi \dep{i} : \dep{c}.\tau \\ \dep{\Psi} \odash \dep{o} : \dep{c}}
-          {\Gamma; \dep{\Psi} \vdash e @ \dep{o} : \dep{\text{subst}}(\tau, [\dep{o}/\dep{i}])}
-
-\inferrule[Typeof-LiftDep]
-          {\dep{\Psi} \odash \dep{o} : \dep{c}}
-          {\Gamma; \dep{\Psi} \vdash \lift{\dep{o}} : \lift{\dep{c}}}
-\end{mathpar}
-
-Let's transcribe those to Makam. I'll just write them out and we will
-can go back and add all the needed declarations next.
+the open terms of STLC. But as a first example, we can just do something
+that is more standard, where we only need the closed terms as objects.
+How about the standard example of a staged \texttt{power} function?
+Here's a sketch:
 
 \begin{verbatim}
+let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
+  match n with
+    0 \ensuremath{\Rightarrow} < stlc.lam (fun x \ensuremath{\Rightarrow} 1) >
+  | S (S n') \ensuremath{\Rightarrow} letobj I = power n' in
+      < stlc.lam (fun x \ensuremath{\Rightarrow} stlc.app ~I (stlc.mult x x)) >
+  | S n' \ensuremath{\Rightarrow} letobj I = power n' in
+      < stlc.lam (fun x \ensuremath{\Rightarrow} stlc.mult (stlc.app ~I x) x) >
+\end{verbatim}
+
+\heroADVISOR{} I see, you're using the \texttt{\textasciitilde{}I} notation
+for antiquotation. It's a plan. So, let's get to it. Should we write
+some of the system down on paper first?
+
+\heroSTUDENT{} Yes, that will be necessary. For this example, we need only the
+lifting construct and the \texttt{letobj} typing rules; we will work on
+dependent functions afterwards. Here are their typing rules, which
+depend on an appropriately defined typing judgment \(\Psi \odash o : c\)
+for objects. We use \(\dep{i}\) for variables standing for objects,
+which we will call \emph{indices}. And we will need a way to antiquote
+indices inside STLC terms, which means that we will have to
+\emph{extend} the objects as well as their typing judgment
+\(\dep{\Psi} \odash o : c\) accordingly.
+
+\vspace{-1.5em}\begin{mathpar}
+\begin{array}{ll}
+\rulename{Ob-Ob-Syntax}                                                   & \rulename{HMML-Syntax} \\
+\dep{o} ::= (\text{...closed terms of STLC, plus }\aq{\dep{i}}\text{...}) & e ::= \text{...} \; | \; \lift{\dep{o}} \; | \; \texttt{letobj} \; \dep{i} = \dep{o} \; \texttt{in} \; e \\
+\dep{o} ::= \text{(...types of STLC...)}                                  & \tau ::= \text{...} \; | \; \lift{\dep{c}}
+\end{array} \\
+
+\inferrule[Typeof-LiftObj]
+          {\dep{\Psi} \odash \dep{o} : \dep{c}}
+          {\Gamma; \dep{\Psi} \vdash \lift{\dep{o}} : \lift{\dep{c}}}
+
+\inferrule[Typeof-LetObj]
+          {\dep{\Psi} \odash \dep{o} : \dep{c} \\ \Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ \tau' = \tau[\dep{o}/\dep{i}]}
+          {\Gamma; \dep{\Psi} \vdash \texttt{letobj} \; \dep{i} = \dep{o} \; \texttt{in} \; e : \tau'}
+
+\inferrule[Classof-Antiquote]
+          {\dep{i} : \dep{c} \in \Psi}
+          {\Psi \odash \aq{\dep{i}} : \dep{c}}
+
+\inferrule[SubstObj]{}{
+  \tau[\dep{o}/\dep{i}] = \tau' \; \text{defined by structural recursion, save for:} \; {\bf{\aq{\dep{i}}[\dep{o}/\dep{i}] = \dep{o}}}
+}
+\end{mathpar}
+
+The typing rules should be quite simple to transcribe to Makam:
+
+\begin{verbatim}
+object, class, index : type.
+classof : object \ensuremath{\to} class \ensuremath{\to} prop.
+classof_index : index \ensuremath{\to} class \ensuremath{\to} prop.
+subst_obj : (I_Typ: index \ensuremath{\to} typ) (O: object) (Typ_O'I: typ) \ensuremath{\to} prop.
+
+liftobj : object \ensuremath{\to} term. liftclass : class \ensuremath{\to} typ.
+typeof (liftobj O) (liftclass C) :- classof O C.
+
+letdep : object \ensuremath{\to} (index \ensuremath{\to} term) \ensuremath{\to} term.
+typeof (letdep O EF) T' :-
+  classof O C, (i:index \ensuremath{\to} classof_index i C \ensuremath{\to} typeof (EF i) (TF i)),
+  subst_obj TF I T'.
+\end{verbatim}
+
+\heroADVISOR{} Great. I'll add the object language in a separate namespace
+prefix -- we can use `\texttt{\%extend}' for going into a namespace --
+and I'll just copy-paste our STLC code from earlier on. Let me also add
+our new antiquote as a new STLC term constructor!
+
+\begin{verbatim}
+%extend stlc.
+term : type. typ : type. typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
+...
+aq : index \ensuremath{\to} term.
+%end.
+\end{verbatim}
+
+\input{generated/todo}
+
+\heroSTUDENT{} (\ldots{})
+
+\begin{verbatim}
+wfclass : class \ensuremath{\to} prop.
+
 lamdep : class \ensuremath{\to} (index \ensuremath{\to} term) \ensuremath{\to} term.
 pidep : class \ensuremath{\to} (index \ensuremath{\to} typ) \ensuremath{\to} typ.
 typeof (lamdep C EF) (pidep C TF) :-
@@ -96,52 +158,17 @@ typeof (lamdep C EF) (pidep C TF) :-
 appdep : term \ensuremath{\to} object \ensuremath{\to} term.
 typeof (appdep E O) T' :-
   typeof E (pidep C TF), classof O C, subst_obj TF I T'.
-
-liftobj : object \ensuremath{\to} term. liftclass : class \ensuremath{\to} typ.
-typeof (liftobj O) (liftclass C) :- classof O C.
 \end{verbatim}
 
-I have assumed distinguished sorts for objects, classes and indices.
-Indices will not have any global constructors; they are only to be
-introduced as variables locally. For objects and classes, we'll proceed
-to add constructors one by one. Also, we need predicates to stand for
+\begin{mathpar}
+\inferrule[Typeof-LamObj]
+          {\Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ \dep{\Psi} \odash \dep{c} \; \text{wf}}
+          {\Gamma; \dep{\Psi} \vdash \Lambda \dep{i} : \dep{c}.e : \Pi \dep{i} : \dep{c}.\tau}
 
-\begin{verbatim}
-object, class, index : type.
-classof : object \ensuremath{\to} class \ensuremath{\to} prop.
-classof_index : index \ensuremath{\to} class \ensuremath{\to} prop.
-wfclass : class \ensuremath{\to} prop.
-\end{verbatim}
-
-\heroADVISOR{} I know that we might need to treat indices specially later on,
-so it's good that they're a different sort. And since \texttt{object}
-and \texttt{index} are different types, we cannot use HOAS function
-application directly to compute the substitution
-\(\tau[\dep{o}/\dep{i}]\) that shows up in the \rulename{Typeof-AppDep}
-rule. So that's why you made that into the \texttt{subst\_obj}
-predicate, and use it when we have an HMML \texttt{typ} of the form
-\(\dep{i}.\tau[\dep{i}]\) and we're substituting the index for an object
-\(\dep{o}\):
-
-\begin{verbatim}
-subst_obj : (I_Typ: index \ensuremath{\to} typ) (O: object) (Typ_O'I: typ) \ensuremath{\to} prop.
-\end{verbatim}
-
-\heroSTUDENT{} Exactly. Hopefully, we won't have to write any unnecessary
-cases for \texttt{subst\_obj}, though!
-
-\heroADVISOR{} Great. I'll add the object language in a separate namespace
-prefix -- we can use `\texttt{\%extend}' for going into a namespace --
-and I'll just copy-paste our STLC code from earlier on.
-
-\begin{verbatim}
-%extend stlc.
-term : type. typ : type. typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
-...
-%end.
-\end{verbatim}
-
-\input{generated/todo}
+\inferrule[Typeof-AppObj]
+          {\Gamma; \dep{\Psi} \vdash e : \Pi \dep{i} : \dep{c}.\tau \\ \dep{\Psi} \odash \dep{o} : \dep{c}}
+          {\Gamma; \dep{\Psi} \vdash e @ \dep{o} : \dep{\text{subst}}(\tau, [\dep{o}/\dep{i}])}
+\end{mathpar}
 
 \heroSTUDENT{} Great! I'll make these into dependent indices now, including
 both types and terms.
