@@ -9,7 +9,7 @@ tests: testsuite. %testsuite tests.
 
 STUDENT. Type synonyms? You mean, introducing type definitions like `type natpair = nat * nat`? That does not seem particularly tricky.
 
-ADVISOR. I think we will face a couple of interesting issues with it. Let me write out the necessary pen-and-paper rules first, so that we are on the same page. We'll do top-level type definitions, so let's add a top-level notion of programs, and a well-formedness judgement for them. We also need an additional environment to store type definitions:
+ADVISOR. I think we will face a couple of interesting issues with it. Let me write out the necessary pen-and-paper rules first, so that we are on the same page. We'll do top-level type definitions, so let's add a top-level notion of programs, and a well-formedness judgement for them. (We could do modules instead of just programs, but I feel that would derail us a little.) We also need an additional environment to store type definitions:
 
 \vspace{-1.2em}
 \begin{mathpar}

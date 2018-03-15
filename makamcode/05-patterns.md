@@ -218,7 +218,7 @@ typeof_pattlist : [NBefore NAfter]
   vector typ NBefore -> vector typ NAfter -> prop.
 
 typeof_pattlist pnil [] VarTypes VarTypes.
-typeof_pattlist (pcons P PS) (T :: TS) VarTypes VarTypes' :-
+typeof_pattlist (pcons P PS) (T :: TS) VarTypes VarTypes'' :-
   typeof_patt P T VarTypes VarTypes',
   typeof_pattlist PS TS VarTypes' VarTypes''.
 
@@ -318,6 +318,12 @@ matchlist (pcons P PS) (V :: VS) Subst Subst'' :-
  eval (app _PRED ozero) PRED0, eval (app _PRED (osucc (osucc ozero))) PRED2) ?
 >> Yes:
 >> T := arrow onat onat, PRED0 := ozero, PRED2 := osucc ozero.
+
+typeof (case_or_else (tuple [tuple [], ozero]) (patt_tuple (pcons patt_var (pcons patt_var pnil)))
+                     (vbind (fun t => vbind (fun n => vbody (osucc n))))
+                     ozero) T ?
+>> Yes:
+>> T := onat.
 ```
 -->
 
