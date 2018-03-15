@@ -61,12 +61,13 @@ and arguments to constructors? / They'll all take just a single.''
 ```
    data nattree = Leaf of nat | Node of (nattree * nattree) ; rest
 ~> data nattree = [ ("Leaf", nat), ("Node", nattree * nattree) ] ; rest
-~> data nattree = [ nat, nattree * nattree ] ; Leaf Node => rest
-~> data (nattree => [nat, nattree * nattree]) ; nattree Leaf Node => rest
-~> data (nattree => [nat, nattree * nattree]) ;
-     nattree => bind (Leaf Node) => body rest
-~> datatype (mkdatadef nattree => [nat, nattree * nattree]))
-     (bind_datatype nattree => bind (leaf node) => body rest)
+~> data nattree = [ nat, nattree * nattree ] ; λLeaf. λNode. rest
+~> data (λnattree. [nat, nattree * nattree]) ; λnattree. λLeaf. λNode. rest
+~> data (λnattree. [nat, nattree * nattree]) ;
+     λnattree. bind (λLeaf. bind (λNode. body rest))
+~> datatype (mkdatadef (fun nattree => [nat, nattree * nattree]))
+     (bind_datatype (fun nattree =>
+       bind (fun leaf => bind (fun node => body rest))))
 ```
 
 \begin{versy}

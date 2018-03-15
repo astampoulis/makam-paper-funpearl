@@ -40,12 +40,13 @@ and arguments to constructors? / They'll all take just a single.''
 \begin{verbatim}
    data nattree = Leaf of nat | Node of (nattree * nattree) ; rest
 ~> data nattree = [ ("Leaf", nat), ("Node", nattree * nattree) ] ; rest
-~> data nattree = [ nat, nattree * nattree ] ; Leaf Node \ensuremath{\Rightarrow} rest
-~> data (nattree \ensuremath{\Rightarrow} [nat, nattree * nattree]) ; nattree Leaf Node \ensuremath{\Rightarrow} rest
-~> data (nattree \ensuremath{\Rightarrow} [nat, nattree * nattree]) ;
-     nattree \ensuremath{\Rightarrow} bind (Leaf Node) \ensuremath{\Rightarrow} body rest
-~> datatype (mkdatadef nattree \ensuremath{\Rightarrow} [nat, nattree * nattree]))
-     (bind_datatype nattree \ensuremath{\Rightarrow} bind (leaf node) \ensuremath{\Rightarrow} body rest)
+~> data nattree = [ nat, nattree * nattree ] ; \foreignlanguage{greek}{λ}Leaf. \foreignlanguage{greek}{λ}Node. rest
+~> data (\foreignlanguage{greek}{λ}nattree. [nat, nattree * nattree]) ; \foreignlanguage{greek}{λ}nattree. \foreignlanguage{greek}{λ}Leaf. \foreignlanguage{greek}{λ}Node. rest
+~> data (\foreignlanguage{greek}{λ}nattree. [nat, nattree * nattree]) ;
+     \foreignlanguage{greek}{λ}nattree. bind (\foreignlanguage{greek}{λ}Leaf. bind (\foreignlanguage{greek}{λ}Node. body rest))
+~> datatype (mkdatadef (fun nattree \ensuremath{\Rightarrow} [nat, nattree * nattree]))
+     (bind_datatype (fun nattree \ensuremath{\Rightarrow}
+       bind (fun leaf \ensuremath{\Rightarrow} bind (fun node \ensuremath{\Rightarrow} body rest))))
 \end{verbatim}
 
 \begin{versy}
