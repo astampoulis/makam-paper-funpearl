@@ -26,10 +26,13 @@ something like this.
 system is a subset of System F\(_\omega\) that should be familiar to you
 -- the simply typed lambda calculus, plus prenex polymorphism, plus
 simple type constructors of the form
-\texttt{type\ *\ ...\ *\ type\ \ensuremath{\to}\ type}. There is a
-\texttt{prop} sort for propositions, which is a normal type, but also a
-bit special: its terms are not just values but are also computations,
-activated when queried upon.
+\texttt{type\ *\ ...\ *\ type\ \ensuremath{\to}\ type}. There is also a
+limited form of rank-2 polymorphism, allowing types of the form
+\texttt{forall\ A\ T}, which are inhabited by unapplied polymorphic
+constants through the notation \texttt{@foo}. There is a \texttt{prop}
+sort for propositions, which is a normal type, but also a bit special:
+its terms are not just values but are also computations, activated when
+queried upon.
 
 However, the language of this land has a distinguishing feature, called
 Ad-Hoc Polymorphism. You see, the different rules that define a
