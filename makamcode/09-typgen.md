@@ -9,7 +9,7 @@ tests: testsuite. %testsuite tests.
 
 \begin{verse}
 ``We mentioned Hindley-Milner / we don't want you to be sad \\
-This paper's going to ending soon / and it wasn't all that bad \\
+This paper's going to end soon / and it wasn't all that bad \\
 \hspace{1em}\vspace{-0.5em} \\
 We'll gather unif-variables / with structural recursion \\
 And if you haven't guessed it yet / we'll get to use reflection.''

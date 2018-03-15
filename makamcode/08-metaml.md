@@ -7,34 +7,79 @@ tests: testsuite. %testsuite tests.
 ```
 -->
 
-\input{generated/todo}
-
 STUDENT. I'm fairly confident by now that Makam should be able to handle the research idea
 we want to try out. Shall we get to it?
 
-ADVISOR. Yes, it is time. So, what we are aiming to do is add a facility for type-safe, heterogeneous meta-programming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a separate object language in a type-safe manner.
+ADVISOR. Yes, it is time. So, what we are aiming to do is add a facility for type-safe, heterogeneous meta-programming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a *separate* object language in a type-safe manner.
 
-STUDENT. Exactly. We'd like our object language to be a formal logic, so our language will
-be similar to Beluga \citep{beluga-main-reference} or VeriML
-\citep{stampoulis2013veriml}. We'll have to be able to pattern match over the terms of the
-object language, too, so they are runtime entities.... But we don't need to do all of
-that; let's just do a basic version for now, and I can do the rest on my own.
+STUDENT. Exactly. We aim for our object language to be a formal logic,
+so our language will be similar to Beluga
+\citep{beluga-main-reference} or VeriML
+\citep{veriml-main-reference}. We'll have to be able to pattern match
+over the terms of the object language, so they will be runtime
+entities, rather than erasable static entities.... But we don't need
+to do all of that; let's just do a basic version for now, and I can do
+the rest on my own.
 
-ADVISOR. Sounds good. So, I think the fragment we should do is this: we will have
-dependent functions over a distinguished language of *dependent indices*. We need the
-dependency so that, for example, we can take an object-level type as an argument and
-return an object-level term that uses that type.
+\newcommand\dep[1]{\ensuremath{#1}}
+\newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
+\newcommand\odash[0]{\ensuremath{\vdash_{\text{o}}}}
+\newcommand\wf[0]{\ensuremath{\; \text{wf}}}
 
-STUDENT. Exactly. Dependent products should be similar, but we can skip them for now and just add a way to return an object-level term from the meta-level.
+ADVISOR. Sounds good. Still, we should use the generic
+dependently-typed framework that we have come up with. But before we
+get to that, let's agree on some terminology first, because a lot of
+words are getting overloaded a lot. Let us call *objects* $o$
+any sorts of terms of the object language that we will be manipulating.
+And, for a lack of a better word, let us call *classes* $c$ any sort of types
+that characterize those objects through a typing relation of the form $\Psi \odash o : c$. It
+is unfortunate that these names suggest object-orientation, but this is not the intent.
+
+STUDENT. I see what you are saying. In the language we have in mind, the objects,
+as you just defined them, include both terms and types; and as a result, the classes
+should be types (characterizing terms) and kinds (characterizing types).
+Now, I think the fragment that we should do is this: we should
+have dependent functions over the objects, where one object can depend on another one.
+We need the dependency so that, for example, we can take an object type `T` as an
+argument and return an object term of that exact type `T`.
+Dependent products should be similar, but we can skip them for now and just add
+a way to return an object as a meta-level value.
 
 ADVISOR. Good idea. We are getting into many levels of meta -- there's the meta-language
-we're using, Makam; there's the object language we are encoding, which is a meta-language
+we're using, Makam; there's the object language we are encoding, which is now becoming a meta-language
 in itself, let's call that Heterogeneous Meta ML Light (HMML?); and there's the
 "object-object" language that HMML is manipulating. And let's keep that last one simple: the simply typed lambda calculus (STLC).
 
-STUDENT. Great. So, our dependent indices will be the types and terms of STLC -- actually, the open terms of STLC.
+STUDENT. Great. Other options for the language of objects could be -- a language
+of natural numbers, equality predicates, and equality proofs, which would be quite similar to the Dependent ML formulation of
+\citet{licata2005formulation}; or even the full meta-language itself, which would be more
+similar to a homogeneous, multi-stage language like MetaML \citep{metaml-main-reference}. But in this case,
+our objects will be the types and terms of STLC -- actually, the open terms of STLC.
 
-ADVISOR. It's a plan. So, let's get to it. Let's first add distinguished sorts for dependent indices and dependent classifiers -- we'll use those to type-check the indices, with an appropriate predicate. Let's also have a distinguished type for *dependent variables*, that is, variables of dependent indices; and a way to substitute such a variable for an object.
+ADVISOR. It's a plan. So, let's get to it. Should we write some of the system down on paper first?
+
+STUDENT. Yes, that will be necessary. Here are the typing rules for the new constructs in HMML, which depend
+on an appropriately defined typing judgment $\Psi \odash o : c$ for objects and a well-formedness judgment
+$\Psi \odash c \wf$ for classes. We use $\dep{v}$ for variables standing for objects. 
+
+\vspace{-1.5em}
+\begin{mathpar}
+\inferrule[Typeof-LamDep]
+          {\Gamma; \dep{\Psi}, \; \dep{v} : \dep{c} \vdash e : \tau \\ \dep{\Psi} \odash \dep{c} \; \text{wf}}
+          {\Gamma; \dep{\Psi} \vdash \Lambda \dep{v} : \dep{c}.e : \Pi \dep{v} : \dep{c}.\tau}
+
+\inferrule[Typeof-AppDep]
+          {\Gamma; \dep{\Psi} \vdash e : \Pi \dep{v} : \dep{c}.\tau \\ \dep{\Psi} \odash \dep{o} : \dep{c}}
+          {\Gamma; \dep{\Psi} \vdash e @ \dep{o} : \dep{\text{subst}}(\tau, [\dep{o}/\dep{v}])}
+
+\inferrule[Typeof-LiftDep]
+          {\dep{\Psi} \odash \dep{o} : \dep{c}}
+          {\Gamma; \dep{\Psi} \vdash \lift{\dep{o}} : \lift{\dep{c}}}
+\end{mathpar}
+
+\input{generated/todo}
+
+Let's first add distinguished sorts for objects and classes. Let's also have a distinguished type for *dependent variables*, that is, variables of dependent indices; and a way to substitute such a variable for an object.
 
 ```makam
 depindex, depclassifier, depvar : type.
@@ -44,24 +89,10 @@ depwf : depclassifier -> prop.
 depsubst : [A] (depvar -> A) -> depindex -> A -> prop.
 ```
 
-\newcommand\dep[1]{\ensuremath{#1_{\text{d}}}}
-\newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
 
 STUDENT. Right, we might need to check that classifiers are well-formed. And we might need to treat variables specially, so it's good that they're a different type. So, that's why you made substitution a predicate, rather than using the normal HOAS function application `F X` directly, as we have been doing so far. I know that when we add variables that stand for open STLC terms, there will be some extra computation involved to substitute them for an open term, so the normal application won't work as is.
 
 ADVISOR. Exactly; and that extra computation will be necessary in order to maintain type-safety. Hopefully, we won't have to write any unnecessary cases, though! Now, we have a few typing rules to add. I'll use ``$\dep{\cdot}$'' to signify things that have to do with the dependent indices.
-
-\vspace{-1.5em}
-\begin{mathpar}
-\inferrule{\dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
-          {\Gamma; \dep{\Psi} \vdash \lift{\dep{i}} : \lift{\dep{c}}}
-
-\inferrule{\Gamma; \dep{\Psi}, \; \dep{v} : \dep{c} \vdash e : \tau \\ \dep{\Psi} \dep{\vdash} \dep{c} \; \text{wf}}
-          {\Gamma; \dep{\Psi} \vdash \Lambda \dep{v} : \dep{c}.e : \Pi \dep{v} : \dep{c}.\tau}
-
-\inferrule{\Gamma; \dep{\Psi} \vdash e : \Pi \dep{v} : \dep{c}.\tau \\ \dep{\Psi} \dep{\vdash} \dep{i} : \dep{c}}
-          {\Gamma; \dep{\Psi} \vdash e @ \dep{i} : \dep{\text{subst}}(\tau, [\dep{i}/\dep{v}])}
-\end{mathpar}
 
 STUDENT. Those are very easy to transcribe to Makam.
 
@@ -76,10 +107,7 @@ typeof (appdep E I) T' :- typeof E (pidep C TF), depclassify I C, depsubst TF I 
 typeof (liftdep I) (liftdep C) :- depclassify I C.
 ```
 
-ADVISOR. Looks nice. Just wanted to say, this framework is quite general. We could instantiate
-dependent indices with a language of natural numbers, equality predicates, and equality
-proofs, which would be quite similar to the Dependent ML formulation of
-\citet{licata2005formulation}. But let's go back to what we're trying to do. I'll add the
+ADVISOR. Looks nice. Just wanted to say, this framework is quite general. I'll add the
 object language in a separate namespace prefix -- we can use `\texttt{\%extend}' for going
 into a namespace -- and I'll just copy-paste our STLC code from earlier on.
 
@@ -96,11 +124,11 @@ We don't have to copy-paste the code, we can import the previous file into a sep
 ```makam
 %import "02-stlc.md" as object.
 %extend object.
-nat : typ. zero : term. succ : term -> term.
-typeof zero nat.
-typeof (succ N) nat :- typeof N nat.
-eval zero zero.
-eval (succ E) (succ V) :- eval E V.
+onat : typ. ozero : term. osucc : term -> term.
+typeof ozero onat.
+typeof (osucc N) onat :- typeof N onat.
+eval ozero ozero.
+eval (osucc E) (osucc V) :- eval E V.
 %end.
 ```
 -->
