@@ -8,12 +8,12 @@ tests: testsuite. %testsuite tests.
 -->
 
 \begin{scenecomment}
-(Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing lyrics from the folk songs of her land, and Hagop is playing the oud. Their friend Lambros from next door joins them on the kemenche.)
+(Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing lyrics from the folk songs of her land, and Hagop is playing the oud. Their friend Lambros from next door joins them on the kemen\c{c}e.)
 \end{scenecomment}
 
 \begin{versy}
 ``System F is easy, / later we might do / Hindley-Milner too. \\
-Types are always valid / a `$\vdash \tau \; \text{wf}$' / judgement we won't do.''
+Types are always valid / a `$\vdash \tau \; \text{wf}$' / judgment we won't do.''
 \end{versy}
 
 ```makam
@@ -27,8 +27,8 @@ typeof (appt E T) T' :- typeof E (tforall TF), eq T' (TF T).
 \begin{versy}
 ``The algebraic datatypes / caused all sorts of trouble \\
 in the previous version / and since it was a double- \\
-blind submission process / people do not know yet \\
-who the crazy person is / who writes papers in verse.''
+blind submission process / reviewers quite diverse \\
+wonder who's the lunatic / who writes papers in verse.''
 \end{versy}
 
 <!--
@@ -71,7 +71,7 @@ and arguments to constructors? / They'll all take just a single.''
 
 \begin{versy}
 ``Sometimes it just is better / to avoid all those words. \\
-Just squint your eyes a little bit / and Hagop'll strum some chords.''
+Just squint your eyes a little bit; / Hagop will strum some chords.''
 \end{versy}
 
 ```makam
@@ -83,8 +83,8 @@ bind_datatype : (typ -> bindmany constructor A) -> datatype_bind A.
 \begin{versy}
 ``We are avoiding GADTs / they're good, but up the ante. \\
 And we have MetaML to do / (in prose 'cause I'm no Dante.) \\
-We're almost there, we need to add / the \text{wfprogram} clause. \\
-But first we'll need an env. with types that / `constructor`s expose.''
+We're almost there, we need to add / the \texttt{wfprogram} clause. \\
+But first we'll need an env. with types that / \texttt{constructor}s expose.''
 \end{versy}
 
 ```makam
@@ -92,8 +92,8 @@ constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) -> prop.
 ```
 
 \begin{versy}
-``We go through the constructors / populating our new \text{prop}. \\
-\text{DT} stands for datatype / -- the page size's just too cropped.''
+``We go through the constructors / populating our new \texttt{prop}. \\
+\texttt{DT} stands for datatype / -- the page is just too cropt.''
 \end{versy}
 
 ```makam
@@ -106,7 +106,7 @@ wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
 
 \begin{versy}
 ``That's it, we're almost over / there's our wf-programs. \\
-We can't use the constructors though / remember \text{term}s and \text{patt}s ?''
+We can't use the constructors though / remember \texttt{term}s and \texttt{patt}s ?''
 \end{versy}
 
 ```makam
@@ -119,8 +119,8 @@ typeof_patt (patt_constr C Arg) Datatype S S' :-
 ```
 
 \begin{versy}
-``That's all, there's no example / but if you download Makam \\
-trust me: you can run this code / and check that all tests pass.''
+``That's all, there's no example / please, download Makam \\
+trust me: you can then run this code / and check that all tests pass.''
 \end{versy}
 
 <!--
