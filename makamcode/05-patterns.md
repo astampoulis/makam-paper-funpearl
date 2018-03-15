@@ -273,6 +273,23 @@ makes for less readable code. \citet{kiselyov05backtracking} is worth reading fo
 the cut statement and the semantics of `if`-`then`-`else` and `not` in logic programming, and Makam
 follows that paper closely.
 
+NEEDFEEDBACK. \todo{Might switch the above to two rules, using a guard clause to differentiate on
+the two cases. (I might start using the guards in the later chapters to simplify the presentation
+for structural recursion.) How does this look? At this point `P when Q :- R` can be understood to
+be entirely equivalent to `P :- Q, R`, however in later chapters this would change -- if the 
+`when` clause fails, then the rule is deemed not applicable.}
+
+\begingroup\color{todo}
+```
+eval (case_or_else Scrutinee Pattern Body Else) V'
+    when eval Scrutinee V, match Pattern V vnil Subst :-
+  vapplymany Body Subst Body', eval Body' V'.
+eval (case_or_else Scrutinee Pattern Body Else) V'
+    when eval Scrutinee V, not(match Pattern V vnil Subst) :-
+  eval Else V'.
+```
+\endgroup
+
 STUDENT. I see. Now, I noticed a `vapplymany` predicate -- what is that?
 
 ADVISOR. That is a standard-library predicate. It is used to perform simultaneous substitution for all the variables in our multiple binding type, `vbindmany`. Or another way to say it, it's the equivalent of HOAS function application for `vbindmany`:
