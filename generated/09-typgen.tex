@@ -15,11 +15,14 @@ and if you haven't guessed it yet / we'll get to use reflection.''
 \heroADVISOR{} Let me now show you how to implement type generalization for
 polymorphic \texttt{let} in the style of
 \citet{damas1984type,hindley1969principal,milner1978theory}. I've done
-this before, and I need to leave for home soon, so bear with me for a
-bit. The gist will be to reuse the unification support of our
-metalanguage, capturing the \emph{metalevel unification variables} and
-generalizing over them. That way we will have a very short
-implementation, and we won't have to do a deep embedding of unification!
+this
+before\footnote{Existing work that has considered the problem of ML type generalization
+in the \lamprolog setting can be found in \citet{typgen-lamprolog-1} and \citet{typgen-lamprolog-2}.},
+and I need to leave for home soon, so bear with me for a bit. The gist
+will be to reuse the unification support of our metalanguage, capturing
+the \emph{metalevel unification variables} and generalizing over them.
+That way we will have a very short implementation, and we won't have to
+do a deep embedding of unification!
 
 \heroSTUDENT{} So -- you're saying that in \lamprolog, other than reusing the
 metalevel function type for implementing object-level substitution, we

@@ -464,6 +464,4 @@ a type system like this in 27 pages of a single-column PDF!
 
 ADVISOR. I wonder where all these voices are coming from?
 
-STUDENT. Somehow, they sound like the ghosts of people who left academia for industry.
-
-TODO. \textit{(Joke will be elided to avoid issues with double-blind submission.)}
+STUDENT. \textit{(Joke elided to avoid issues with double-blind submission.)}

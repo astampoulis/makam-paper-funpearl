@@ -1,7 +1,8 @@
-# Where are heroes are nowhere to be found, lost in a sea of references
+# Where are heroes are nowhere to be found, lost in a sea of references to related work
 
 \identNormal
 
+<!--
 \hero{\bf Higher-order logic programming} Most of the development we present should be easy
 to transcribe to other implementations of \lamprolog like Teyjus \citep{teyjus-main-reference}
 and ELPI \citep{elpi-main-reference}. Also, existing work in the same area
@@ -35,6 +36,7 @@ essential for achieving the conciseness that the use case of rapid prototyping d
 based on LF \citep{lf-main-reference} such as Twelf \citep{twelf-main-reference} and Beluga \citep{beluga-main-reference}, because they break the
 adequacy of encodings in that case. Specializing such datatypes to their uses should be enough to
 transcribe our examples that do not make use of meta-logical reflective predicates.
+-->
 
 \hero{\bf Racket} The Racket programming language aims to be a language for creating new
 programming languages \citep{racket-manifesto} and has been used to implement a very wide variety of DSLs
@@ -72,7 +74,7 @@ dynamic semantics. We have found that some of these DSLs have restrictions that 
 the implementation of type systems similar to the ones we present in the present work
 challenging. Our intention with the design of Makam as a language prototyping tool is for
 it to be a single expressive core, where all different aspects of a language can be
-implemented. The **K Framework* \citep{k-framework-main-reference} is a semantics framework based
+implemented. The **K Framework** \citep{k-framework-main-reference} is a semantics framework based
 on rewriting and has been used to implement the dynamic semantics of a wide variety of languages.
 It has also been shown to be effective for the implementation of type systems \citep{k-framework-type-systems}, treating
 them as abstract machines that compute types rather than values. The recent addition of

@@ -1,64 +1,8 @@
 \section{Where are heroes are nowhere to be found, lost in a sea of
-references}\label{where-are-heroes-are-nowhere-to-be-found-lost-in-a-sea-of-references}
+references to related
+work}\label{where-are-heroes-are-nowhere-to-be-found-lost-in-a-sea-of-references-to-related-work}
 
 \identNormal
-
-\hero{\bf Higher-order logic programming} Most of the development we
-present should be easy to transcribe to other implementations of
-\lamprolog like Teyjus \citep{teyjus-main-reference} and ELPI
-\citep{elpi-main-reference}. Also, existing work in the same area has
-considered aspects of the developments we present. Specifically:
-
-\begin{itemize}
-\tightlist
-\item
-  the binding constructions we present like multiple binding, patterns
-  and contextual terms work in both of these implementations. The
-  definition of \texttt{assumemany} is not supported in Teyjus, as it
-  rests outside the fragment of hereditary Harrop formulas and breaks
-  the logical properties of the language \citep{assumemany-issue};
-  however, the few uses of it that we make can be inlined instead.
-  Still, we have noticed a few issues with the type checker of ELPI;
-  especially predicates that make use of ad-hoc polymorphism like
-  \texttt{vmap} and \texttt{vopenmany} might not offer the same type
-  safety as they do in Makam or Teyjus.
-\item
-  we have made sparing use of the runtime aspect of ad-hoc polymorphism,
-  which is not supported in ELPI; one such example is the definition of
-  \texttt{structural\_recursion} and the \texttt{getunif} predicate.
-\item
-  while standard metalogical predicates like \texttt{refl.isunif} are
-  available under other names in most \lamprolog implementations,
-  others, like \texttt{refl.assume\_get} are not directly supported.
-  Still, we believe that they should be possible to add.
-\item
-  to the best of our knowledge, our use of ad-hoc polymorphism to encode
-  GADTs is novel in the setting of \lamprolog, as is our definition of
-  generic predicates like structural recursion
-\item
-  logical alternatives to various issues that we discuss are available.
-  For example, the \texttt{typeq} predicate could be implemented as
-  first discussed based on tabling \citep{tabling-main-reference}. Also,
-  mode declarations as found in ELPI and Twelf
-  \citep{twelf-main-reference} can be used instead of uses of
-  \texttt{refl.isunif}, as done in our use of \texttt{typedef}. These
-  features are not supported at present in Makam and are left for future
-  work.
-\item
-  existing work that has considered the problem of ML type
-  generalization in the \lamprolog setting can be found in
-  \citet{typgen-lamprolog-1} and \citet{typgen-lamprolog-2}.
-\item
-  we make heavy use of polymorphic datatypes such as \texttt{list} and
-  \texttt{bindmany}, which we believe is essential for achieving the
-  conciseness that the use case of rapid prototyping demands. These are
-  not supported in higher-order logic programming systems based on LF
-  \citep{lf-main-reference} such as Twelf \citep{twelf-main-reference}
-  and Beluga \citep{beluga-main-reference}, because they break the
-  adequacy of encodings in that case. Specializing such datatypes to
-  their uses should be enough to transcribe our examples that do not
-  make use of meta-logical reflective predicates.
-\end{itemize}
 
 \hero{\bf Racket} The Racket programming language aims to be a language
 for creating new programming languages \citep{racket-manifesto} and has
@@ -108,16 +52,17 @@ restrictions that would make the implementation of type systems similar
 to the ones we present in the present work challenging. Our intention
 with the design of Makam as a language prototyping tool is for it to be
 a single expressive core, where all different aspects of a language can
-be implemented. The **K Framework* \citep{k-framework-main-reference} is
-a semantics framework based on rewriting and has been used to implement
-the dynamic semantics of a wide variety of languages. It has also been
-shown to be effective for the implementation of type systems
-\citep{k-framework-type-systems}, treating them as abstract machines
-that compute types rather than values. The recent addition of a builtin
-unification procedure has made this approach more effective; however,
-the fact that \lamprolog supports higher-order unification as well
-renders it applicable in further situations such as dependently typed
-systems. As future work, we are exploring the design of a core calculus
-to aid in the bootstrapping of a language such as Makam and we believe
-that a connection with the rewriting logic core of the K framework will
-prove beneficial in this endeavor.
+be implemented. The \textbf{K Framework}
+\citep{k-framework-main-reference} is a semantics framework based on
+rewriting and has been used to implement the dynamic semantics of a wide
+variety of languages. It has also been shown to be effective for the
+implementation of type systems \citep{k-framework-type-systems},
+treating them as abstract machines that compute types rather than
+values. The recent addition of a builtin unification procedure has made
+this approach more effective; however, the fact that \lamprolog supports
+higher-order unification as well renders it applicable in further
+situations such as dependently typed systems. As future work, we are
+exploring the design of a core calculus to aid in the bootstrapping of a
+language such as Makam and we believe that a connection with the
+rewriting logic core of the K framework will prove beneficial in this
+endeavor.
