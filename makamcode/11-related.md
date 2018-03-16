@@ -53,13 +53,32 @@ and disentangle aspects of the complex Racket syntax extension system, such as h
 The recent development of a methodology for developing type systems as macros
 \citet{racket-type-systems-as-macros} is a great validation of the Racket approach and is especially
 relevant to our use case, as it has been used to encode type systems similar to ML. The integration
-that this methodology provides with the rest of the Racket ecosystem offers a number of
-advantages, as does the \rulename{Turnstile} DSL for writing typing rules close to the pen-and-paper versions. We do believe that the higher-order logic programming setting allows for more expressivity and genericity -- for example, we have used the same techniques to define not only typing rules but evaluation rules as well. However, we are exploring a similar approach to implement a higher-level surface language for writing typing rules, using Makam itself.
+that this methodology provides with the rest of the Racket ecosystem offers a number of advantages,
+as does the \rulename{Turnstile} DSL for writing typing rules close to the pen-and-paper
+versions. We do believe that the higher-order logic programming setting allows for more expressivity
+and genericity -- for example, we have used the same techniques to define not only typing rules but
+evaluation rules as well. Evaluation rules can be implemented using another DSL of the Racket
+ecosystem, namely PLT Redex \citep{felleisen2009semantics}. We believe that staying within the same
+framework for both aspects offers other advantages, especially for encoding languages where the two
+aspects are more linked, such as dependently typed languages with the conversion rule. We give one
+small example of that in the form of the type synonyms example. We also find that the presence of
+first-class substitution support and the support for structural recursion in Makam offers advantages
+over PLT Redex.  Last, we are also exploring an approach similar to \rulename{Turnstile} to
+implement a higher-level surface language for writing typing rules using Makam itself.
 
-\hero{\bf PLT/Redex}
-
-\hero{\bf Spoofax}
-
-\hero{\bf The K framework}
-
-\hero{\bf CRSX}
+\hero{\bf Other frameworks} The **Spoofax language workbench** \citep{spoofax-main-reference} offers a series of DSLs
+for implementing different aspects of a language, such as parsing, binding, typing and
+dynamic semantics. We have found that some of these DSLs have restrictions that would make
+the implementation of type systems similar to the ones we present in the present work
+challenging. Our intention with the design of Makam as a language prototyping tool is for
+it to be a single expressive core, where all different aspects of a language can be
+implemented. The **K Framework* \citep{k-framework-main-reference} is a semantics framework based
+on rewriting and has been used to implement the dynamic semantics of a wide variety of languages.
+It has also been shown to be effective for the implementation of type systems \citep{k-framework-type-systems}, treating
+them as abstract machines that compute types rather than values. The recent addition of
+a builtin unification procedure has made this approach more effective; however, the fact
+that \lamprolog supports higher-order unification as well renders it applicable in
+further situations such as dependently typed systems. As future work, we are exploring
+the design of a core calculus to aid in the bootstrapping of a language such as Makam
+and we believe that a connection with the rewriting logic core of the K framework
+will prove beneficial in this endeavor.

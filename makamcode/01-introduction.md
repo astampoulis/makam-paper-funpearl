@@ -14,8 +14,7 @@ ADVISOR. That sounds like a lot. Why don't you use some kind of metalanguage to 
 the prototype?
 
 STUDENT. You mean a tool like Racket \citep{racket-manifesto}, PLT Redex \citep{felleisen2009semantics},
-the K Framework \citep{rosu2010overview}, Spoofax \citep{kats2010spoofax}, or
-CRSX \citep{rose2011crsx}?
+the K Framework \citep{k-framework-main-reference} or Spoofax \citep{spoofax-main-reference}?
 
 ADVISOR. Yes, all of those should be good choices. I was thinking though that we could
 use higher-order logic programming... it's a formalism that is well-suited to what we want to do,
