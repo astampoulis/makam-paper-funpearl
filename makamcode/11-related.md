@@ -48,9 +48,7 @@ the same lines; this is not demonstrated in the present work to a large extent, 
 use of `refl.assume_get`, which turns code (the local assumptions for a predicate) into data
 (a reified list of the assumptions). Still, we believe the presence of first-class binding
 support in the form of higher-order abstract syntax makes the \lamprolog setting significantly
-different from Racket. We hope that this paper explains some of the far-reaching implications 
-of that choice. We believe that in the future, this same feature can be used to further elucidate
-and disentangle aspects of the complex Racket syntax extension system, such as hygiene.
+different from Racket.
 
 The recent development of a methodology for developing type systems as macros
 \citet{racket-type-systems-as-macros} is a great validation of the Racket approach and is especially
