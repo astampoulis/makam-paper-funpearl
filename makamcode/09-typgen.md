@@ -18,111 +18,150 @@ We'll gather unif-variables / with structural recursion \\
 and if you haven't guessed it yet / we'll get to use reflection.''
 \end{verse}
 
-STUDENT. I have an idea for implementing type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}.
-I remember the typing rule looks like this:
+ADVISOR. Let me now show you how to implement type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}. I've done this before, and I need to leave for home soon, so bear with me
+for a bit. The gist of this will be to reuse the unification support of our metalanguage,
+capturing the *metalevel unification variables* and generalizing over them. That way we will
+have a very short implementation and we won't have to do a deep embedding of unification!
+
+STUDENT. So -- you're saying that in \lamprolog, other than reusing the metalevel function type
+for implementing object level substitution, we can also reuse metalevel unification for the
+object level as well.
+
+\identNormal
+
+ADVISOR. Exactly! First of all, the typing rule for a generalizing let looks like this:
 
 \vspace{-1.2em}
 \begin{mathpar}
 \inferrule{\Gamma \vdash e : \tau \\ \vec{a} = \text{fv}(\tau) - \text{fv}(\Gamma) \\ \Gamma, x : \forall \vec{a}.\tau \vdash e' : \tau'}{\Gamma \vdash \text{let} \; x = e \; \text{in} \; e' : \tau'}
 \end{mathpar}
 
-ADVISOR. Right, and we don't have any side-effectful operations, so, no need for a value
-restriction. Let's assume a predicate for generalizing the type, for now; the rest of the rule is easy:
+We don't have any side-effectful operations, so, there is no need for a value
+restriction. Transcribing this to Makam is easy, if we assume a predicate for
+generalizing the type, for now:
 
 ```makam
-generalize : typ -> typ -> prop.
+generalize : (Type: typ) (GeneralizedType: typ) -> prop.
 let : term -> (term -> term) -> term.
 typeof (let E F) T' :-
   typeof E T, generalize T Tgen, (x:term -> typeof x Tgen -> typeof (F x) T').
 ```
 
-STUDENT. Right, so for generalization, based on the typing rule, we need the following ingredients:
+Now, for generalization itself, we need the following ingredients based on the typing rule:
 
-- something that picks out free variables from a type -- or, in our setting, uninstantiated unification variables
-- something that picks out free variables from the local context
-- a way to turn something that includes unification variables into a `forall` type
+- something that picks out free variables from a type, standing for the $\text{fv}(\tau)$ part -- or, in our setting, this should really be read as uninstantiated unification variables. Those are the Makam-level unification variables that have not been forced to unify with a concrete type because of the rest of the typing rules.
+- something that picks out free variables from the local context: the $\text{fv}(\Gamma)$ part. Again, these are the uninstantiated unification variables rather than the free variables. In our case, the context $\Gamma$ is represented by the local `typeof` assumptions that our typing rules add, so we'll have to look at those somehow.
+- a way to turn something that includes unification variables into a $\forall$ type, corresponding to the $\forall \vec{a}.\tau$ part. This essentially abstracts over a number of variables and uses them as the replacement for the ones inside $\tau$.
 
-\noindent
-Those look like things that we should be able to do with our generic recursion and with the
-reflective predicates we've been using!
+All of those look like things that we should be able to do with our generic recursion and with the
+reflective predicates we've been using! However, to make the implementation simpler, we will
+generalize over one variable at a time, instead of all at once -- but that should be entirely
+equivalent to what's described in the typing rule.
 
-ADVISOR. Indeed! So, I've done this before, and I need to leave for home soon, so bear with me
-for a bit. There's this generic operation in the Makam standard library, called
-`generic.fold`. It is quite similar to `structural_recursion`, but it does a fold through
-a term, carrying an accumulator through. Pretty standard, really, and its code is similar to what
-we did already. I'll use it to define a predicate that returns *one* unification
-variable of the right type from a term, if at least one exists.
+First, we will define a `findunif` predicate that returns *one* unification variable *of the right
+type* from a term, if at least one such variable exists. To implement this, we will make use of a
+generic operation in the Makam standard library, called `generic_fold`. It is quite similar to
+`structural_recursion`, but it does a fold through a term, carrying an accumulator through. Pretty
+standard, really, and its code is similar to what we did already for `structural_recursion`, with no
+new surprises.
+
+<!--
+```makam
+generic_fold : [A'] forall A (B -> A -> B -> prop) -> B -> A' -> B -> prop.
+
+generic_fold F Acc X Acc when refl.isconst X.
+
+generic_fold F Acc (X : A -> B) Acc' <-
+  (x:A -> (instantiate F F', F' Acc (X x) Acc')).
+
+generic_fold F Acc X Acc' when refl.isbaseterm X <-
+  refl.headargs X HD Args,
+  instantiate F F',
+  dyn.foldl F' Acc Args Acc'.
+```
+-->
 
 ```makam
-findunif : [A B] option B -> A -> option B -> prop.
-findunif (some X) _ (some X).
-findunif none (X : B) (some (X : B)) :- refl.isunif X.
-findunif In X Out :- generic.fold findunif In X Out.
-findunif : [A B] A -> B -> prop.  findunif T X :- findunif none T (some X).
+findunif_aux : [Any VarType]
+  (Var: option VarType) (Current: Any) (Var': option VarType) -> prop.
+findunif_aux (some Var) _ (some Var).
+findunif_aux none (Current : VarType) (some (Current : VarType)) :-
+  refl.isunif Current.
+findunif_aux In Current Out :- generic_fold @findunif_aux In Current Out.
+
+findunif : [Any VarType] (Search: Any) (Found: VarType) -> prop.
+findunif Search Found :- findunif_aux none Search (some Found).
 ```
 
-STUDENT. Oh, the second rule is the important one -- it will only match when we encounter a unification
-variable of the same type as the one we require, thanks to type specialization.
+Here, the second rule of `findunif_aux` is the important one -- it will only match when we
+encounter a unification variable of the same type as the one we require. So this rule uses
+the dynamic `typecase` aspect of the ad-hoc polymorphism in \lamprolog.
+With this, we should be already able to find *one* (as opposed to all, as described above)
+uninstantiated unification variable from a type. Here is an example of its use:
 
-ADVISOR. Exactly. Now we add a predicate that, given a specific unification variable and a
-specific term, replaces its occurrences with the term. I'll show you later why this
-operation is necessary. Here I'll need another reflective predicate, `refl.sameunif`, that
-succeeds when its two arguments are the same exact unification variable; `eq` would just
-unify them, which is not what we want.
+Now we add a predicate `replaceunif` that, given a specific unification variable and a
+specific term, replaces its occurrences with the term. This will be needed as part of the
+$\forall \vec{a}.\tau$ operation of the rule. Here I'll need another reflective predicate,
+`refl.sameunif`, that succeeds when its two arguments are the same exact unification variable;
+`eq` would just unify them, which is not what we want.
 
 ```makam
-replaceunif : [A B] A -> A -> B -> B -> prop.
-replaceunif Which ToWhat Where Result :- refl.isunif Where,
-  if (refl.sameunif Which Where) then (eq (dyn Result) (dyn ToWhat))
-  else (eq Result Where).
+replaceunif : [VarType Any]
+  (Which: VarType) (ToWhat: VarType) (Where: Any) (Result: Any) -> prop.
+replaceunif Which ToWhat Where ToWhat :-
+  refl.isunif Where, refl.sameunif Which Where.
+replaceunif Which ToWhat Where Where :-
+  refl.isunif Where, not(refl.sameunif Which Where).
 replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
   structural_recursion @(replaceunif Which ToWhat) Where Result.
 ```
 
-ADVISOR. And last, we'll need an auxiliary predicate that tells us whether a unification
-variable exists within a term. You can do that yourself; it's similar to the above.
+Last, we'll need an auxiliary predicate that tells us whether a unification variable exists within a
+term. This is easy; it's similar to the above.
 
-STUDENT. Yes, I think I know how to do that.
 ```makam
-hasunif : [A B] B -> bool -> A -> bool -> prop.
+hasunif : [VarType Any] VarType -> bool -> Any -> bool -> prop.
 hasunif _ true _ true.
 hasunif X false Y true :- refl.sameunif X Y.
-hasunif X In Y Out :- generic.fold (hasunif X) In Y Out.
-hasunif : [A B] A -> B -> prop. hasunif Term Var :- hasunif Var false Term true.
+hasunif X In Y Out :- generic_fold @(hasunif X) In Y Out.
+
+hasunif : [VarType Any] VarType -> Any -> prop.
+hasunif Var Term :- hasunif Var false Term true.
 ```
 
-ADVISOR. OK, we are now mostly ready to implement `generalize`. We'll do this recursively. The
-base case is when there are no unification variables within a type left:
+We are now mostly ready to implement `generalize`. We'll do this recursively. The base case is when there are no unification variables within a type left:
+
 ```makam
 generalize T T :- not(findunif T X).
 ```
 
-STUDENT. Ah, I see what you are getting at. For the recursive case, we will pick out the first
-unification variable that we come upon using `findunif`. We will generalize over it using `replaceunif`
-and then proceed to the rest. But don't we have to skip over the unification variables that are in
-the $\Gamma$ environment?
-
-ADVISOR. Well, that's the last hurdle. Let's assume a predicate that gives us all the
-types in the environment, and write the recursive case down:
+For the recursive case, we will pick out the first unification variable that we come upon using
+`findunif`. We will generalize over it using `replaceunif` and then proceed to the rest.  Still,
+there is a last hurdle: we have to skip over the unification variables that are in the $\Gamma$
+environment. For the time being, let's assume a predicate that gives us all the types in the
+environment, and write the recursive case down:
 
 ```makam
 get_types_in_environment : [A] A -> prop.
-generalize T Res :- 
+generalize T Res :-
   findunif T Var, get_types_in_environment GammaTypes,
   (x:typ -> (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
-  if (hasunif GammaTypes Var) then (eq Res (T'' Var)) else (eq Res (tforall T'')).
+  if (hasunif Var GammaTypes)
+  then (eq Res (T'' Var))
+  else (eq Res (tforall T'')).
 ```
+
+\identDialog
 
 STUDENT. Oh, clever. But what should `get_types_in_environment` be? Don't we have to go
 back and thread a list of types through our `typeof` predicate, every time we introduce a
 new `typeof x T ->` assumption?
 
-ADVISOR. Well, we came this far without rewriting our rules, so it's a shame to do that now!
-Maybe we'll be excused to use yet another reflective predicate that does what we
-want? There is a way to get a list of all the local assumptions for the `typeof` predicate; it
-turns out that all the rules and connectives are normal λProlog terms like any other,
-so there's not really much magic to it. And those assumptions will include just the
-types in $\Gamma$....
+ADVISOR. Well, we came this far without significantly rewriting our rules, so it's a shame to do
+that now!  Maybe we'll be excused to use yet another reflective predicate that does what we want?
+There is a way to get a list of all the local assumptions for the `typeof` predicate; it turns out
+that all the rules and connectives are normal \lamprolog terms like any other, so there's not really
+much magic to it. And those assumptions will include just the types in $\Gamma$....
 
 ```makam
 get_types_in_environment Assumptions :-

@@ -11,48 +11,47 @@ it is novel, some of it is folklore, some of it, we just did in a pleasant way; 
 did also use a couple of not-so-pleasant hacks. But let's make a list of what's what.
 
 \vspace{-0.5em}
-- We defined HOAS encodings of complicated binding forms, including mutually recursive
-  definitions and patterns, while only having explicit support in our metalanguage for
-  single-variable binding. These encodings are novel, as far as I know. We made use of
-  GADTs for them, together with ad-hoc polymorphism, which seems to be a feature specific
-  to the Makam implementation of λProlog. We also depended on a technicality for defining
-  an essential predicate\footnote{\texttt{assumemany} uses what is technically referred to
-  as a strong-hereditary Harrop formula, whereas Teyjus only supports weak-hereditary
-  Harrop formulas \citep{teyjus-main-reference}.}. As a result, we have not been able to
-  replicate these in the standard λProlog/Teyjus implementation
-  \citep{teyjus-main-reference}, though all the features we need are part of the original
-  λProlog language design \citep{miller1988overview}.
+- We defined HOAS encodings of complicated binding forms, including mutually recursive definitions
+  and patterns, while only having explicit support in our metalanguage for single-variable
+  binding. These encodings seem to have been part of PL folklore, but we believe that a type like
+  `bindmany` has never been shown as a reusable datatype that \lamprolog makes possible.  We have
+  made use of GADTs to encode some of these binding structures precisely, which we show are
+  supported in \lamprolog through ad-hoc polymorphism.  This we believe is a novel usage for this
+  \lamprolog feature. Our binding constructions should be replicable in the standard λProlog/Teyjus
+  implementation \citep{teyjus-main-reference}, though are not so in ELPI
+  \citep{elpi-main-reference}, as it lacks ad-hoc polymorphism.
 
 - We defined a generic predicate to perform structural recursion using a very concise
   definition. It allows us to define structurally recursive predicates that only explicitly
-  list out the important cases, in what we believe is a novel encoding for the λProlog
+  list out the important cases, in what we believe is a novel encoding for the \lamprolog
   setting. Any new definitions, such as constructors or datatypes we introduce later, do
   not need any special provision to be covered by the same predicates. They depend on a
   number of reflective predicates, which are available in other Prolog dialects; however,
-  we are not aware of a published example that makes use of them in the λProlog
+  we are not aware of a published example that makes use of them in the \lamprolog
   setting. These predicates are used to reflect on the structure of Makam terms, and to
   get the list of local assumptions; for the most part, their use is limited to predicates
   that would be part of the standard library, not in user code.
 
-- The above encodings are reusable and can be made part of the Makam standard library. As
+- The above encodings are reusable and have been made part of the Makam standard library. As
   a result, we were able to develop the type checker for quite an advanced type system, in
-  very few lines of code specific to it, all the while allowing for the parts of terms and
-  types that can be determined from the context to be left implicit. Our development
-  includes mutually recursive definitions, polymorphism, polymorphic datatypes,
-  pattern-matching, a conversion rule, Hindley-Milner type generalization, constructs for
-  dependent types over a separately specified language of dependent indices, and an
-  example of such indices that use contextually typed open terms of the simply typed
-  lambda calculus.  We are not aware of another metalinguistic framework that allows this
-  level of expressivity and has been used to encode such type-system features.
+  very few lines of code specific to it, using rules that we believe do not, presentation-wise, stray
+  far from their pen-and-paper versions. Our development
+  includes mutually recursive definitions, polymorphism, datatypes,
+  pattern-matching, a conversion rule, Hindley-Milner type generalization, and staging
+  constructs that allow the computation of contextually typed open terms of the simply typed
+  lambda calculus. We are not aware of another metalinguistic framework that allows this
+  level of expressivity and has been used to encode such type-system features with the same
+  level of concision.
 
 - We have also shown that higher-order logic programming allows not just meta-level
   functions to be reused for encoding object-level binding; there are also cases where
   meta-level unification can also be reused to encode certain object-level features:
-  matching a pattern against a scrutinee and doing type generalization as in Algorithm W.
+  for example, doing type generalization as in Algorithm W.
 
 STUDENT. Well, that was very interesting; thank you for working with me on this!
 
 ADVISOR. I enjoyed this, too. Say, if you want to relax, there's a new staging of the classic play by \citet{fischer2010play} downtown -- I saw it yesterday, and it is really good!
 
-STUDENT. That's a great idea, one of my favorites. I wish there were more plays like it.... Well, good night, and see you on Monday!
+STUDENT. That's a great idea! You know, I wish there were more plays like it.... Well, good night, and see you on Monday!
 
+\input{generated/todo}
