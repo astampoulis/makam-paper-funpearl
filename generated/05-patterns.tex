@@ -273,8 +273,9 @@ is that?
 
 \heroADVISOR{} That is a standard-library predicate. It is used to perform
 simultaneous substitution for all the variables in our multiple binding
-type, \texttt{vbindmany}. Or another way to say it, it's the equivalent
-of HOAS function application for \texttt{vbindmany}:
+type, \texttt{vbindmany} (also available as \texttt{appmany} for
+\texttt{bindmany}). Or another way to say it, it's the equivalent of
+HOAS function application for \texttt{vbindmany}:
 
 \begin{verbatim}
 vapplymany : [N] vbindmany Var N Body \ensuremath{\to} vector Var N \ensuremath{\to} Body \ensuremath{\to} prop.

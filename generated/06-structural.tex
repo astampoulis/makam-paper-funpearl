@@ -176,7 +176,7 @@ and adds a few lines:)
 \end{scenecomment}
 
 \begin{verbatim}
-typeq A T' :- typedef A T, typeq T T'.
+typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T T' :- structural_recursion @typeq T T'.
 \end{verbatim}
@@ -184,6 +184,8 @@ typeq T T' :- structural_recursion @typeq T T'.
 \begin{scenecomment}
 (Hagop is suddenly feeling faint by what will obviously be the main point of the rest of this chapter.)
 \end{scenecomment}
+
+\heroTODO{} Explain the two negations.
 
 \heroSTUDENT{} \ldots{} What just happened. Is \texttt{structural\_recursion}
 some special Makam trick I don't know about yet?

@@ -161,7 +161,7 @@ structural_recursion : [B] forall A (A -> A -> prop) -> B -> B -> prop.
 -->
 
 ```makam
-typeq A T' :- typedef A T, typeq T T'.
+typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T T' :- structural_recursion @typeq T T'.
 ```
@@ -169,6 +169,8 @@ typeq T T' :- structural_recursion @typeq T T'.
 \begin{scenecomment}
 (Hagop is suddenly feeling faint by what will obviously be the main point of the rest of this chapter.)
 \end{scenecomment}
+
+TODO. Explain the two negations.
 
 STUDENT. ... What just happened. Is `structural_recursion` some special Makam trick I don't know about yet?
 
