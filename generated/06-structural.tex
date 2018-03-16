@@ -118,7 +118,9 @@ whether something is a unification variable?
 \heroADVISOR{} There is! Most Prolog dialects have a predicate that does that
 -- it's usually called \texttt{var}. In Makam it is called
 \texttt{refl.isunif}, the \texttt{refl} namespace prefix standing for
-\emph{reflective} predicates. So, here's a second attempt:
+\emph{reflective} predicates. So, here's a second attempt, where I'm
+also using logical
+negation\footnote{Makam follows \citet{kiselyov05backtracking} closely in terms of the semantics for logical if-then-else and logical negation.}:
 
 \begin{verbatim}
 typeof E T :- not(refl.isunif T), typeof E T', typeq T T'.

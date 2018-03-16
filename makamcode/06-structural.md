@@ -98,7 +98,7 @@ STUDENT. Is that even possible? Is there a way in λProlog to tell whether somet
 
 ADVISOR. There is! Most Prolog dialects have a predicate that does that -- it's usually
 called `var`. In Makam it is called `refl.isunif`, the `refl` namespace prefix standing for
-*reflective* predicates. So, here's a second attempt:
+*reflective* predicates. So, here's a second attempt, where I'm also using logical negation\footnote{Makam follows \citet{kiselyov05backtracking} closely in terms of the semantics for logical if-then-else and logical negation.}:
 
 ```
 typeof E T :- not(refl.isunif T), typeof E T', typeq T T'.
