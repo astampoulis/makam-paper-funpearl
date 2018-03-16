@@ -172,8 +172,7 @@ which iteratively uses HOAS function application to perform a number of substitu
 ```makam
 applymany : bindmany A B -> list A -> B -> prop.
 applymany (body B) [] B.
-applymany (bind F) (X :: XS) B :-
-  applymany (F X) XS B.
+applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
 eval (appmany E ES) V :-
   eval E (lammany XS_E'), map eval ES VS,
   applymany XS_E' VS E'', eval E'' V.
@@ -231,7 +230,7 @@ syntactic form `pfun` for writing anonymous predicates instead. Since this will 
 predicate, you are also able to destructure parameters like you did here on `(defs, body)` -- that doesn't work for
 normal functions in the general case, since they need to treat arguments parametrically.
 This works by performing unification of the parameter with the given term -- so `defs` and `body`
-need to be unification variables.
+need to be capitalized so that they are unification variables.
 
 ```makam
 typeof (letrec XS_DefsBody) T' :-

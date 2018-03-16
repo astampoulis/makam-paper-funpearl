@@ -32,9 +32,8 @@ branch(pattern, bind [# of variables in pattern].body)
 So we could write the above branch in Makam like this:
 
 ```
-branch(
-  patt_cons patt_var patt_var,
-  bind (fun hd => bind (fun tl => body (.. hd .. tl ..))))
+branch(patt_cons patt_var patt_var,
+       bind (fun hd => bind (fun tl => body (.. hd .. tl ..))))
 ```
 
 We do have to keep the order of variables consistent somehow, so `hd`
@@ -59,8 +58,7 @@ eval ozero ozero. eval (osucc E) (osucc V) :- eval E V.
 ```
 
 ```
-case_or_else :
-  (Scrutinee: term)
+case_or_else : (Scrutinee: term)
   (Patt: patt N) (Vars_Body: vbindmany term N term)
   (Else: term) -> term.
 ```
@@ -69,8 +67,7 @@ Now for the typing rule -- it will be something like this:
 
 ```
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
-  typeof Scrutinee T,
-  typeof_patt Pattern T VarTypes,
+  typeof Scrutinee T, typeof_patt Pattern T VarTypes,
   vopenmany Vars_Body (pfun vars body =>
     vassumemany typeof vars VarTypes (typeof body BodyT)),
   typeof Else BodyT.
@@ -156,8 +153,7 @@ vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
 -->
 
 ```makam
-case_or_else :
-  (Scrutinee: term)
+case_or_else : (Scrutinee: term)
   (Patt: patt zero N) (Vars_Body: vbindmany term N term)
   (Else: term) -> term.
 ```
@@ -166,13 +162,11 @@ I think I'll also have to change `typeof_patt`, so that it includes an accumulat
 own:
 
 ```makam
-typeof_patt : [NBefore NAfter]
-  patt NBefore NAfter -> typ ->
+typeof_patt : [NBefore NAfter] patt NBefore NAfter -> typ ->
   vector typ NBefore -> vector typ NAfter -> prop.
 
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
-  typeof Scrutinee T,
-  typeof_patt Pattern T vnil VarTypes,
+  typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
   vopenmany Vars_Body (pfun vars body =>
     vassumemany typeof vars VarTypes (typeof body BodyT)),
   typeof Else BodyT.
@@ -235,10 +229,9 @@ typeof_patt (patt_tuple PS) (product TS) VarTypes VarTypes' :-
 Let me see if this works! I'll try out the predecessor function:
 
 ```makam
-typeof
-  (lam _ (fun n => case_or_else n
-    (patt_osucc patt_var) (* |-> *) (vbind (fun pred => vbody pred))
-    ozero)) T ?
+typeof (lam _ (fun n => case_or_else n
+  (patt_osucc patt_var) (vbind (fun pred => vbody pred))
+  ozero)) T ?
 >> Yes:
 >> T := arrow onat onat.
 ```

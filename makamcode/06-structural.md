@@ -14,26 +14,23 @@ STUDENT. Type synonyms? You mean, introducing type definitions like `type natpai
 does not seem particularly tricky.
 
 ADVISOR. I think we will face a couple of interesting issues with it, the main one being how to do
-*structural recursion* in a nice way. But first, let me write out the necessary pen-and-paper rules, so that we are on the same page. We'll do top-level type definitions, so let's add a top-level notion of programs and a well-formedness judgment for them. (We could do modules instead of just programs, but I feel that would derail us a little.) We also need an additional environment to store type definitions:
+*structural recursion* in a nice way. But first, let me write out the necessary pen-and-paper rules, so that we are on the same page. We'll do top-level type definitions, so let's add a top-level notion of programs $c$ and a well-formedness judgment '$\vdash c \; \text{wf}$' for them. (We could do modules instead of just programs, but I feel that would derail us a little.) We also need an additional environment $\Delta$ to store type definitions:
 
 \vspace{-1.2em}
 \begin{mathpar}
-\inferrule[Program-Syntax]{}{c ::= \text{main} \; e \; | \; \texttt{type} \; \alpha = \tau \; ; \; c}
-
 \inferrule[WfProgram-Main]{\emptyset; \; \Delta \vdash e : \tau}
           {\Delta \vdash (\text{main} \; e) \; \text{wf}}
 
 \inferrule[WfProgram-Type]{\Delta, \; \alpha = \tau \vdash c \; \text{wf}}
           {\Delta \vdash (\texttt{type} \; \alpha = \tau \; ; \; c) \; \text{wf}}
 
-\inferrule[Typeof-Conversion]
-          {\Gamma; \Delta \vdash e : \tau \\ \Delta \vdash \tau =_\delta \tau'}
+\inferrule[Typeof-Conv]
+          {\Gamma; \Delta \vdash e : \tau \\\\ \Delta \vdash \tau =_\delta \tau'}
           {\Gamma; \Delta \vdash e : \tau'}
 
 \inferrule[TypEq-Def]
           {\alpha = \tau \in \Delta}
           {\Delta \vdash \alpha =_\delta \tau}
-\cdots
 \end{mathpar}
 
 STUDENT. Right, we will need the conversion rule, so that we identify types up to expanding their definitions; that's $\delta$-equality... And I see you haven't listed out all the rules for that, but those are mostly standard.
@@ -137,7 +134,6 @@ typeof_patt (P : patt A B) T S S' :-
 ```
 typeq A T' :- typedef A T, typeq T T'.
 typeq T' A :- typedef A T, typeq T T'.
-...
 ```
 
 ADVISOR. I like how you added the symmetric rule, but... this is subtle, but if `A` is a unification variable, we don't want to unify it with an arbitrary synonym. So we need to check that `A` is concrete somehow\footnote{Though not supported in Makam, an alternative to this in other languages based on higher-order logic programming would be to add a \texttt{mode (i o)} declaration for \texttt{typedef}, so that \texttt{typedef A T} would fail if \texttt{A} is not concrete.}:
@@ -145,7 +141,6 @@ ADVISOR. I like how you added the symmetric rule, but... this is subtle, but if 
 ```
 typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
-...
 ```
 
 STUDENT. I see what you mean. OK, I'll continue on to the rest of the cases....
@@ -155,7 +150,6 @@ typeq (arrow T1 T2) (arrow T1' T2') :-
   typeq T1 T1', typeq T2 T2'.
 typeq (arrowmany TS T) (arrowmany TS' T') :-
   map typeq TS TS', typeq T T'.
-...
 ```
 
 ADVISOR. Writing boilerplate is not fun, is it?

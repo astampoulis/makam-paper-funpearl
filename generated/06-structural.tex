@@ -13,28 +13,25 @@ tricky.
 the main one being how to do \emph{structural recursion} in a nice way.
 But first, let me write out the necessary pen-and-paper rules, so that
 we are on the same page. We'll do top-level type definitions, so let's
-add a top-level notion of programs and a well-formedness judgment for
-them. (We could do modules instead of just programs, but I feel that
-would derail us a little.) We also need an additional environment to
-store type definitions:
+add a top-level notion of programs \(c\) and a well-formedness judgment
+`\(\vdash c \; \text{wf}\)' for them. (We could do modules instead of
+just programs, but I feel that would derail us a little.) We also need
+an additional environment \(\Delta\) to store type definitions:
 
 \vspace{-1.2em}\begin{mathpar}
-\inferrule[Program-Syntax]{}{c ::= \text{main} \; e \; | \; \texttt{type} \; \alpha = \tau \; ; \; c}
-
 \inferrule[WfProgram-Main]{\emptyset; \; \Delta \vdash e : \tau}
           {\Delta \vdash (\text{main} \; e) \; \text{wf}}
 
 \inferrule[WfProgram-Type]{\Delta, \; \alpha = \tau \vdash c \; \text{wf}}
           {\Delta \vdash (\texttt{type} \; \alpha = \tau \; ; \; c) \; \text{wf}}
 
-\inferrule[Typeof-Conversion]
-          {\Gamma; \Delta \vdash e : \tau \\ \Delta \vdash \tau =_\delta \tau'}
+\inferrule[Typeof-Conv]
+          {\Gamma; \Delta \vdash e : \tau \\\\ \Delta \vdash \tau =_\delta \tau'}
           {\Gamma; \Delta \vdash e : \tau'}
 
 \inferrule[TypEq-Def]
           {\alpha = \tau \in \Delta}
           {\Delta \vdash \alpha =_\delta \tau}
-\cdots
 \end{mathpar}
 
 \heroSTUDENT{} Right, we will need the conversion rule, so that we identify
@@ -157,7 +154,6 @@ almost the same as for terms. (\ldots{}) I'll do \texttt{typeq} next.
 \begin{verbatim}
 typeq A T' :- typedef A T, typeq T T'.
 typeq T' A :- typedef A T, typeq T T'.
-...
 \end{verbatim}
 
 \heroADVISOR{} I like how you added the symmetric rule, but\ldots{} this is
@@ -169,7 +165,6 @@ somehow\footnote{Though not supported in Makam, an alternative to this in other 
 \begin{verbatim}
 typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
-...
 \end{verbatim}
 
 \heroSTUDENT{} I see what you mean. OK, I'll continue on to the rest of the
@@ -180,7 +175,6 @@ typeq (arrow T1 T2) (arrow T1' T2') :-
   typeq T1 T1', typeq T2 T2'.
 typeq (arrowmany TS T) (arrowmany TS' T') :-
   map typeq TS TS', typeq T T'.
-...
 \end{verbatim}
 
 \heroADVISOR{} Writing boilerplate is not fun, is it?

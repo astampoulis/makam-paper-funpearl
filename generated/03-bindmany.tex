@@ -175,8 +175,7 @@ perform a number of substitutions:
 \begin{verbatim}
 applymany : bindmany A B \ensuremath{\to} list A \ensuremath{\to} B \ensuremath{\to} prop.
 applymany (body B) [] B.
-applymany (bind F) (X :: XS) B :-
-  applymany (F X) XS B.
+applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
 eval (appmany E ES) V :-
   eval E (lammany XS_E'), map eval ES VS,
   applymany XS_E' VS E'', eval E'' V.
@@ -243,7 +242,7 @@ you did here on \texttt{(defs,\ body)} -- that doesn't work for normal
 functions in the general case, since they need to treat arguments
 parametrically. This works by performing unification of the parameter
 with the given term -- so \texttt{defs} and \texttt{body} need to be
-unification variables.
+capitalized so that they are unification variables.
 
 \begin{verbatim}
 typeof (letrec XS_DefsBody) T' :-

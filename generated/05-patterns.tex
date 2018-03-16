@@ -33,9 +33,8 @@ branch(pattern, bind [# of variables in pattern].body)
 So we could write the above branch in Makam like this:
 
 \begin{verbatim}
-branch(
-  patt_cons patt_var patt_var,
-  bind (fun hd \ensuremath{\Rightarrow} bind (fun tl \ensuremath{\Rightarrow} body (.. hd .. tl ..))))
+branch(patt_cons patt_var patt_var,
+       bind (fun hd \ensuremath{\Rightarrow} bind (fun tl \ensuremath{\Rightarrow} body (.. hd .. tl ..))))
 \end{verbatim}
 
 We do have to keep the order of variables consistent somehow, so
@@ -64,8 +63,7 @@ eval ozero ozero. eval (osucc E) (osucc V) :- eval E V.
 \end{verbatim}
 
 \begin{verbatim}
-case_or_else :
-  (Scrutinee: term)
+case_or_else : (Scrutinee: term)
   (Patt: patt N) (Vars_Body: vbindmany term N term)
   (Else: term) \ensuremath{\to} term.
 \end{verbatim}
@@ -74,8 +72,7 @@ Now for the typing rule -- it will be something like this:
 
 \begin{verbatim}
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
-  typeof Scrutinee T,
-  typeof_patt Pattern T VarTypes,
+  typeof Scrutinee T, typeof_patt Pattern T VarTypes,
   vopenmany Vars_Body (pfun vars body \ensuremath{\Rightarrow}
     vassumemany typeof vars VarTypes (typeof body BodyT)),
   typeof Else BodyT.
@@ -167,8 +164,7 @@ patterns, we should always start with the accumulator being
 \texttt{zero}\ldots{}
 
 \begin{verbatim}
-case_or_else :
-  (Scrutinee: term)
+case_or_else : (Scrutinee: term)
   (Patt: patt zero N) (Vars_Body: vbindmany term N term)
   (Else: term) \ensuremath{\to} term.
 \end{verbatim}
@@ -177,13 +173,11 @@ I think I'll also have to change \texttt{typeof\_patt}, so that it
 includes an accumulator argument of its own:
 
 \begin{verbatim}
-typeof_patt : [NBefore NAfter]
-  patt NBefore NAfter \ensuremath{\to} typ \ensuremath{\to}
+typeof_patt : [NBefore NAfter] patt NBefore NAfter \ensuremath{\to} typ \ensuremath{\to}
   vector typ NBefore \ensuremath{\to} vector typ NAfter \ensuremath{\to} prop.
 
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
-  typeof Scrutinee T,
-  typeof_patt Pattern T vnil VarTypes,
+  typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
   vopenmany Vars_Body (pfun vars body \ensuremath{\Rightarrow}
     vassumemany typeof vars VarTypes (typeof body BodyT)),
   typeof Else BodyT.
@@ -216,10 +210,9 @@ which are available in the unabridged version of this story.)
 Let me see if this works! I'll try out the predecessor function:
 
 \begin{verbatim}
-typeof
-  (lam _ (fun n \ensuremath{\Rightarrow} case_or_else n
-    (patt_osucc patt_var) (* |\ensuremath{\to} *) (vbind (fun pred \ensuremath{\Rightarrow} vbody pred))
-    ozero)) T ?
+typeof (lam _ (fun n \ensuremath{\Rightarrow} case_or_else n
+  (patt_osucc patt_var) (vbind (fun pred \ensuremath{\Rightarrow} vbody pred))
+  ozero)) T ?
 >> Yes:
 >> T := arrow onat onat.
 \end{verbatim}

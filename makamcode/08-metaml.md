@@ -75,8 +75,9 @@ typing judgment accordingly. We store indices in the $\Psi$ context, so the STLC
 \stlce  ::= \lambda x:\stlct.\stlce \; | \; \stlce_1 \; \stlce_2 \; | \; x \; | \; n \; | \; \stlce_1 * \stlce_2 \; | \; \textbf{\aq{i}} & e ::= \text{...} \; | \; \lift{\dep{o}} \; | \; \texttt{letobj} \; \dep{i} = \dep{o} \; \texttt{in} \; e \\
 \stlct  ::= \stlct_1 \to \stlct_2 \; | \; \stlc{\text{nat}} & \tau ::= \text{...} \; | \; \lift{\dep{c}} \\
 \dep{o} ::= \stlce \hspace{1.5em} \dep{c} ::= \stlct &
-\end{array} \\
-
+\end{array}
+\end{mathpar}
+\begin{mathpar}
 \inferrule[Typeof-LiftObj]
           {\dep{\Psi} \odash \dep{o} : \dep{c}}
           {\Gamma; \dep{\Psi} \vdash \lift{\dep{o}} : \lift{\dep{c}}}
@@ -88,7 +89,8 @@ typing judgment accordingly. We store indices in the $\Psi$ context, so the STLC
 \inferrule[STLC-Typeof-Antiquote]
           {\dep{i} : \stlct \in \Psi}
           {\Psi; \Delta \vdash \aq{\dep{i}} : \stlct}
-          
+\end{mathpar}
+\begin{mathpar}
 \inferrule[Eval-LiftObj]
           {\hspace{1em}}{\lift{\dep{o}} \Downarrow \lift{\dep{o}}}
 
@@ -96,9 +98,10 @@ typing judgment accordingly. We store indices in the $\Psi$ context, so the STLC
           {e \Downarrow \lift{\dep{o}} \\ e'[\dep{o}/\dep{i}] \Downarrow v}
           {\texttt{letobj} \; \dep{i} = e \; \texttt{in} \; e' \Downarrow v}
 
-\inferrule[SubstObj]{}{
-  e[\dep{o}/\dep{i}] = e' \; \text{defined by structural recursion, save for:} \; {\aq{\dep{i}}[\stlce/\dep{i}] = \stlce}
-}
+\begin{array}{l}
+\rulename{SubstObj} \\
+  e[\dep{o}/\dep{i}] = e' \; \text{is defined by} \\ \text{structural recursion, save for:} \\ \hspace{2em} {\aq{\dep{i}}[\stlce/\dep{i}] = \stlce}
+\end{array}
 \end{mathpar}
 
 The typing rules should be quite simple to transcribe to Makam:
@@ -329,8 +332,7 @@ open term. Here's how I would write the same example from before:
 let power_aux (n: onat): < [ stlc.onat ] stlc.onat > =
   match n with
     0 => < [x]. 1 >
-  | S n' => letobj I = power_aux n' in
-      < [x]. stlc.mult ~(I/[x]) x >
+  | S n' => letobj I = power_aux n' in < [x]. stlc.mult ~(I/[x]) x >
 ```
 
 \noindent
@@ -354,15 +356,16 @@ on a specific context $\Phi$, but we might use them at a different context $\Phi
 *substitution* $\sigma$ to go from the context of definition into the current context.
 I think writing down the rules on paper will help:
 
+\vspace{-2em}
 \begin{mathpar}
-\begin{array}{l}
-\rulename{Ob-Ob-Syntax} \\
-\dep{o} ::= \text{...} \; | \; [x_1, \text{...}, x_n]. \stlce \\
-\dep{c} ::= \text{...} \; | \; [\stlct_1, \text{...}, \stlct_n] \stlct \\
-\stlce ::= \text{...} | \; \aqopen{i}/\sigma \\
-\sigma ::= [\stlce_1, \text{...}, \stlce_n]
+\begin{array}{ll}
+\rulename{Ob-Ob-Syntax} & \\
+\dep{o} ::= \text{...} \; | \; [x_1, \text{...}, x_n]. \stlce & \dep{c} ::= \text{...} \; | \; [\stlct_1, \text{...}, \stlct_n] \stlct \\
+\stlce ::= \text{...} \; | \; \aqopen{i}/\sigma & 
+\sigma ::= [\stlce_1, \text{...}, \stlce_n] \\
 \end{array}
-
+\end{mathpar}
+\begin{mathpar}
 \inferrule[Classof-OpenTerm]
           {\Psi; x_1 : \stlct_1, \text{...}, x_n : \stlct_n \vdash \stlce : \stlct}
           {\Psi \odash [x_1, \text{...}, x_n]. \stlce : [\stlct_1, \text{...}, \stlct_n] \stlct}
@@ -371,10 +374,14 @@ I think writing down the rules on paper will help:
           {\dep{i} : [\stlct_1, \text{...}, \stlct_n] \stlct \in \Psi \\
            \forall i.\Psi \odash \stlce_i : \stlct_i}
           {\Psi; \Delta \vdash \aqopen{\dep{i}}/[\stlce_1, \text{...}, \stlce_n] : \stlct}
-          
-\inferrule[SubstObj]{}{
-  (\aqopen{\dep{i}}/\sigma)[[x_1, \text{...}, x_n]. \stlce / i] = \stlce[\stlce_1/x_1, \text{...}, \stlce_n/x_n] \text{ if } \sigma[[x_1, \text{...}, x_n]. \stlce / i] = [\stlce_1, \text{...}, \stlce_n]
-}
+\end{mathpar}
+\begin{mathpar}
+\begin{array}{l}
+\rulename{SubstObj} \\
+(\aqopen{\dep{i}}/\sigma)[[x_1, \text{...}, x_n]. \stlce / i] =
+    \stlce[\stlce_1/x_1, \text{...}, \stlce_n/x_n] 
+    \text{ if } \sigma[[x_1, \text{...}, x_n]. \stlce / i] = [\stlce_1, \text{...}, \stlce_n]
+\end{array}
 \end{mathpar}
 
 STUDENT. I've seen that rule for \rulename{SubstObj} before, and it is still tricky... We need
@@ -392,11 +399,9 @@ cls_ctxtyp : list stlc.typ -> stlc.typ -> class.
 
 %extend stlc.
 aqopen : index -> list term -> term.
+typeof (aqopen I ES) T :-
+  classof_index I (cls_ctxtyp TS T), map typeof ES TS.
 %end.
-
-stlc.typeof (stlc.aqopen I ES) T :-
-  classof_index I (cls_ctxtyp TS T),
-  map stlc.typeof ES TS.
 
 classof (obj_openterm XS_E) (cls_ctxtyp TS T) :-
   openmany XS_E (fun xs e =>
@@ -463,5 +468,3 @@ ideas. That's why I started working on Makam. That took a few years, but now we 
 a type system like this in 27 pages of a single-column PDF!
 
 ADVISOR. I wonder where all these voices are coming from?
-
-STUDENT. \textit{(Joke elided to avoid issues with double-blind submission.)}
