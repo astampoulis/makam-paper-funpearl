@@ -185,7 +185,7 @@ subst_obj_aux Var Replacement Where Result :-
   if (subst_obj_cases Var Replacement Where Result)
   then success
   else (structural_recursion @(subst_obj_aux Var Replacement) Where Result).
-subst_obj_cases Var (obj_term Replacement) (stlc.aq Var) Replace.
+subst_obj_cases Var (obj_term Replacement) (stlc.aq Var) Replacement.
 \end{verbatim}
 
 \noindent
