@@ -136,7 +136,7 @@ typeof (letobj E EF') T :-
 
 eval (liftobj O) (liftobj O).
 eval (letobj E I_E') V :-
-  eval E (liftobj O), subst_obj I_E' O E', eval E' V.
+  eval E (liftobj O), subst_obj I_E' O E', if (refl.isunif E') then (print "not fixed", failure) else success, eval E' V.
 \end{verbatim}
 
 \heroADVISOR{} Great. I'll add the object language in a separate namespace
@@ -187,13 +187,15 @@ subst_obj I_Typ O Typ_O'I :-
 
 subst_obj_aux Var Replace Where Result :-
   if (refl.rules_apply (subst_obj_cases Var Replace Where Result))
-  then (subst_obj_cases Var Replace Where Res)
-  else (structural_recursion @(subst_obj_aux Var Replace) Where Res).
+  then (subst_obj_cases Var Replace Where Result)
+  else (structural_recursion @(subst_obj_aux Var Replace) Where Result).
 
 subst_obj_cases Var (obj_term Replace) (stlc.aq Var) Replace.
 \end{verbatim}
 
 \heroSTUDENT{} Are we done?
+
+\heroTODO{} Fix the code!
 
 \begin{verbatim}
 wfclass : class \ensuremath{\to} prop.

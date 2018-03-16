@@ -248,6 +248,7 @@ of one thing that is quite simple to do: the evaluation rule. On paper we typica
           {\texttt{case\_or\_else}(e_1, p \mapsto xs.e_2, e_3) \Downarrow v_3}
 \end{mathpar}
 
+\noindent
 So `match` tries to unify a pattern with a term and yields a substitution $\sigma$ for the pattern variables if successful, which is then applied to the body of the branch. If there is no `match` to be found, then we use the `else` branch.
 
 STUDENT. Hmm... so do we need two predicates, one for the case where the `match` is successful and one to check that a pattern *does not* match a scrutinee?
@@ -266,29 +267,13 @@ eval (case_or_else Scrutinee Pattern Body Else) V' :-
   else (eval Else V').
 ```
 
+\noindent
 The `if-then-else` construct behaves as follows: when there is at least one way to prove the
 condition, it proceeds to the `then` branch, otherwise it goes to the `else` branch. Pretty standard,
 really. It is one thing that the Prolog cut statement, `!`, is useful for, but I find that using cut
 makes for less readable code. \citet{kiselyov05backtracking} is worth reading for alternatives to
 the cut statement and the semantics of `if`-`then`-`else` and `not` in logic programming, and Makam
 follows that paper closely.
-
-NEEDFEEDBACK. \todo{Might switch the above to two rules, using a guard clause to differentiate on
-the two cases. (I might start using the guards in the later chapters to simplify the presentation
-for structural recursion.) How does this look? At this point `P when Q :- R` can be understood to
-be entirely equivalent to `P :- Q, R`, however in later chapters this would change -- if the 
-`when` clause fails, then the rule is deemed not applicable.}
-
-\begingroup\color{todo}
-```
-eval (case_or_else Scrutinee Pattern Body Else) V'
-    when eval Scrutinee V, match Pattern V vnil Subst :-
-  vapplymany Body Subst Body', eval Body' V'.
-eval (case_or_else Scrutinee Pattern Body Else) V'
-    when eval Scrutinee V, not(match Pattern V vnil Subst) :-
-  eval Else V'.
-```
-\endgroup
 
 STUDENT. I see. Now, I noticed a `vapplymany` predicate -- what is that?
 

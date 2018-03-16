@@ -1,3 +1,5 @@
 TODO. \todo{This is where I am! Haven't finished revising from here on! A partial list of text-wide TODOs follows.}
 
 TODO. \todo{Have some way to distinguish between code that is part of the literate development, vs. library code, vs. thoughts, vs. wrong code. Maybe an icon next to each code block?}
+
+TODO. \todo{Make sure that we use noindent wherever the same character continues to talk after some code.}

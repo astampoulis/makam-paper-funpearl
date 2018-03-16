@@ -128,7 +128,7 @@ typeof (letobj E EF') T :-
 
 eval (liftobj O) (liftobj O).
 eval (letobj E I_E') V :-
-  eval E (liftobj O), subst_obj I_E' O E', eval E' V.
+  eval E (liftobj O), subst_obj I_E' O E', if (refl.isunif E') then (print "not fixed", failure) else success, eval E' V.
 ```
 
 ADVISOR. Great. I'll add the object language in a separate namespace prefix -- we can use `\texttt{\%extend}' for going
@@ -147,15 +147,54 @@ aq : index -> term.
 We don't have to copy-paste the code, we can import the previous file into a separate namespace. But let's add natural numbers too.
 
 ```makam
-%import "02-stlc.md" as stlc.
+%extend stlc.
+term : type. typ : type.
+typeof : term -> typ -> prop.
+
+app : term -> term -> term.
+lam : typ -> (term -> term) -> term.
+arrow : typ -> typ -> typ.
+
+typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
+typeof (lam T1 E) (arrow T1 T2) :- (x:term -> typeof x T1 -> typeof (E x) T2).
+
+tuple : list term -> term. product : list typ -> typ.
+typeof (tuple ES) (product TS) :- map typeof ES TS.
+
+eval : term -> term -> prop.
+eval (lam T F) (lam T F).
+eval (tuple ES) (tuple VS) :- map eval ES VS.
+eval (app E E') V'' :- eval E (lam _ F), eval E' V', eval (F V') V''.
+%end.
+
+
 %extend stlc.
 onat : typ. ozero : term. osucc : term -> term.
-mult : term -> term -> term.
 typeof ozero onat.
 typeof (osucc N) onat :- typeof N onat.
-typeof (mult N1 N2) onat :- typeof N1 onat, typeof N2 onat.
 eval ozero ozero.
 eval (osucc E) (osucc V) :- eval E V.
+
+add : term -> term -> term.
+mult : term -> term -> term.
+
+typeof (add N1 N2) onat :- typeof N1 onat, typeof N2 onat.
+typeof (mult N1 N2) onat :- typeof N1 onat, typeof N2 onat.
+
+do_oadd : term -> term -> term -> prop.
+do_oadd ozero N N.
+do_oadd (osucc N) N' (osucc N'') :- do_oadd N N' N''.
+
+do_omult : term -> term -> term -> prop.
+do_omult ozero N ozero.
+do_omult (osucc ozero) N N.
+do_omult (osucc (osucc N)) N' N''' :-
+ do_omult (osucc N) N' N'',
+ do_oadd N' N'' N'''.
+
+eval (add E1 E2) V :- eval E1 V1, eval E2 V2, do_oadd V1 V2 V.
+eval (mult E1 E2) V :- eval E1 V1, eval E2 V2, do_omult V1 V2 V.
+
 aq : index -> term.
 %end.
 ```
@@ -190,7 +229,7 @@ typeof (letrec
     case_or_else n
       (patt_ozero) 
         (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
-      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero))))
+      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.ozero))))
     )], power)))) T ?
 >> Yes:
 >> T := arrow onat (liftclass (cls_typ (stlc.arrow stlc.onat stlc.onat))).
@@ -215,7 +254,7 @@ typeof (letrec
            letobj (app power n')
            (fun i =>
              liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.mult x (stlc.app (stlc.aq i) x))))))))
-      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero))))
+      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.ozero))))
     ))
     )], power)))) T ?
 >> Yes:
@@ -245,7 +284,7 @@ applies Goal <- aux_demand clause.demand_applies Goal.
 
 %extend refl.
 rules_apply : prop -> prop.
-rules_apply P :- demand.applies P.
+rules_apply P :- not(not(demand.applies P)).
 %end.
 ```
 -->
@@ -258,18 +297,19 @@ subst_obj I_Typ O Typ_O'I :-
 
 subst_obj_aux Var Replace Where Result :-
   if (refl.rules_apply (subst_obj_cases Var Replace Where Result))
-  then (subst_obj_cases Var Replace Where Res)
-  else (structural_recursion @(subst_obj_aux Var Replace) Where Res).
+  then (subst_obj_cases Var Replace Where Result)
+  else (structural_recursion @(subst_obj_aux Var Replace) Where Result).
 
 subst_obj_cases Var (obj_term Replace) (stlc.aq Var) Replace.
 ```
 
 STUDENT. Are we done?
 
+TODO. Fix the code!
+
 <!--
-```
-%trace+ eval.
-eval (app (letrec
+```makam
+eval (letrec
   (bind (fun power => body ([
     lam onat (fun n =>
     case_or_else n
@@ -287,11 +327,35 @@ eval (app (letrec
            letobj (app power n')
            (fun i =>
              liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.mult x (stlc.app (stlc.aq i) x))))))))
-      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero))))
+      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.ozero))))
     ))
-    )], power)))) (osucc (osucc (osucc ozero)))) V ?
+    )], app power (osucc (osucc (osucc ozero))))))) V ?
 >> Yes:
->> V := ozero.
+>> V := liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.app (stlc.lam stlc.onat (fun a => stlc.mult a (stlc.app (stlc.lam stlc.onat (fun b => stlc.osucc stlc.ozero)) a))) (stlc.mult x x)))).
+
+(eval (letrec
+  (bind (fun power => body ([
+    lam onat (fun n =>
+    case_or_else n
+      (patt_ozero) 
+        (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
+    (case_or_else n
+      (patt_osucc (patt_osucc patt_var))
+        (* |-> *) (vbind (fun n' => vbody (
+           letobj (app power n')
+           (fun i =>
+             liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.app (stlc.aq i) (stlc.mult x x))))))))
+    (case_or_else n
+      (patt_osucc patt_var)
+        (* |-> *) (vbind (fun n' => vbody (
+           letobj (app power n')
+           (fun i =>
+             liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.mult x (stlc.app (stlc.aq i) x))))))))
+      (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.ozero))))
+    ))
+    )], app power (osucc (osucc ozero))
+    )))) (liftobj (obj_term V)),
+  stlc.eval (stlc.app V (stlc.osucc (stlc.osucc stlc.ozero))) V') ?
 ```
 -->
 
