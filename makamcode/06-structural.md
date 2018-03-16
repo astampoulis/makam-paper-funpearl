@@ -7,9 +7,14 @@ tests: testsuite. %testsuite tests.
 ```
 -->
 
-STUDENT. Type synonyms? You mean, introducing type definitions like `type natpair = nat * nat`? That does not seem particularly tricky.
+ADVISOR. Your pattern matching encoding looks good! You seem to be getting the hang of this. How
+about we do something challenging then? Say, type synonyms?
 
-ADVISOR. I think we will face a couple of interesting issues with it. Let me write out the necessary pen-and-paper rules first, so that we are on the same page. We'll do top-level type definitions, so let's add a top-level notion of programs, and a well-formedness judgement for them. (We could do modules instead of just programs, but I feel that would derail us a little.) We also need an additional environment to store type definitions:
+STUDENT. Type synonyms? You mean, introducing type definitions like `type natpair = nat * nat`? That
+does not seem particularly tricky.
+
+ADVISOR. I think we will face a couple of interesting issues with it, the main one being how to do
+*structural recursion* in a nice way. But first, let me write out the necessary pen-and-paper rules, so that we are on the same page. We'll do top-level type definitions, so let's add a top-level notion of programs and a well-formedness judgment for them. (We could do modules instead of just programs, but I feel that would derail us a little.) We also need an additional environment to store type definitions:
 
 \vspace{-1.2em}
 \begin{mathpar}
@@ -28,13 +33,12 @@ ADVISOR. I think we will face a couple of interesting issues with it. Let me wri
 \inferrule[TypEq-Def]
           {\alpha = \tau \in \Delta}
           {\Delta \vdash \alpha =_\delta \tau}
-
 \cdots
 \end{mathpar}
 
-STUDENT. Right, we will need the conversion rule, so that we identify types up to expanding their definitions; that's $\delta$-equality... And I see you haven't listed out all the rules for that, but those are quite standard.
+STUDENT. Right, we will need the conversion rule, so that we identify types up to expanding their definitions; that's $\delta$-equality... And I see you haven't listed out all the rules for that, but those are mostly standard.
 
-ADVISOR. Still, there are quite a few of those rules. Want to give this a try?
+ADVISOR. Still, there are quite a few of those rules. Want to give transcribing this to Makam a try?
 
 STUDENT. Yes, I got this. I'll add a new `typedef` predicate; I will only use it for local assumptions, to correspond to $\Delta$ context of type definitions. I will also do the well-formed program rules:
 
@@ -51,7 +55,7 @@ wfprogram (lettype T A_Program) :-
   (a:typ -> typedef a T -> wfprogram (A_Program a)).
 ```
 
-Well, I can do the conversion rule and the type equality judgement too.... I will name that `typeq`. I'll just write the one rule for now, which should be sufficient for a small example:
+Well, I can do the conversion rule and the type-equality judgment too.... I will name that `typeq`. I'll just write the one rule for now, which should be sufficient for a small example:
 
 ```
 typeq : (T1: typ) (T2: typ) -> prop.
@@ -71,7 +75,7 @@ typeq : [Any] (T1: Any) (T2: Any) -> prop.
 
 ADVISOR. Time to `Ctrl-C` out of the infinite loop?
 
-STUDENT. Oh. Oh, right. I guess we hit a case where the proof search strategy of Makam fails to make progress?
+STUDENT. Oh. Oh, right. I guess we hit a case where the proof-search strategy of Makam fails to make progress?
 
 ADVISOR. Correct. The loop happens when the new `typeof` rule gets triggered: it has `typeof E T'` as a premise, but the same rule still applies to solve that goal, so the rule will fire again, and so on. Makam just does depth-first search right now; until my friend implements a more sophisticated search strategy, we need to find another way to do this. 
 
@@ -83,7 +87,7 @@ type `T` of an expression `E`, but the typing rules require that `E` has a type 
 form. That was the case above -- for `E = f`, we knew that `T = a`, but the typing rule for `app`
 required that `T' = arrow T1 T2` for some `T1`, `T2`.
 
-STUDENT. Oh. Do you mean this in bi-directional typing terms? So, doing type analysis of
+STUDENT. Oh. Do you mean this in bidirectional typing terms? So, doing type analysis of
 an expression with a concrete type `T` might fail, but synthesizing the type anew could work?
 
 ADVISOR. Exactly, and in that case we have to check that the two types are equal, using `typeq`.
@@ -119,7 +123,7 @@ eq : A -> A -> prop. eq X X.
 
 STUDENT. If we ever made a paper submission out of this, some reviewers would not be happy
 about this `typeof` rule. But sure. Oh, and we should add the
-conversion rule for `typeof_patt`, but that's almost identical as for terms. (...) I'll do `typeq` next.
+conversion rule for `typeof_patt`, but that's almost the same as for terms. (...) I'll do `typeq` next.
 
 <!--
 ```makam
@@ -132,7 +136,21 @@ typeof_patt (P : patt A B) T S S' :-
 
 ```
 typeq A T' :- typedef A T, typeq T T'.
+typeq T' A :- typedef A T, typeq T T'.
+...
+```
+
+ADVISOR. I like how you added the symmetric rule, but... this is subtle, but if `A` is a unification variable, we don't want to unify it with an arbitrary synonym. So we need to check that `A` is concrete somehow\footnote{Though not supported in Makam, an alternative to this in other languages based on higher-order logic programming would be to add a \texttt{mode (i o)} declaration for \texttt{typedef}, so that \texttt{typedef A T} would fail if \texttt{A} is not concrete.}:
+
+```
+typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+...
+```
+
+STUDENT. I see what you mean. OK, I'll continue on to the rest of the cases....
+
+```
 typeq (arrow T1 T2) (arrow T1' T2') :-
   typeq T1 T1', typeq T2 T2'.
 typeq (arrowmany TS T) (arrowmany TS' T') :-
@@ -140,9 +158,9 @@ typeq (arrowmany TS T) (arrowmany TS' T') :-
 ...
 ```
 
-ADVISOR. I see you learn quickly and wrote the symmetric case for `typedef`s so as to avoid looping! Still, writing boilerplate is not fun, is it?
+ADVISOR. Writing boilerplate is not fun, is it?
 
-STUDENT. It is not. I wish we could just write the first two rules; they're the important
+STUDENT. It is not. I wish we could just write the first two rules that you wrote; they're the important
 ones, after all. All the others just propagate the structural recursion through. Also,
 whenever we add a new constructor for types, we'll have to remember to add a `typeq` rule
 for it....
@@ -166,12 +184,6 @@ typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T T' :- structural_recursion @typeq T T'.
 ```
 
-\begin{scenecomment}
-(Hagop is suddenly feeling faint by what will obviously be the main point of the rest of this chapter.)
-\end{scenecomment}
-
-TODO. Explain the two negations.
-
 STUDENT. ... What just happened. Is `structural_recursion` some special Makam trick I don't know about yet?
 
 ADVISOR. Indeed. There is a little bit of trickery involved here, but you will see that
@@ -180,16 +192,16 @@ just a normal standard-library predicate like any other; it essentially applies 
 to a term. Its implementation will be a little special of course. But let's just think about how you would
 write the rest of the rules of `typeq` generically, to perform structural recursion.
 
-STUDENT. OK. Well, when looking at two `typ`s together, we have to make sure that their constructors are the same, and also any `typ`s they contain as arguments are recursively `typeq`ual. So something like this:
+STUDENT. OK. Well, when looking at two `typ`s together, we have to make sure that their constructors are the same and also that any `typ`s they contain as arguments are recursively `typeq`ual. So something like this:
 
 ```
 typeq (Constructor Arguments) (Constructor Arguments') :-
   map typeq Arguments Arguments'.
 ```
 
-ADVISOR. Right. Note though, that the types of arguments might be different than `typ`. So even if we start comparing two types at the top-level, we might end up having to compare two lists of types that they contain -- imagine the case for `arrowmany` for example.
+ADVISOR. Right. Note, though, that the types of arguments might be different than `typ`. So even if we start comparing two types at the top level, we might end up having to compare two lists of types that they contain -- imagine the case for `arrowmany` for example.
 
-STUDENT. I see! That's why you edited `typeq` to be polymorphic above; you have extended it to work on *any type* that might contain a `typ`.
+STUDENT. I see! That's why you edited `typeq` to be polymorphic above; you have extended it to work on *any type* (of the metalanguage) that might contain a `typ`.
 
 ADVISOR. Exactly. Now, the list of `Arguments` -- can you come up with a type for them?
 
@@ -264,7 +276,7 @@ typeq T T' :-
   hmap @typeq Args Args'.
 ```
 
-ADVISOR. That looks great! Simple, isn't it? You'll see that there are a few more cases that are needed for the generic case, though. Should we do that? We can roll our own reusable `structural_recursion` implementation -- that way we will dispel all magic from its use that I showed you earlier! I'll give you the type; you fill in the first case:
+ADVISOR. That looks great! Simple, isn't it? You'll see that there are a few more generic cases that are needed, though. Should we do that? We can roll our own reusable `structural_recursion` implementation -- that way we will dispel all magic from its use that I showed you earlier! I'll give you the type; you fill in the first case:
 
 ```
 structural_recursion : [Any] 

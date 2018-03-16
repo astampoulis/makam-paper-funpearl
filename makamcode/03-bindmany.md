@@ -133,29 +133,9 @@ typeof (lammany F) (arrowmany TS T) :-
 ```
 -->
 
-<!--
-TODO. Figure out where to place this.
-```makam
-applymany : bindmany A B -> list A -> B -> prop.
-applymany (body B) [] B.
-applymany (bind F) (X :: XS) B :-
-  applymany (F X) XS B.
-```
--->
-
 ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons. Makam is more lax, and so is ELPI, another recent \lamprolog implementation, and allows this form statically, though there are instantiations of `P` that will fail at run-time.
 
-NEEDFEEDBACK. \todo{I am considering abandoning `assumemany` in favor of using a specialized `assume\_types\_of`. We could avoid the above explanation in that case; also this would make the development in this chapter work in other \lamprolog dialects, and also keep our \lamprolog experts from raising an issue at departing from the logical reading of \lamprolog so early in the text. The specialized predicate would look as follows.}
-
-\begingroup\color{todo}
-```
-assume_types_of : list term -> list typ -> prop -> prop.
-assume_types_of [] [] Q :- Q.
-assume_types_of (X :: XS) (T :: TS) Q :- (typeof X T -> assume_types_of P XS TS Q).
-```
-\endgroup
-
-STUDENT. I see. But we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
+STUDENT. I see. But in that case we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
 
 ```makam
 typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T ?
@@ -163,14 +143,48 @@ typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T ?
 >> T := arrowmany [T1, T2] (product [T2, T1]).
 ```
 
-Great, I think I got the hang of this. We could definitely add a multiple-argument application
-construct `appmany` or define the rules for `eval` for these. But that would be easy; we can do it
-later. Something that worries me, though -- all these fancy higher-order abstract binders, how do we
-... make them concrete? Say, how do we print them?
+\noindent
+Great, I think I got the hang of this. Let me try to see if I can add a multiple-argument application
+construct `appmany` and its evaluation rules. 
+
+```
+appmany : term -> list term -> term.
+typeof (appmany E ES) T :-
+  typeof E (arrowmany TS T), map typeof ES TS.
+eval (appmany E ES) V :-
+  eval E (lammany XS_E'), map eval ES VS, (...).
+```
+
+<!--
+```makam
+appmany : term -> list term -> term.
+typeof (appmany E ES) T :-
+  typeof E (arrowmany TS T), map typeof ES TS.
+```
+-->
+
+\noindent
+How can I do simultaneous substitution of all of the `XS` for `VS`?
+
+ADVISOR. You'll need another standard-library predicate for `bindmany`,
+which iteratively uses HOAS function application to perform a number of substitutions:
+
+```makam
+applymany : bindmany A B -> list A -> B -> prop.
+applymany (body B) [] B.
+applymany (bind F) (X :: XS) B :-
+  applymany (F X) XS B.
+eval (appmany E ES) V :-
+  eval E (lammany XS_E'), map eval ES VS,
+  applymany XS_E' VS E'', eval E'' V.
+```
+
+STUDENT. I see, that makes sense. Can I ask you something that worries me, though -- all these fancy higher-order abstract
+binders, how do we... make them concrete? Say, how do we print them?
 
 ADVISOR. That's actually quite easy. We just add a concrete name to them. A plain old `string`. Our
 typing rules etc. do not care about it, but we could use it for parsing concrete syntax into our
-abstract binding syntax, or for pretty-printing.... Let's not get into that for the time being, but
+abstract binding syntax, or for pretty-printing.... All those are stories for another time, though;
 let's just say that we could have defined `bind` with an extra `string` argument, representing the
 concrete name; and then `openmany` would just ignore it.
 
@@ -217,9 +231,7 @@ syntactic form `pfun` for writing anonymous predicates instead. Since this will 
 predicate, you are also able to destructure parameters like you did here on `(defs, body)` -- that doesn't work for
 normal functions in the general case, since they need to treat arguments parametrically.
 This works by performing unification of the parameter with the given term -- so `defs` and `body`
-need to be unification variables\footnote{There is a subtlety here, having to do with the free variables that a unification variable
-can capture. A unification variable is allowed to capture all the free variables in scope at the
-point where it is introduced. \text{Defs} and \text{Body} are introduced as unification variables when we get to execute the \text{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \text{Defs} and \text{Body} can capture the \text{xs} variables that \text{openmany} introduces, whereas \text{T'} cannot. In \lamprolog terms, the \text{pfun} notation desugars to existential quantification of \text{Defs} and \text{Body}.}.
+need to be unification variables.
 
 ```makam
 typeof (letrec XS_DefsBody) T' :-
@@ -243,7 +255,9 @@ eval (letrec (bind (fun x => body ([Def x], Body x)))) V :-
 ```
 -->
 
-STUDENT. Ah, I see. Let me ask you something though: one thing I noticed with our representation of `letrec` is that we have to be careful so
+STUDENT. Ah, I see\footnote{There is a subtlety here, having to do with the free variables that a unification variable
+can capture. In \lamprolog, a unification variable is allowed to capture all the free variables in scope at the
+point where it is introduced, as well as any variables it is explicitly applied to. \texttt{Defs} and \texttt{Body} are introduced as unification variables when we get to execute the \texttt{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \texttt{Defs} and \texttt{Body} can capture the \texttt{xs} variables that \texttt{openmany} introduces, whereas \texttt{T'} cannot. In \lamprolog terms, the \texttt{pfun} notation desugars to existential quantification of any (capitalized) unification variables that are mentioned while destructuring an argument, like the variables \texttt{Defs} and \texttt{Body}.}. Let me ask you something though: one thing I noticed with our representation of `letrec` is that we have to be careful so
 that the number of binders matches the number of definitions we give. Our typing rules disallow
 that, but I wonder if there's a way to have a more accurate representation for `letrec` which
 includes that requirement?

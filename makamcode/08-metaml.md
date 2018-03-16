@@ -14,9 +14,9 @@ ADVISOR. Yes, it is time. So, what we are aiming to do is add a facility for typ
 
 STUDENT. Exactly. For the research language we have in mind, we aim for our object language to be a
 formal logic, so our language will be similar to Beluga \citep{beluga-main-reference} or VeriML
-\citep{veriml-main-reference}. We'll have to be able to pattern match over the terms of the object
-language, so they will be runtime entities, rather than erasable static entities.... But we don't
-need to do all of that; let's just do a basic version for now, and I can do the rest on my own.
+\citep{veriml-main-reference}. We will also need dependent functions and pattern-matching over
+the object language... But we don't need to do all of that; let's just do a basic version
+for now, and I can do the rest on my own.
 
 \newcommand\dep[1]{\ensuremath{#1}}
 \newcommand\lift[1]{\ensuremath{\langle#1\rangle}}
@@ -25,25 +25,24 @@ need to do all of that; let's just do a basic version for now, and I can do the 
 \newcommand\aq[1]{\ensuremath{\texttt{aq}(#1)}}
 \newcommand\aqopen[1]{\ensuremath{\texttt{aqopen}(#1)}}
 
-ADVISOR. Sounds good. First, let's agree on some terminology, because a lot of
-words are getting overloaded a lot. Let us call *objects* $o$
-any sorts of terms of the object language that we will be manipulating.
-And, for a lack of a better word, let us call *classes* $c$ the "types"
-that characterize those objects through a typing relation of the form $\Psi \odash o : c$. It
-is unfortunate that these names suggest object-orientation, but this is not the intent.
+ADVISOR. Sounds good. First, let's agree on some terminology, because a lot of words are getting
+overloaded a lot. Let us call *objects* $o$ any sorts of terms of the object language that we will
+be manipulating.  And, for a lack of a better word, let us call *classes* $c$ the "types" that
+characterize those objects through a typing relation of the form $\Psi \odash o : c$. It is
+unfortunate that these names suggest object-orientation, but this is not the intent.
 
-STUDENT. I see what you are saying. Let's keep the objects simple -- to start, let's just
-do the terms of the simply typed lambda calculus (STLC). In that cases our
-classes will just be the types of STLC. The objects are run-time entities: essentially,
-our programs will be able to "compute" objects. So we need a way to return (or "lift")
-an object $o$ as a meta-level value $\lift{o}$.
+STUDENT. I see what you are saying. Let's keep the objects simple -- to start, let's just do the
+terms of the simply typed lambda calculus (STLC). In that cases our classes will just be the types
+of STLC. The objects are run-time entities: essentially, our programs will be able to "compute"
+objects. So we need a way to return (or "lift") an object $o$ as a meta-level value $\lift{o}$.
 
-ADVISOR. Good idea. We are getting into many levels of meta -- there's the meta-language
-we're using, Makam; there's the object language we are encoding, which is now becoming a meta-language
-in itself, let's call that Heterogeneous Meta ML Light (HMML?); and there's the
-"object-object" language that HMML is manipulating. One option would be to have the object-object
-language be the full HMML metalanguage itself, which would lead us to a homogeneous, multi-stage language like MetaML \citep{metaml-main-reference}. But, I agree, we should keep the object-object
-language simple: the STLC will suffice.
+ADVISOR. Good idea. We are getting into many levels of meta -- there's the metalanguage we're
+using, Makam; there's the object language we are encoding, which is now becoming a metalanguage in
+itself, let's call that Heterogeneous Meta ML Light (HMML?); and there's the "object-object"
+language that HMML is manipulating. One option would be to have the object-object language be the
+full HMML metalanguage itself, which would lead us to a homogeneous, multi-stage language like
+MetaML \citep{metaml-main-reference}. But, I agree, we should keep the object-object language
+simple: the STLC will suffice.
 
 STUDENT. Great. How about we try to do the standard example of a staged `power` function?
 Here's a rough sketch, where I'm using `~I` for antiquotation:
@@ -200,9 +199,11 @@ stlc.typeof (stlc.aq I) T :- classof_index I (cls_typ T).
 ```
 
 \begin{scenecomment}
-(Hagop transcribes the example from before. Writing out the term takes several lines, so finds himself
+(Hagop transcribes the example from before. Writing out the term takes several lines, so he finds himself
 wishing that Makam supported some way to write terms of object languages in their native syntax;
-quite curiously, he also finds himself wishing that he had one blank page or two.)
+quite curiously, he also finds himself wishing that he had a stack of blank pages.
+Unbeknownst to him, his first wish has already been granted, but his second wish hasn't, so he
+will have to learn about it at some later time in the future.)
 \end{scenecomment}
 
 ```
@@ -251,21 +252,25 @@ ADVISOR. That's great! Only thing missing to try out an evaluation example too i
 ```makam
 subst_obj_aux, subst_obj_cases : [Any]
   (Var: index) (Replace: object) (Where: Any) (Result: Any) -> prop.
-subst_obj I_Typ O Typ_O'I :-
-  (i:index -> subst_obj_aux i O (I_Typ i) Typ_O'I).
+subst_obj I_Term O Term_O'I :-
+  (i:index -> subst_obj_aux i O (I_Term i) Term_O'I).
 
 subst_obj_aux Var Replace Where Result :-
   if (subst_obj_cases Var Replace Where Result)
   then success
   else (structural_recursion @(subst_obj_aux Var Replace) Where Result).
-
 subst_obj_cases Var (obj_term Replace) (stlc.aq Var) Replace.
 ```
 
 \noindent
-My definition of `subst_obj_aux` is quite subtle. So let me walk you through it:
-
-TODO. Fill this out.
+My definition here is quite subtle, so let me walk you through it. First, we extend the
+`subst_obj` predicate to work on any type -- that's what `subst_obj_aux` is for.
+We set up the structural recursion, by attempting to see whether the "essential" cases
+actually apply -- those are captured in the `subst_obj_cases` predicate. If they don't,
+that means we should proceed by structural recursion. I did not mention it before, but
+the `@` notation that we used to treat a polymorphic constant as a term of type `forall A T`,
+can be used with an arbitrary term as well, to assign it such a type if possible.
+Finally, the essential case itself is a direct transcription of the pen-and-paper version.
 
 STUDENT. Let me go and re-read that a little. (...) I think it makes sense now. Well, is that all?
 Are we done?
@@ -378,7 +383,7 @@ I think writing down the rules on paper will help:
 STUDENT. I've seen that rule for \rulename{SubstObj} before, and it is still tricky... We need
 to replace the open variables in $e$ through the substitution $\sigma = [\stlce^*_1, \text{...}, \stlce^*_n]$.
 However, the terms $\stlce^*_1$ through $\stlce^*_n$ might mention the $i$ index themselves, so we first
-need to apply the top-level substitution to $\sigma$ itself! After that, we do replace the open
+need to apply the top level substitution to $\sigma$ itself! After that, we do replace the open
 variables in $\stlce$.
 
 ADVISOR. I feel that we are getting to the point where it's easier to write things

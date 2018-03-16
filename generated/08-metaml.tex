@@ -13,10 +13,9 @@ manner.
 \heroSTUDENT{} Exactly. For the research language we have in mind, we aim for
 our object language to be a formal logic, so our language will be
 similar to Beluga \citep{beluga-main-reference} or VeriML
-\citep{veriml-main-reference}. We'll have to be able to pattern match
-over the terms of the object language, so they will be runtime entities,
-rather than erasable static entities\ldots{}. But we don't need to do
-all of that; let's just do a basic version for now, and I can do the
+\citep{veriml-main-reference}. We will also need dependent functions and
+pattern-matching over the object language\ldots{} But we don't need to
+do all of that; let's just do a basic version for now, and I can do the
 rest on my own.
 
 \newcommand\dep[1]{\ensuremath{#1}}
@@ -43,8 +42,8 @@ objects are run-time entities: essentially, our programs will be able to
 \(o\) as a meta-level value \(\lift{o}\).
 
 \heroADVISOR{} Good idea. We are getting into many levels of meta -- there's
-the meta-language we're using, Makam; there's the object language we are
-encoding, which is now becoming a meta-language in itself, let's call
+the metalanguage we're using, Makam; there's the object language we are
+encoding, which is now becoming a metalanguage in itself, let's call
 that Heterogeneous Meta ML Light (HMML?); and there's the
 ``object-object'' language that HMML is manipulating. One option would
 be to have the object-object language be the full HMML metalanguage
@@ -159,9 +158,11 @@ stlc.typeof (stlc.aq I) T :- classof_index I (cls_typ T).
 \end{verbatim}
 
 \begin{scenecomment}
-(Hagop transcribes the example from before. Writing out the term takes several lines, so finds himself
+(Hagop transcribes the example from before. Writing out the term takes several lines, so he finds himself
 wishing that Makam supported some way to write terms of object languages in their native syntax;
-quite curiously, he also finds himself wishing that he had one blank page or two.)
+quite curiously, he also finds himself wishing that he had a stack of blank pages.
+Unbeknownst to him, his first wish has already been granted, but his second wish hasn't, so he
+will have to learn about it at some later time in the future.)
 \end{scenecomment}
 
 \begin{verbatim}
@@ -177,22 +178,28 @@ example too is implementing \texttt{subst\_obj}. Thanks to
 \begin{verbatim}
 subst_obj_aux, subst_obj_cases : [Any]
   (Var: index) (Replace: object) (Where: Any) (Result: Any) \ensuremath{\to} prop.
-subst_obj I_Typ O Typ_O'I :-
-  (i:index \ensuremath{\to} subst_obj_aux i O (I_Typ i) Typ_O'I).
+subst_obj I_Term O Term_O'I :-
+  (i:index \ensuremath{\to} subst_obj_aux i O (I_Term i) Term_O'I).
 
 subst_obj_aux Var Replace Where Result :-
   if (subst_obj_cases Var Replace Where Result)
   then success
   else (structural_recursion @(subst_obj_aux Var Replace) Where Result).
-
 subst_obj_cases Var (obj_term Replace) (stlc.aq Var) Replace.
 \end{verbatim}
 
 \noindent
-My definition of \texttt{subst\_obj\_aux} is quite subtle. So let me
-walk you through it:
-
-\heroTODO{} Fill this out.
+My definition here is quite subtle, so let me walk you through it.
+First, we extend the \texttt{subst\_obj} predicate to work on any type
+-- that's what \texttt{subst\_obj\_aux} is for. We set up the structural
+recursion, by attempting to see whether the ``essential'' cases actually
+apply -- those are captured in the \texttt{subst\_obj\_cases} predicate.
+If they don't, that means we should proceed by structural recursion. I
+did not mention it before, but the \texttt{@} notation that we used to
+treat a polymorphic constant as a term of type \texttt{forall\ A\ T},
+can be used with an arbitrary term as well, to assign it such a type if
+possible. Finally, the essential case itself is a direct transcription
+of the pen-and-paper version.
 
 \heroSTUDENT{} Let me go and re-read that a little. (\ldots{}) I think it
 makes sense now. Well, is that all? Are we done?
@@ -277,7 +284,7 @@ still tricky\ldots{} We need to replace the open variables in \(e\)
 through the substitution
 \(\sigma = [\stlce^*_1, \text{...}, \stlce^*_n]\). However, the terms
 \(\stlce^*_1\) through \(\stlce^*_n\) might mention the \(i\) index
-themselves, so we first need to apply the top-level substitution to
+themselves, so we first need to apply the top level substitution to
 \(\sigma\) itself! After that, we do replace the open variables in
 \(\stlce\).
 

@@ -1,17 +1,22 @@
 \section{Where our heroes reflect on structural
 recursion}\label{where-our-heroes-reflect-on-structural-recursion}
 
+\heroADVISOR{} Your pattern matching encoding looks good! You seem to be
+getting the hang of this. How about we do something challenging then?
+Say, type synonyms?
+
 \heroSTUDENT{} Type synonyms? You mean, introducing type definitions like
 \texttt{type\ natpair\ =\ nat\ *\ nat}? That does not seem particularly
 tricky.
 
-\heroADVISOR{} I think we will face a couple of interesting issues with it.
-Let me write out the necessary pen-and-paper rules first, so that we are
-on the same page. We'll do top-level type definitions, so let's add a
-top-level notion of programs, and a well-formedness judgement for them.
-(We could do modules instead of just programs, but I feel that would
-derail us a little.) We also need an additional environment to store
-type definitions:
+\heroADVISOR{} I think we will face a couple of interesting issues with it,
+the main one being how to do \emph{structural recursion} in a nice way.
+But first, let me write out the necessary pen-and-paper rules, so that
+we are on the same page. We'll do top-level type definitions, so let's
+add a top-level notion of programs and a well-formedness judgment for
+them. (We could do modules instead of just programs, but I feel that
+would derail us a little.) We also need an additional environment to
+store type definitions:
 
 \vspace{-1.2em}\begin{mathpar}
 \inferrule[Program-Syntax]{}{c ::= \text{main} \; e \; | \; \texttt{type} \; \alpha = \tau \; ; \; c}
@@ -29,17 +34,16 @@ type definitions:
 \inferrule[TypEq-Def]
           {\alpha = \tau \in \Delta}
           {\Delta \vdash \alpha =_\delta \tau}
-
 \cdots
 \end{mathpar}
 
 \heroSTUDENT{} Right, we will need the conversion rule, so that we identify
 types up to expanding their definitions; that's
 \(\delta\)-equality\ldots{} And I see you haven't listed out all the
-rules for that, but those are quite standard.
+rules for that, but those are mostly standard.
 
-\heroADVISOR{} Still, there are quite a few of those rules. Want to give this
-a try?
+\heroADVISOR{} Still, there are quite a few of those rules. Want to give
+transcribing this to Makam a try?
 
 \heroSTUDENT{} Yes, I got this. I'll add a new \texttt{typedef} predicate; I
 will only use it for local assumptions, to correspond to \(\Delta\)
@@ -59,7 +63,7 @@ wfprogram (lettype T A_Program) :-
   (a:typ \ensuremath{\to} typedef a T \ensuremath{\to} wfprogram (A_Program a)).
 \end{verbatim}
 
-Well, I can do the conversion rule and the type equality judgement
+Well, I can do the conversion rule and the type-equality judgment
 too\ldots{}. I will name that \texttt{typeq}. I'll just write the one
 rule for now, which should be sufficient for a small example:
 
@@ -75,7 +79,7 @@ wfprogram (lettype (arrow onat onat) (fun a \ensuremath{\Rightarrow}
 
 \heroADVISOR{} Time to \texttt{Ctrl-C} out of the infinite loop?
 
-\heroSTUDENT{} Oh. Oh, right. I guess we hit a case where the proof search
+\heroSTUDENT{} Oh. Oh, right. I guess we hit a case where the proof-search
 strategy of Makam fails to make progress?
 
 \heroADVISOR{} Correct. The loop happens when the new \texttt{typeof} rule
@@ -98,7 +102,7 @@ the typing rule for \texttt{app} required that
 \texttt{T\textquotesingle{}\ =\ arrow\ T1\ T2} for some \texttt{T1},
 \texttt{T2}.
 
-\heroSTUDENT{} Oh. Do you mean this in bi-directional typing terms? So, doing
+\heroSTUDENT{} Oh. Do you mean this in bidirectional typing terms? So, doing
 type analysis of an expression with a concrete type \texttt{T} might
 fail, but synthesizing the type anew could work?
 
@@ -146,11 +150,30 @@ eq : A \ensuremath{\to} A \ensuremath{\to} prop. eq X X.
 \heroSTUDENT{} If we ever made a paper submission out of this, some reviewers
 would not be happy about this \texttt{typeof} rule. But sure. Oh, and we
 should add the conversion rule for \texttt{typeof\_patt}, but that's
-almost identical as for terms. (\ldots{}) I'll do \texttt{typeq} next.
+almost the same as for terms. (\ldots{}) I'll do \texttt{typeq} next.
 
 \begin{verbatim}
 typeq A T' :- typedef A T, typeq T T'.
+typeq T' A :- typedef A T, typeq T T'.
+...
+\end{verbatim}
+
+\heroADVISOR{} I like how you added the symmetric rule, but\ldots{} this is
+subtle, but if \texttt{A} is a unification variable, we don't want to
+unify it with an arbitrary synonym. So we need to check that \texttt{A}
+is concrete
+somehow\footnote{Though not supported in Makam, an alternative to this in other languages based on higher-order logic programming would be to add a \texttt{mode (i o)} declaration for \texttt{typedef}, so that \texttt{typedef A T} would fail if \texttt{A} is not concrete.}:
+
+\begin{verbatim}
+typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+...
+\end{verbatim}
+
+\heroSTUDENT{} I see what you mean. OK, I'll continue on to the rest of the
+cases\ldots{}.
+
+\begin{verbatim}
 typeq (arrow T1 T2) (arrow T1' T2') :-
   typeq T1 T1', typeq T2 T2'.
 typeq (arrowmany TS T) (arrowmany TS' T') :-
@@ -158,15 +181,13 @@ typeq (arrowmany TS T) (arrowmany TS' T') :-
 ...
 \end{verbatim}
 
-\heroADVISOR{} I see you learn quickly and wrote the symmetric case for
-\texttt{typedef}s so as to avoid looping! Still, writing boilerplate is
-not fun, is it?
+\heroADVISOR{} Writing boilerplate is not fun, is it?
 
-\heroSTUDENT{} It is not. I wish we could just write the first two rules;
-they're the important ones, after all. All the others just propagate the
-structural recursion through. Also, whenever we add a new constructor
-for types, we'll have to remember to add a \texttt{typeq} rule for
-it\ldots{}.
+\heroSTUDENT{} It is not. I wish we could just write the first two rules that
+you wrote; they're the important ones, after all. All the others just
+propagate the structural recursion through. Also, whenever we add a new
+constructor for types, we'll have to remember to add a \texttt{typeq}
+rule for it\ldots{}.
 
 \heroADVISOR{} Right. Let's just use some magic instead.
 
@@ -181,12 +202,6 @@ typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T T' :- structural_recursion @typeq T T'.
 \end{verbatim}
 
-\begin{scenecomment}
-(Hagop is suddenly feeling faint by what will obviously be the main point of the rest of this chapter.)
-\end{scenecomment}
-
-\heroTODO{} Explain the two negations.
-
 \heroSTUDENT{} \ldots{} What just happened. Is \texttt{structural\_recursion}
 some special Makam trick I don't know about yet?
 
@@ -200,7 +215,7 @@ would write the rest of the rules of \texttt{typeq} generically, to
 perform structural recursion.
 
 \heroSTUDENT{} OK. Well, when looking at two \texttt{typ}s together, we have
-to make sure that their constructors are the same, and also any
+to make sure that their constructors are the same and also that any
 \texttt{typ}s they contain as arguments are recursively
 \texttt{typeq}ual. So something like this:
 
@@ -209,14 +224,14 @@ typeq (Constructor Arguments) (Constructor Arguments') :-
   map typeq Arguments Arguments'.
 \end{verbatim}
 
-\heroADVISOR{} Right. Note though, that the types of arguments might be
+\heroADVISOR{} Right. Note, though, that the types of arguments might be
 different than \texttt{typ}. So even if we start comparing two types at
-the top-level, we might end up having to compare two lists of types that
+the top level, we might end up having to compare two lists of types that
 they contain -- imagine the case for \texttt{arrowmany} for example.
 
 \heroSTUDENT{} I see! That's why you edited \texttt{typeq} to be polymorphic
-above; you have extended it to work on \emph{any type} that might
-contain a \texttt{typ}.
+above; you have extended it to work on \emph{any type} (of the
+metalanguage) that might contain a \texttt{typ}.
 
 \heroADVISOR{} Exactly. Now, the list of \texttt{Arguments} -- can you come up
 with a type for them?
@@ -285,10 +300,10 @@ typeq T T' :-
 \end{verbatim}
 
 \heroADVISOR{} That looks great! Simple, isn't it? You'll see that there are a
-few more cases that are needed for the generic case, though. Should we
-do that? We can roll our own reusable \texttt{structural\_recursion}
-implementation -- that way we will dispel all magic from its use that I
-showed you earlier! I'll give you the type; you fill in the first case:
+few more generic cases that are needed, though. Should we do that? We
+can roll our own reusable \texttt{structural\_recursion} implementation
+-- that way we will dispel all magic from its use that I showed you
+earlier! I'll give you the type; you fill in the first case:
 
 \begin{verbatim}
 structural_recursion : [Any] 

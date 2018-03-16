@@ -12,8 +12,14 @@ tests: testsuite. %testsuite tests.
 \end{scenecomment}
 
 \begin{versy}
-``System F is easy, / later we might do / Hindley-Milner too. \\
-Types are always valid / a `$\vdash \tau \; \text{wf}$' / judgment we won't do.''
+``You can skim this chapter / or skip it all the same. \\
+It's mostly for completeness / since ML as a name \\
+suggests some datatypes / and polymorphism too. \\
+
+System F is easy, / later we might do \\
+type generalizing / like Hindley-Milner too \\
+but if you're feeling tired / I told you just before \\
+you can take a break too / like Lambros from next door.''
 \end{versy}
 
 ```makam
@@ -82,7 +88,7 @@ bind_datatype : (typ -> bindmany constructor A) -> datatype_bind A.
 ```
 
 \begin{versy}
-``We are avoiding GADTs / they're good, but up the ante. \\
+``We are avoiding GADTs / they're good but up the ante. \\
 And we have MetaML to do / (in prose 'cause I'm no Dante.) \\
 We're almost there, we need to add / the \texttt{wfprogram} clause. \\
 But first we'll need an env. with types that / \texttt{constructor}s expose.''
@@ -94,7 +100,7 @@ constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) -> prop.
 
 \begin{versy}
 ``We go through the constructors / populating our new \texttt{prop}. \\
-\texttt{DT} stands for datatype / -- the page is just too cropt.''
+\texttt{DT} stands for datatype / -- the page is just too cropped.''
 \end{versy}
 
 ```makam
@@ -107,7 +113,7 @@ wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
 
 \begin{versy}
 ``That's it, we're almost over / there's our wf-programs. \\
-We can't use the constructors though / remember \texttt{term}s and \texttt{patt}s ?''
+We can't use the constructors, though / remember \texttt{term}s and \texttt{patt}s ?''
 \end{versy}
 
 ```makam

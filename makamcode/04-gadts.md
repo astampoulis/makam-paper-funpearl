@@ -119,14 +119,6 @@ of any feature, all thanks to the existing support for Ad-Hoc Polymorphism.
 
 \identDialog
 
-NEEDFEEDBACK. \todo{This section is new, trying to explain the relationship
-between Ad-Hoc Polymorphism and GADTs with a little more detail, as
-this is one of the two main novel parts of the paper (the other one is
-the way we encode structural recursion). Reviewers had asked for a
-more careful exposition of this in the previous version. This also
-tries to address the criticism that the dialog format was getting
-tiring after a while; especially in the more difficult parts.}
-
 <!--
 ```makam
 vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
