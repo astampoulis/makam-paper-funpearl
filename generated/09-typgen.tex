@@ -90,22 +90,43 @@ with no new surprises.
 findunif_aux : [Any VarType]
   (Var: option VarType) (Current: Any) (Var': option VarType) \ensuremath{\to} prop.
 findunif_aux (some Var) _ (some Var).
-findunif_aux none (Current : VarType) (some (Current : VarType)) :-
-  refl.isunif Current.
-findunif_aux In Current Out :- generic_fold @findunif_aux In Current Out.
-
+findunif_aux none (Current : CurrentType) (Result: option VarType) :-
+  refl.isunif Current,
+  if (dyn.eq Result (some Current)) then success
+  else (eq Result none).
+findunif_aux (In: option B) Current Out :-
+  generic_fold @findunif_aux In Current Out.
 findunif : [Any VarType] (Search: Any) (Found: VarType) \ensuremath{\to} prop.
 findunif Search Found :- findunif_aux none Search (some Found).
 \end{verbatim}
 
 Here, the second rule of \texttt{findunif\_aux} is the important one --
-it will only match when we encounter a unification variable of the same
-type as the one we require. So this rule uses the dynamic
-\texttt{typecase} aspect of the ad-hoc polymorphism in \lamprolog. With
-this, we should already be able to find \emph{one} (as opposed to all,
-as described above) uninstantiated unification variable from a type.
+it will only succeed when we encounter a unification variable of the
+\emph{same type} \texttt{VarType} as the one we require. This rule
+relies on the dynamic \texttt{typecase} aspect of the ad-hoc
+polymorphism in \lamprolog, making use of the \texttt{dyn.eq}
+standard-library predicate, which has a lax typing:
 
-\heroTODO{} \todo{Fix this and add an example.}
+\begin{verbatim}
+dyn.eq : [A B] A \ensuremath{\to} B \ensuremath{\to} prop.
+dyn.eq X X.
+\end{verbatim}
+
+The difference between this and \texttt{eq} is that the types \texttt{A}
+and \texttt{B} are only unified at runtime, rather than statically too.
+Otherwise, our rule would only apply when the type \texttt{CurrentType}
+of the current unification variable we are visiting already matches the
+type that we are searching for, \texttt{VarType}.
+
+With this predicate, we should already be able to find \emph{one} (as
+opposed to all, as described above) uninstantiated unification variable
+from a type. Here is an example of its use:
+
+\begin{verbatim}
+findunif (arrowmany TS T) (X: typ) ?
+>> Yes:
+>> X := T.
+\end{verbatim}
 
 Now we add a predicate \texttt{replaceunif} that, given a specific
 unification variable and a specific term, replaces its occurrences with

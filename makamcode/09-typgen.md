@@ -74,10 +74,16 @@ generic_fold F Acc X Acc when refl.isconst X.
 generic_fold F Acc (X : A -> B) Acc' <-
   (x:A -> (instantiate F F', F' Acc (X x) Acc')).
 
+polyrec_foldl : forall A (B -> A -> B -> prop) -> B -> list dyn -> B -> prop.
+polyrec_foldl P S nil S.
+polyrec_foldl P S (cons (dyn HD) TL) S'' <-
+  instantiate P P', 
+  P' S HD S',
+  polyrec_foldl P S' TL S''.
+
 generic_fold F Acc X Acc' when refl.isbaseterm X <-
   refl.headargs X HD Args,
-  instantiate F F',
-  dyn.foldl F' Acc Args Acc'.
+  polyrec_foldl F Acc Args Acc'.
 ```
 -->
 
@@ -85,21 +91,49 @@ generic_fold F Acc X Acc' when refl.isbaseterm X <-
 findunif_aux : [Any VarType]
   (Var: option VarType) (Current: Any) (Var': option VarType) -> prop.
 findunif_aux (some Var) _ (some Var).
-findunif_aux none (Current : VarType) (some (Current : VarType)) :-
-  refl.isunif Current.
-findunif_aux In Current Out :- generic_fold @findunif_aux In Current Out.
-
+findunif_aux none (Current : CurrentType) (Result: option VarType) :-
+  refl.isunif Current,
+  if (dyn.eq Result (some Current)) then success
+  else (eq Result none).
+findunif_aux (In: option B) Current Out :-
+  generic_fold @findunif_aux In Current Out.
 findunif : [Any VarType] (Search: Any) (Found: VarType) -> prop.
 findunif Search Found :- findunif_aux none Search (some Found).
 ```
 
-Here, the second rule of `findunif_aux` is the important one -- it will only match when we
-encounter a unification variable of the same type as the one we require. So this rule uses
-the dynamic `typecase` aspect of the ad-hoc polymorphism in \lamprolog.
-With this, we should already be able to find *one* (as opposed to all, as described above)
-uninstantiated unification variable from a type. 
+Here, the second rule of `findunif_aux` is the important one -- it will only succeed when we
+encounter a unification variable of the *same type* `VarType` as the one we require. This rule 
+relies on the dynamic `typecase` aspect of the ad-hoc polymorphism in \lamprolog, making
+use of the `dyn.eq` standard-library predicate, which has a lax typing:
 
-TODO. \todo{Fix this and add an example.}
+```
+dyn.eq : [A B] A -> B -> prop.
+dyn.eq X X.
+```
+
+The difference between this and `eq` is that the types `A` and `B` are only unified at runtime,
+rather than statically too. Otherwise, our rule would only apply when the type `CurrentType` of the
+current unification variable we are visiting already matches the type that we are searching for,
+`VarType`.
+
+With this predicate, we should already be able to find *one* (as opposed to all, as described above)
+uninstantiated unification variable from a type. Here is an example of its use:
+
+```
+findunif (arrowmany TS T) (X: typ) ?
+>> Yes:
+>> X := T.
+```
+
+<!--
+```makam
+findunif (arrowmany TS T) (X: typ) ?
+>> Yes:
+>> X := T,
+>> T := T,
+>> TS := TS.
+```
+-->
 
 Now we add a predicate `replaceunif` that, given a specific unification variable and a
 specific term, replaces its occurrences with the term. This will be needed as part of the
