@@ -6,15 +6,15 @@ and what does not.
 
 \hero{ROZA (Advisor)} Definitely -- trying out examples will help you refine your ideas, too.
 
-STUDENT. Let's see, though; we have an ML core, dependently typed constructs, and
-contextual types like in \citet{nanevski2008contextual}... I guess I will need a few
-months?
+STUDENT. Let's see, though; we have the simply typed λ-calculus, some ML core features, a staging
+construct, and contextual types like in \citet{nanevski2008contextual}... I guess I will need a few
+weeks?
 
 ADVISOR. That sounds like a lot. Why don't you use some kind of metalanguage to implement
 the prototype?
 
-STUDENT. You mean a tool like Racket/PLT Redex \citep{tobin2011languages,felleisen2009semantics},
-the K Framework \citep{rosu2010overview,ellison2009rewriting}, Spoofax \citep{kats2010spoofax}, or
+STUDENT. You mean a tool like Racket \citep{felleisen2009semantics}, PLT Redex \citep{tobin2011languages},
+the K Framework \citep{rosu2010overview}, Spoofax \citep{kats2010spoofax}, or
 CRSX \citep{rose2011crsx}?
 
 ADVISOR. Yes, all of those should be good choices. I was thinking though that we could

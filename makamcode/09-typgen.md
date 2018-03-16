@@ -1,4 +1,4 @@
-# Where our heroes implement type generalization, tying loose ends
+# Where our hero Roza implements type generalization, tying loose ends
 
 <!--
 ```makam
@@ -8,11 +8,14 @@ tests: testsuite. %testsuite tests.
 -->
 
 \begin{verse}
-``We mentioned Hindley-Milner / we don't want you to be sad \\
-This paper's going to end soon / and it wasn't all that bad \\
+``We mentioned Hindley-Milner / we don't want you to be sad. \\
+This paper's going to end soon / and it wasn't all that bad. \\
+\hspace{1em}\vspace{-0.5em} \\
+(Before we get to that though / it's time to get a break. \\
+If taksims seem monotonous / then put on some Nick Drake.) \\
 \hspace{1em}\vspace{-0.5em} \\
 We'll gather unif-variables / with structural recursion \\
-And if you haven't guessed it yet / we'll get to use reflection.''
+and if you haven't guessed it yet / we'll get to use reflection.''
 \end{verse}
 
 STUDENT. I have an idea for implementing type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}.
