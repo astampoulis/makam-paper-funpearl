@@ -286,8 +286,8 @@ through the substitution \(\sigma = [e^*_1, \text{...}, e^*_n]\).
 However, the terms \(e^*_1\) through \(e^*_n\) might mention the \(i\)
 index themselves, so we first need to apply the top-level substitution
 to \(\sigma\) itself! After that, we do replace the open variables in
-\(e\). Still, I feel that we are getting to the point where it's easier
-to write things down in Makam rather than on paper:
+\(e\). I feel that we are getting to the point where it's easier to
+write things down in Makam rather than on paper:
 
 \begin{verbatim}
 obj_openterm : bindmany stlc.term stlc.term \ensuremath{\to} object.
@@ -309,6 +309,8 @@ subst_obj_cases Var (obj_openterm Replace) (stlc.aqopen Var Subst) Result :-
   subst_obj_aux Var (obj_openterm Replace) Intermediate Result.
 \end{verbatim}
 
+\heroADVISOR{} I think that's all! This is exciting -- let me try it out:
+
 \begin{verbatim}
 (eq _TERM (letrec (bind (fun power \ensuremath{\Rightarrow} body ([
     lam onat (fun n \ensuremath{\Rightarrow}
@@ -327,8 +329,26 @@ subst_obj_cases Var (obj_openterm Replace) (stlc.aqopen Var Subst) Result :-
   typeof _TERM T, eval _TERM V) ?
 >> Yes:
 >> T := liftclass (cls_ctxtyp (cons stlc.onat nil) stlc.onat),
->> V := liftobj (obj_openterm (bind (fun x \ensuremath{\Rightarrow} body (stlc.mult x (stlc.mult x (stlc.osucc stlc.ozero)))))).
+>> V := liftobj (obj_openterm (bind (fun x \ensuremath{\Rightarrow} body (
+          stlc.mult x (stlc.mult x (stlc.osucc stlc.ozero)))))).
 \end{verbatim}
+
+\heroSTUDENT{} It works! That's it! I cannot believe how easy this was!
+
+\heroAUDIENCE{} We cannot possibly believe that you thought this was easy!
+
+\heroAUTHOR{} Trust me, you should have seen how many weeks it took to
+implement something like this in OCaml\ldots{}. it was enough to make me
+start working on Makam. That took a few years, but now we can at least
+show it in 27 pages of a single-column PDF!
+
+\heroADVISOR{} Where are all these voices coming from?
+
+\heroSTUDENT{} They sound like ghosts of people who left academia for
+industry.
+
+\heroTODO{}
+\textit{(Joke will be elided to avoid issues with double-blind submission.)}
 
 \input{generated/todo}
 
@@ -490,17 +510,3 @@ typeof (lamdep cext (fun t \ensuremath{\Rightarrow}
 \begin{scenecomment}
 (Our heroes try out a few more examples to convince themselves that this works.)
 \end{scenecomment}
-
-\heroSTUDENT{} That's it! That's it! I cannot believe how easy this was!
-
-\heroAUDIENCE{} Neither can we believe that you thought this was easy!
-
-\heroAUTHOR{} Trust me, you should have seen how many weeks it took me to
-implement something like this in OCaml\ldots{}. it was enough to make me
-start working on Makam. That took two years, but now we can at least
-show it in 24 pages of a single-column PDF!
-
-\heroADVISOR{} Where are all these voices coming from?
-
-\heroSTUDENT{}
-\textit{(Joke elided to avoid issues with double-blind submission.)}

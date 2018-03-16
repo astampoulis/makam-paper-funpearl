@@ -391,7 +391,7 @@ STUDENT. I've seen that rule for \rulename{SubstObj} before, and it is still tri
 to replace the open variables in $e$ through the substitution $\sigma = [e^*_1, \text{...}, e^*_n]$.
 However, the terms $e^*_1$ through $e^*_n$ might mention the $i$ index themselves, so we first
 need to apply the top-level substitution to $\sigma$ itself! After that, we do replace the open
-variables in $e$. Still, I feel that we are getting to the point where it's easier to write things
+variables in $e$. I feel that we are getting to the point where it's easier to write things
 down in Makam rather than on paper:
 
 ```makam
@@ -414,6 +414,31 @@ subst_obj_cases Var (obj_openterm Replace) (stlc.aqopen Var Subst) Result :-
   subst_obj_aux Var (obj_openterm Replace) Intermediate Result.
 ```
 
+ADVISOR. I think that's all! This is exciting -- let me try it out:
+
+```
+(eq _TERM (letrec (bind (fun power => body ([
+    lam onat (fun n =>
+    case_or_else n
+      (patt_ozero) (* |-> *)
+        (vbody (liftobj (obj_openterm (bind (fun x =>
+          body (stlc.osucc stlc.ozero))))))
+    (case_or_else n
+      (patt_osucc patt_var) (* |-> *) (vbind (fun n' => vbody (
+         letobj (app power n') (fun i =>
+         liftobj (obj_openterm (bind (fun x =>
+           body (stlc.mult x (stlc.aqopen i [x])))))))))
+      (liftobj (obj_openterm (bind (fun x => body stlc.ozero))))
+    )
+    )], app power (osucc (osucc ozero)))))),
+  typeof _TERM T, eval _TERM V) ?
+>> Yes:
+>> T := liftclass (cls_ctxtyp (cons stlc.onat nil) stlc.onat),
+>> V := liftobj (obj_openterm (bind (fun x => body (
+          stlc.mult x (stlc.mult x (stlc.osucc stlc.ozero)))))).
+```
+
+<!--
 ```makam
 (eq _TERM (letrec (bind (fun power => body ([
     lam onat (fun n =>
@@ -434,20 +459,21 @@ subst_obj_cases Var (obj_openterm Replace) (stlc.aqopen Var Subst) Result :-
 >> T := liftclass (cls_ctxtyp (cons stlc.onat nil) stlc.onat),
 >> V := liftobj (obj_openterm (bind (fun x => body (stlc.mult x (stlc.mult x (stlc.osucc stlc.ozero)))))).
 ```
+-->
 
+STUDENT. It works! That's it! I cannot believe how easy this was!
 
+AUDIENCE. We cannot possibly believe that you thought this was easy!
 
+AUTHOR. Trust me, you should have seen how many weeks it took to implement something
+like this in OCaml.... it was enough to make me start working on Makam. That took a few years,
+but now we can at least show it in 27 pages of a single-column PDF!
 
+ADVISOR. Where are all these voices coming from?
 
+STUDENT. They sound like ghosts of people who left academia for industry.
 
-
-
-
-
-
-
-
-
+TODO. \textit{(Joke will be elided to avoid issues with double-blind submission.)}
 
 
 
@@ -686,15 +712,3 @@ typeof (lamdep _ (fun t1 => (lamdep _ (fun t2 =>
 \begin{scenecomment}
 (Our heroes try out a few more examples to convince themselves that this works.)
 \end{scenecomment}
-
-STUDENT. That's it! That's it! I cannot believe how easy this was!
-
-AUDIENCE. Neither can we believe that you thought this was easy!
-
-AUTHOR. Trust me, you should have seen how many weeks it took me to implement something
-like this in OCaml.... it was enough to make me start working on Makam. That took two years,
-but now we can at least show it in 24 pages of a single-column PDF!
-
-ADVISOR. Where are all these voices coming from?
-
-STUDENT. \textit{(Joke elided to avoid issues with double-blind submission.)}
