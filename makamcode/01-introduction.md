@@ -13,7 +13,7 @@ weeks?
 ADVISOR. That sounds like a lot. Why don't you use some kind of metalanguage to implement
 the prototype?
 
-STUDENT. You mean a tool like Racket \citep{felleisen2009semantics}, PLT Redex \citep{tobin2011languages},
+STUDENT. You mean a tool like Racket \citep{racket-manifesto}, PLT Redex \citep{felleisen2009semantics},
 the K Framework \citep{rosu2010overview}, Spoofax \citep{kats2010spoofax}, or
 CRSX \citep{rose2011crsx}?
 
@@ -22,7 +22,7 @@ use higher-order logic programming... it's a formalism that is well-suited to wh
 since we will need all sorts of different binding constructs, and the type system we are thinking
 about is quite advanced.
 
-STUDENT. Oh, so you mean λProlog \citep{miller1988overview} or LF \citep{pfenning1999system}.
+STUDENT. Oh, so you mean λProlog \citep{miller1988overview} or LF \citep{lf-main-reference}.
 
 ADVISOR. Yes. Actually, a few years back a friend of mine worked on this new implementation of λProlog
 just for this purpose -- rapid prototyping of languages. It's called Makam. It should be

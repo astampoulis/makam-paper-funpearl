@@ -1,6 +1,6 @@
 # Where our heroes summarize what they've done and our story concludes before the credits start rolling
 
-STUDENT. I feel like we've done a lot here. And, some of the things we did I don't think
+STUDENT. I feel like we've done a lot here. And some of the things we did I don't think
 I've seen in the literature before, but then again, it's not clear to me what's
 Makam-specific and what isn't. In any case, I think a lot of people would find that
 quickly prototyping their PL research ideas using this style of higher-order logic
@@ -18,8 +18,7 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   made use of GADTs to encode some of these binding structures precisely, which we show are
   supported in \lamprolog through ad-hoc polymorphism.  This we believe is a novel usage for this
   \lamprolog feature. Our binding constructions should be replicable in the standard λProlog/Teyjus
-  implementation \citep{teyjus-main-reference}, though are not so in ELPI
-  \citep{elpi-main-reference}, as it lacks ad-hoc polymorphism.
+  implementation \citep{teyjus-main-reference} and in ELPI \citep{elpi-main-reference}.
 
 - We defined a generic predicate to perform structural recursion using a very concise
   definition. It allows us to define structurally recursive predicates that only explicitly
@@ -28,7 +27,7 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   not need any special provision to be covered by the same predicates. They depend on a
   number of reflective predicates, which are available in other Prolog dialects; however,
   we are not aware of a published example that makes use of them in the \lamprolog
-  setting. These predicates are used to reflect on the structure of Makam terms, and to
+  setting. These predicates are used to reflect on the structure of Makam terms and to
   get the list of local assumptions; for the most part, their use is limited to predicates
   that would be part of the standard library, not in user code.
 
@@ -37,7 +36,7 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   very few lines of code specific to it, using rules that we believe do not, presentation-wise, stray
   far from their pen-and-paper versions. Our development
   includes mutually recursive definitions, polymorphism, datatypes,
-  pattern-matching, a conversion rule, Hindley-Milner type generalization, and staging
+  pattern matching, a conversion rule, Hindley-Milner type generalization, and staging
   constructs that allow the computation of contextually typed open terms of the simply typed
   lambda calculus. We are not aware of another metalinguistic framework that allows this
   level of expressivity and has been used to encode such type-system features with the same
@@ -53,5 +52,3 @@ STUDENT. Well, that was very interesting; thank you for working with me on this!
 ADVISOR. I enjoyed this, too. Say, if you want to relax, there's a new staging of the classic play by \citet{fischer2010play} downtown -- I saw it yesterday, and it is really good!
 
 STUDENT. That's a great idea! You know, I wish there were more plays like it.... Well, good night, and see you on Monday!
-
-\input{generated/todo}

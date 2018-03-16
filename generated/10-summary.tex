@@ -2,7 +2,7 @@
 concludes before the credits start
 rolling}\label{where-our-heroes-summarize-what-theyve-done-and-our-story-concludes-before-the-credits-start-rolling}
 
-\heroSTUDENT{} I feel like we've done a lot here. And, some of the things we
+\heroSTUDENT{} I feel like we've done a lot here. And some of the things we
 did I don't think I've seen in the literature before, but then again,
 it's not clear to me what's Makam-specific and what isn't. In any case,
 I think a lot of people would find that quickly prototyping their PL
@@ -28,8 +28,8 @@ not-so-pleasant hacks. But let's make a list of what's what.
   supported in \lamprolog through ad-hoc polymorphism. This we believe
   is a novel usage for this \lamprolog feature. Our binding
   constructions should be replicable in the standard \foreignlanguage{greek}{λ}Prolog/Teyjus
-  implementation \citep{teyjus-main-reference}, though are not so in
-  ELPI \citep{elpi-main-reference}, as it lacks ad-hoc polymorphism.
+  implementation \citep{teyjus-main-reference} and in ELPI
+  \citep{elpi-main-reference}.
 \item
   We defined a generic predicate to perform structural recursion using a
   very concise definition. It allows us to define structurally recursive
@@ -41,7 +41,7 @@ not-so-pleasant hacks. But let's make a list of what's what.
   which are available in other Prolog dialects; however, we are not
   aware of a published example that makes use of them in the \lamprolog
    setting. These predicates are used to reflect on the structure of
-  Makam terms, and to get the list of local assumptions; for the most
+  Makam terms and to get the list of local assumptions; for the most
   part, their use is limited to predicates that would be part of the
   standard library, not in user code.
 \item
@@ -50,13 +50,13 @@ not-so-pleasant hacks. But let's make a list of what's what.
   checker for quite an advanced type system, in very few lines of code
   specific to it, using rules that we believe do not, presentation-wise,
   stray far from their pen-and-paper versions. Our development includes
-  mutually recursive definitions, polymorphism, datatypes,
-  pattern-matching, a conversion rule, Hindley-Milner type
-  generalization, and staging constructs that allow the computation of
-  contextually typed open terms of the simply typed lambda calculus. We
-  are not aware of another metalinguistic framework that allows this
-  level of expressivity and has been used to encode such type-system
-  features with the same level of concision.
+  mutually recursive definitions, polymorphism, datatypes, pattern
+  matching, a conversion rule, Hindley-Milner type generalization, and
+  staging constructs that allow the computation of contextually typed
+  open terms of the simply typed lambda calculus. We are not aware of
+  another metalinguistic framework that allows this level of
+  expressivity and has been used to encode such type-system features
+  with the same level of concision.
 \item
   We have also shown that higher-order logic programming allows not just
   meta-level functions to be reused for encoding object-level binding;
@@ -74,5 +74,3 @@ it yesterday, and it is really good!
 
 \heroSTUDENT{} That's a great idea! You know, I wish there were more plays
 like it\ldots{}. Well, good night, and see you on Monday!
-
-\input{generated/todo}

@@ -135,7 +135,9 @@ assumemany P (X :: XS) (T :: TS) Q :- (P X T \ensuremath{\to} assumemany P XS TS
 \heroADVISOR{} Yes, exactly! Just a note, though -- \lamprolog typically does
 not allow the definition of \texttt{assumemany}, where a non-concrete
 predicate like \texttt{P\ X\ Y} is used as an assumption, because of
-logical reasons. Makam is more lax, and so is ELPI, another recent
+logical
+reasons\footnote{See \citet{assumemany-issue} for a discussion of the issue.}.
+Makam is more lax, and so is ELPI, another recent
 \lamprolog implementation, and allows this form statically, though there
 are instantiations of \texttt{P} that will fail at run-time.
 

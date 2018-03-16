@@ -8,14 +8,14 @@ tests: testsuite. %testsuite tests.
 -->
 
 \begin{scenecomment}
-(Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes used in traditional Arabic and Turkish music and in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing lyrics from the folk songs of her land, and Hagop is playing the oud. Their friend Lambros from next door joins them on the kemen\c{c}e.)
+(Our heroes need a small break, so they work on a couple of features while improvising on a makam\footnote{Makam is the system of melodic modes of traditional Arabic and Turkish music, and also used in the Greek rembetiko, comprised of a set of scales, patterns of melodic development, and rules for improvisation.}. Roza is singing lyrics from the folk songs of her land, and Hagop is playing the oud. Their friend Lambros from the next office over joins them on the kemen\c{c}e.)
 \end{scenecomment}
 
 \begin{versy}
 ``You can skim this chapter / or skip it all the same. \\
 It's mostly for completeness / since ML as a name \\
 suggests some datatypes / and polymorphism too. \\
-
+\hspace{1em} \vspace{-0.5em} \\
 System F is easy, / later we might do \\
 type generalizing / like Hindley-Milner too \\
 but if you're feeling tired / I told you just before \\

@@ -27,7 +27,7 @@ for now, and I can do the rest on my own.
 
 ADVISOR. Sounds good. First, let's agree on some terminology, because a lot of words are getting
 overloaded a lot. Let us call *objects* $o$ any sorts of terms of the object language that we will
-be manipulating.  And, for a lack of a better word, let us call *classes* $c$ the "types" that
+be manipulating.  And, for lack of a better word, let us call *classes* $c$ the "types" that
 characterize those objects through a typing relation of the form $\Psi \odash o : c$. It is
 unfortunate that these names suggest object-orientation, but this is not the intent.
 
@@ -57,13 +57,13 @@ let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
 
 ADVISOR. It's a plan. So, let's get to it. Should we write some of the system down on paper first?
 
-STUDENT. Yes, that would be very useful. For this example, we will need the lifting construct $\lift{\cdot}$ and the
-`letobj` typing rules. Here are their typing
+STUDENT. Yes, that would be very useful. For this example, we will need a lifting construct $\lift{\cdot}$ and the
+`letobj` form. Here are their typing
 rules, which depend on an appropriately defined typing judgment $\Psi \odash o : c$ for objects. In
-our case, this will initially match the $\Psi; \Delta \vdash t : e$ typing judgment for STLC. We
+our case, this will initially match the $\Delta \vdash \hat{t} : \hat{e}$ typing judgment for STLC (I'll use hats for terms of STLC, to disambiguate them from terms of HMML). We
 use $\dep{i}$ for variables standing for objects, which we will call *indices*. And we will need
 a way to antiquote indices inside STLC terms, which means that we will have to *extend* the STLC terms as well as their
-typing judgment accordingly. Last, I'll also write down their evaluation rules, as they are quite simple.
+typing judgment accordingly. We store indices in the $\Psi$ context, so the STLC typing judgment will end up having the form $\Psi; \Delta \vdash t : e$. Last, I'll also write down the evaluation rules of the new constructs, as they are quite simple.
 
 \newcommand\stlce[0]{\hat{e}}
 \newcommand\stlct[0]{\hat{t}}
@@ -82,7 +82,7 @@ typing judgment accordingly. Last, I'll also write down their evaluation rules, 
           {\Gamma; \dep{\Psi} \vdash \lift{\dep{o}} : \lift{\dep{c}}}
 
 \inferrule[Typeof-LetObj]
-          {\Gamma; \dep{\Psi} \vdash e : \lift{\dep{c}} \\ \Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e : \tau \\ i \not\in \text{fv}(\tau)}
+          {\Gamma; \dep{\Psi} \vdash e : \lift{\dep{c}} \\ \Gamma; \dep{\Psi}, \; \dep{i} : \dep{c} \vdash e' : \tau \\ i \not\in \text{fv}(\tau)}
           {\Gamma; \dep{\Psi} \vdash \texttt{letobj} \; \dep{i} = e \; \texttt{in} \; e' : \tau}
 
 \inferrule[STLC-Typeof-Antiquote]
@@ -107,7 +107,7 @@ The typing rules should be quite simple to transcribe to Makam:
 object, class, index : type.
 classof : object -> class -> prop.
 classof_index : index -> class -> prop.
-subst_obj : (I_E: index -> term) (O: object) (E_O'I: term) -> prop.
+subst_obj : (I_E: index -> term) (O: object) (E_OforI: term) -> prop.
 
 liftobj : object -> term. liftclass : class -> typ.
 typeof (liftobj O) (liftclass C) :- classof O C.
@@ -189,7 +189,7 @@ aq : index -> term.
 ```
 -->
 
-STUDENT. Time to add STLC terms as `object`s, and their types as `class`es. We can
+STUDENT. Time to add STLC terms as `object`s and their types as `class`es. We can
 then give the corresponding rule for `classof`. And I think that's it for the typing rules!
 
 ```makam
@@ -200,10 +200,7 @@ stlc.typeof (stlc.aq I) T :- classof_index I (cls_typ T).
 
 \begin{scenecomment}
 (Hagop transcribes the example from before. Writing out the term takes several lines, so he finds himself
-wishing that Makam supported some way to write terms of object languages in their native syntax;
-quite curiously, he also finds himself wishing that he had a stack of blank pages.
-Unbeknownst to him, his first wish has already been granted, but his second wish hasn't, so he
-will have to learn about it at some later time in the future.)
+wishing that Makam supported some way to write terms of object languages in their native syntax.)
 \end{scenecomment}
 
 ```
@@ -247,19 +244,19 @@ typeof (letrec
 ```
 -->
 
-ADVISOR. That's great! Only thing missing to try out an evaluation example too is implementing `subst_obj`. Thanks to `structural_recursion` though, that is very easy:
+ADVISOR. That's great! The only thing missing to try out an evaluation example too is implementing `subst_obj`. Thanks to `structural_recursion` though, that is very easy:
 
 ```makam
 subst_obj_aux, subst_obj_cases : [Any]
-  (Var: index) (Replace: object) (Where: Any) (Result: Any) -> prop.
-subst_obj I_Term O Term_O'I :-
-  (i:index -> subst_obj_aux i O (I_Term i) Term_O'I).
+  (Var: index) (Replacement: object) (Where: Any) (Result: Any) -> prop.
+subst_obj I_Term O Term_OforI :-
+  (i:index -> subst_obj_aux i O (I_Term i) Term_OforI).
 
-subst_obj_aux Var Replace Where Result :-
-  if (subst_obj_cases Var Replace Where Result)
+subst_obj_aux Var Replacement Where Result :-
+  if (subst_obj_cases Var Replacement Where Result)
   then success
-  else (structural_recursion @(subst_obj_aux Var Replace) Where Result).
-subst_obj_cases Var (obj_term Replace) (stlc.aq Var) Replace.
+  else (structural_recursion @(subst_obj_aux Var Replacement) Where Result).
+subst_obj_cases Var (obj_term Replacement) (stlc.aq Var) Replace.
 ```
 
 \noindent
@@ -268,16 +265,16 @@ My definition here is quite subtle, so let me walk you through it. First, we ext
 We set up the structural recursion, by attempting to see whether the "essential" cases
 actually apply -- those are captured in the `subst_obj_cases` predicate. If they don't,
 that means we should proceed by structural recursion. I did not mention it before, but
-the `@` notation that we used to treat a polymorphic constant as a term of type `forall A T`,
+the `@` notation that we used to treat a polymorphic constant as a term of type `forall A T`
 can be used with an arbitrary term as well, to assign it such a type if possible.
 Finally, the essential case itself is a direct transcription of the pen-and-paper version.
 
-STUDENT. Let me go and re-read that a little. (...) I think it makes sense now. Well, is that all?
+STUDENT. Let me go and reread that a little. (...) I think it makes sense now. Well, is that all?
 Are we done?
 
 ```
-eval (letrec (bind (fun power => body ([ ..long term.. ],
-        app power (osucc (osucc ozero)))))) V ?
+eval (letrec (bind (fun power => body ([ (* .. definition of power *) ],
+        (* body of letrec: *) app power (osucc (osucc ozero)))))) V ?
 >> Yes!!!
 >> V := < obj_term (λx.x * ((λa.a * (λb.1) a) x)) >.
 ```
@@ -325,7 +322,7 @@ eval (letrec
 -->
 
 ADVISOR. See, even the Makam REPL is excited\footnote{We have taken the liberty here to transcribe the result to more meaningful syntax to make it easier to verify.}! That looks correct, even though there are a lot
-of administrative redeces. We should be able to fix that with the next kind of object in our check-list though: open STLC terms! That way, instead of having `power` return an object containing a lambda function, it can return an
+of administrative redices. We should be able to fix that with the next kind of object in our check-list, though: open STLC terms! That way, instead of having `power` return an object containing a lambda function, it can return an
 open term. Here's how I would write the same example from before:
 
 ```
@@ -341,7 +338,7 @@ We have to list out explicitly the variables that an open term depends on, so th
 `[x].` notation I use. Then, we can use contextual types \citep{nanevski2008contextual} for the type of those open terms.
 
 STUDENT. Good thing I've already printed the paper out. (...) OK, so it says here that we can use
-contextual types to record, at the type level, the context that open terms depend on. So let's say,
+contextual types to record, at the type level, the context that open terms depend on. So let's say
 an open `stlc.term` of type $t$ that mentions variables of a $\Phi$ context would have a contextual
 type of the form $[\Phi] t$. This is some sort of modal typing, with a precise context.
 
@@ -354,7 +351,7 @@ this is easier to implement in Makam than to talk about.
 
 ADVISOR. Maybe so. Well, let me just say this: those variables will stand for open terms that depend
 on a specific context $\Phi$, but we might use them at a different context $\Phi'$. We need a
-*substitution* $\sigma$ to go from the context they were defined into the current context.
+*substitution* $\sigma$ to go from the context of definition into the current context.
 I think writing down the rules on paper will help:
 
 \begin{mathpar}
@@ -383,7 +380,7 @@ I think writing down the rules on paper will help:
 STUDENT. I've seen that rule for \rulename{SubstObj} before, and it is still tricky... We need
 to replace the open variables in $e$ through the substitution $\sigma = [\stlce^*_1, \text{...}, \stlce^*_n]$.
 However, the terms $\stlce^*_1$ through $\stlce^*_n$ might mention the $i$ index themselves, so we first
-need to apply the top level substitution to $\sigma$ itself! After that, we do replace the open
+need to apply the top-level substitution to $\sigma$ itself! After that, we do replace the open
 variables in $\stlce$.
 
 ADVISOR. I feel that we are getting to the point where it's easier to write things
@@ -414,18 +411,17 @@ STUDENT. I think that's all! This is exciting -- let me try it out:
 
 ```
 (eq _TERM (letrec (bind (fun power => body ([
-    lam onat (fun n =>
-    case_or_else n
-      (patt_ozero) (* |-> *)
-        (vbody (liftobj (obj_openterm (bind (fun x =>
-          body (stlc.osucc stlc.ozero))))))
-    (case_or_else n
-      (patt_osucc patt_var) (* |-> *) (vbind (fun n' => vbody (
-         letobj (app power n') (fun i =>
-         liftobj (obj_openterm (bind (fun x =>
-           body (stlc.mult x (stlc.aqopen i [x])))))))))
-      (liftobj (obj_openterm (bind (fun x => body stlc.ozero))))
-    ))], app power (osucc (osucc ozero)))))),
+   lam onat (fun n =>
+   case_or_else n (patt_ozero)
+     (vbody (liftobj (obj_openterm (bind (fun x =>
+       body (stlc.osucc stlc.ozero))))))
+   (case_or_else n (patt_osucc patt_var)
+     (vbind (fun n' => vbody (
+       letobj (app power n') (fun i =>
+       liftobj (obj_openterm (bind (fun x =>
+         body (stlc.mult x (stlc.aqopen i [x])))))))))
+   (liftobj (obj_openterm (bind (fun x => body stlc.ozero))))
+   ))], app power (osucc (osucc ozero)))))),
   typeof _TERM T, eval _TERM V) ?
 >> Yes:
 >> T := liftclass (cls_ctxtyp (cons stlc.onat nil) stlc.onat),
@@ -462,7 +458,7 @@ It works! That's it! I cannot believe how easy this was!
 AUDIENCE. We cannot possibly believe that you are claiming this was easy!
 
 AUTHOR. Still, try implementing something like this without a metalanguage...  It takes a long time!
-As a result, it limits our ability to experiment with and iterate on new language design
+As a result, it limits our ability to experiment with and iterate on new language-design
 ideas. That's why I started working on Makam. That took a few years, but now we can at least show
 a type system like this in 27 pages of a single-column PDF!
 

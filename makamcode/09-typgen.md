@@ -11,7 +11,7 @@ tests: testsuite. %testsuite tests.
 ``We mentioned Hindley-Milner / we don't want you to be sad. \\
 This paper's going to end soon / and it wasn't all that bad. \\
 \hspace{1em}\vspace{-0.5em} \\
-(Before we get to that though / it's time to get a break. \\
+(Before we get to that, though / it's time to take a break. \\
 If taksims seem monotonous / then put on some Nick Drake.) \\
 \hspace{1em}\vspace{-0.5em} \\
 We'll gather unif-variables / with structural recursion \\
@@ -19,12 +19,12 @@ and if you haven't guessed it yet / we'll get to use reflection.''
 \end{verse}
 
 ADVISOR. Let me now show you how to implement type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}. I've done this before, and I need to leave for home soon, so bear with me
-for a bit. The gist of this will be to reuse the unification support of our metalanguage,
+for a bit. The gist will be to reuse the unification support of our metalanguage,
 capturing the *metalevel unification variables* and generalizing over them. That way we will
-have a very short implementation and we won't have to do a deep embedding of unification!
+have a very short implementation, and we won't have to do a deep embedding of unification!
 
 STUDENT. So -- you're saying that in \lamprolog, other than reusing the metalevel function type
-for implementing object level substitution, we can also reuse metalevel unification for the
+for implementing object-level substitution, we can also reuse metalevel unification for the
 object level as well.
 
 \identNormal
@@ -36,7 +36,7 @@ ADVISOR. Exactly! First of all, the typing rule for a generalizing let looks lik
 \inferrule{\Gamma \vdash e : \tau \\ \vec{a} = \text{fv}(\tau) - \text{fv}(\Gamma) \\ \Gamma, x : \forall \vec{a}.\tau \vdash e' : \tau'}{\Gamma \vdash \text{let} \; x = e \; \text{in} \; e' : \tau'}
 \end{mathpar}
 
-We don't have any side-effectful operations, so, there is no need for a value
+We don't have any side-effectful operations, so there is no need for a value
 restriction. Transcribing this to Makam is easy, if we assume a predicate for
 generalizing the type, for now:
 
@@ -49,7 +49,7 @@ typeof (let E F) T' :-
 
 Now, for generalization itself, we need the following ingredients based on the typing rule:
 
-- something that picks out free variables from a type, standing for the $\text{fv}(\tau)$ part -- or, in our setting, this should really be read as uninstantiated unification variables. Those are the Makam-level unification variables that have not been forced to unify with a concrete type because of the rest of the typing rules.
+- something that picks out free variables from a type, standing for the $\text{fv}(\tau)$ part -- or, in our setting, this should really be read as uninstantiated unification variables. Those are the Makam-level unification variables that have not been forced to unify with concrete types because of the rest of the typing rules.
 - something that picks out free variables from the local context: the $\text{fv}(\Gamma)$ part. Again, these are the uninstantiated unification variables rather than the free variables. In our case, the context $\Gamma$ is represented by the local `typeof` assumptions that our typing rules add, so we'll have to look at those somehow.
 - a way to turn something that includes unification variables into a $\forall$ type, corresponding to the $\forall \vec{a}.\tau$ part. This essentially abstracts over a number of variables and uses them as the replacement for the ones inside $\tau$.
 
@@ -59,7 +59,7 @@ generalize over one variable at a time, instead of all at once -- but that shoul
 equivalent to what's described in the typing rule.
 
 First, we will define a `findunif` predicate that returns *one* unification variable *of the right
-type* from a term, if at least one such variable exists. To implement this, we will make use of a
+type* from a term, if at least one such variable exists. To implement it, we will make use of a
 generic operation in the Makam standard library, called `generic_fold`. It is quite similar to
 `structural_recursion`, but it does a fold through a term, carrying an accumulator through. Pretty
 standard, really, and its code is similar to what we did already for `structural_recursion`, with no
@@ -96,8 +96,10 @@ findunif Search Found :- findunif_aux none Search (some Found).
 Here, the second rule of `findunif_aux` is the important one -- it will only match when we
 encounter a unification variable of the same type as the one we require. So this rule uses
 the dynamic `typecase` aspect of the ad-hoc polymorphism in \lamprolog.
-With this, we should be already able to find *one* (as opposed to all, as described above)
-uninstantiated unification variable from a type. Here is an example of its use:
+With this, we should already be able to find *one* (as opposed to all, as described above)
+uninstantiated unification variable from a type. 
+
+TODO. \todo{Fix this and add an example.}
 
 Now we add a predicate `replaceunif` that, given a specific unification variable and a
 specific term, replaces its occurrences with the term. This will be needed as part of the
@@ -139,7 +141,7 @@ For the recursive case, we will pick out the first unification variable that we 
 `findunif`. We will generalize over it using `replaceunif` and then proceed to the rest.  Still,
 there is a last hurdle: we have to skip over the unification variables that are in the $\Gamma$
 environment. For the time being, let's assume a predicate that gives us all the types in the
-environment, and write the recursive case down:
+environment, so we can write the recursive case down:
 
 ```makam
 get_types_in_environment : [A] A -> prop.
@@ -165,7 +167,7 @@ much magic to it. And those assumptions will include just the types in $\Gamma$.
 
 ```makam
 get_types_in_environment Assumptions :-
-  refl.assume_get (typeof : term -> typ -> prop) Assumptions.
+  refl.assume_get typeof Assumptions.
 ```
 
 STUDENT. Wait. It can't be.
