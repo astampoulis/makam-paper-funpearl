@@ -220,6 +220,7 @@ hmap P hnil hnil.
 hmap P (hcons X XS) (hcons Y YS) :- apply P X Y, hmap P XS YS.
 ```
 
+\noindent
 As I mentioned before, the rank-2 polymorphism support in Makam is quite limited, so you have to use `apply` explicitly to instantiate the polymorphic `P` predicate accordingly and apply it.
 
 STUDENT. Let me try out an example of that:
@@ -229,6 +230,7 @@ hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
 >> YS := hcons 1 (hcons "foo" hnil).
 ```
 
+\noindent
 Looks good enough. So, going back to our generic rule -- is there a way to actually write it? Maybe there's a reflective predicate we can use, similar to how we used `refl.isunif` before to tell if a term is an uninstantiated unification variable?
 
 <!--
@@ -253,7 +255,7 @@ headargs Term Head Arguments when not(refl.isunif Head) :-
 ```
 -->
 
-ADVISOR. Exactly -- there is `refl.headargs`. It relates a concrete term to its decomposition into a constructor and a list of arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `\texttt{compound\_{}name\_{}arguments}', which is quite similar.}. This is not an extra-logical feature, though: we could define `refl.headargs` without any special support, save for `refl.isunif`, if we maintained a discipline whenever we add a new constructor, roughly like this:
+ADVISOR. Exactly -- there is `refl.headargs`. It relates a concrete term to its decomposition into a constructor and a list of arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `\texttt{compound\_{}name\_{}arguments}', which is quite similar.}. This does not need an extra-logical feature save for `refl.isunif`, though: we could define `refl.headargs` without any special support, if we maintained a discipline whenever we add a new constructor, roughly like this:
 
 ```
 refl.headargs : (Term: TermT) (Constr: ConstrT) (Args: hlist ArgsTS) -> prop.
@@ -292,7 +294,7 @@ structural_recursion Rec X Y :-
 
 ADVISOR. Nice. Now, this assumes that `X` and `Y` are both concrete terms. What happens when `X` is concrete and `Y` isn't, or the other way around? Hint: you can use `refl.headargs` in the other direction, to reconstruct a term from a constructor and a list of arguments.
 
-STUDENT. How about this? This way, we will deconstruct the concrete `X`, perform the transformation on the `Arguments`, and then reapply the `Constructor` to get the result for `Y`.
+STUDENT. How about this? This way, we will decocompose the concrete `X`, perform the transformation on the `Arguments`, and then reapply the `Constructor` to get the result for `Y`.
 
 ```makam
 structural_recursion Rec X Y :-
@@ -305,7 +307,8 @@ ADVISOR. That is exactly right. You need the symmetric case too but that's entir
 
 ```makam
 structural_recursion Rec (X : A -> B) (Y : A -> B) :-
-  (x:A -> structural_recursion Rec x x -> structural_recursion Rec (X x) (Y x)).
+  (x:A -> structural_recursion Rec x x ->
+    structural_recursion Rec (X x) (Y x)).
 ```
 
 STUDENT. Ah, I see! Here you *are* actually relying on the `typecase` aspect of ad-hoc polymorphism, right? To check if `X` and `Y` are of the meta-level function type.
@@ -318,7 +321,7 @@ STUDENT. That's right: we do not need to do anything special for the binding for
 ADVISOR. You are correct, it would fail in that case. But in my experience, it's better to define how to handle unification variables as needed, in each new structurally recursive predicate. In this case, we should never get into that situation based on how we have defined `typeq`.
 
 \begin{scenecomment}
-(Our heroes try out a few examples and convince themselves that this works OK and no endless loops happen when things don't typecheck correctly.)
+(Roza and Hagop try out a few examples and convince themselves that this works OK and no endless loops happen when things don't typecheck correctly.)
 \end{scenecomment}
 
 <!--

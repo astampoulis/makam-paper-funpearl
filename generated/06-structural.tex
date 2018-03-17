@@ -254,6 +254,7 @@ hmap P hnil hnil.
 hmap P (hcons X XS) (hcons Y YS) \ensuremath{:\!-} apply P X Y, hmap P XS YS.
 \end{verbatim}
 
+\noindent
 As I mentioned before, the rank-2 polymorphism support in Makam is quite
 limited, so you have to use \texttt{apply} explicitly to instantiate the
 polymorphic \texttt{P} predicate accordingly and apply it.
@@ -266,6 +267,7 @@ hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
 >> YS := hcons 1 (hcons "foo" hnil).
 \end{verbatim}
 
+\noindent
 Looks good enough. So, going back to our generic rule -- is there a way
 to actually write it? Maybe there's a reflective predicate we can use,
 similar to how we used \texttt{refl.isunif} before to tell if a term is
@@ -274,10 +276,10 @@ an uninstantiated unification variable?
 \heroADVISOR{} Exactly -- there is \texttt{refl.headargs}. It relates a
 concrete term to its decomposition into a constructor and a list of
 arguments\footnote{Other versions of Prolog have predicates toward the same effect; for example, SWI-Prolog \citep{wielemaker2012swi} provides `\texttt{compound\_{}name\_{}arguments}', which is quite similar.}.
-This is not an extra-logical feature, though: we could define
-\texttt{refl.headargs} without any special support, save for
-\texttt{refl.isunif}, if we maintained a discipline whenever we add a
-new constructor, roughly like this:
+This does not need an extra-logical feature save for
+\texttt{refl.isunif}, though: we could define \texttt{refl.headargs}
+without any special support, if we maintained a discipline whenever we
+add a new constructor, roughly like this:
 
 \begin{verbatim}
 refl.headargs : (Term: TermT) (Constr: ConstrT) (Args: hlist ArgsTS) \ensuremath{\to} prop.
@@ -327,7 +329,7 @@ isn't, or the other way around? Hint: you can use \texttt{refl.headargs}
 in the other direction, to reconstruct a term from a constructor and a
 list of arguments.
 
-\heroSTUDENT{} How about this? This way, we will deconstruct the concrete
+\heroSTUDENT{} How about this? This way, we will decocompose the concrete
 \texttt{X}, perform the transformation on the \texttt{Arguments}, and
 then reapply the \texttt{Constructor} to get the result for \texttt{Y}.
 
@@ -346,7 +348,8 @@ have to treat them specially:
 
 \begin{verbatim}
 structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) \ensuremath{:\!-}
-  (x:A \ensuremath{\to} structural_recursion Rec x x \ensuremath{\to} structural_recursion Rec (X x) (Y x)).
+  (x:A \ensuremath{\to} structural_recursion Rec x x \ensuremath{\to}
+    structural_recursion Rec (X x) (Y x)).
 \end{verbatim}
 
 \heroSTUDENT{} Ah, I see! Here you \emph{are} actually relying on the
@@ -371,5 +374,5 @@ should never get into that situation based on how we have defined
 \texttt{typeq}.
 
 \begin{scenecomment}
-(Our heroes try out a few examples and convince themselves that this works OK and no endless loops happen when things don't typecheck correctly.)
+(Roza and Hagop try out a few examples and convince themselves that this works OK and no endless loops happen when things don't typecheck correctly.)
 \end{scenecomment}
