@@ -1,4 +1,4 @@
-%use "03-bindmany".
+%use "04-bindmany".
 tests: testsuite. %testsuite tests.
 
 zero : type. succ : type -> type.

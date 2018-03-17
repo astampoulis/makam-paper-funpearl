@@ -1,4 +1,4 @@
-%use "04-gadts".
+%use "05-gadts".
 tests: testsuite. %testsuite tests.
 
 onat : typ. ozero : term. osucc : term -> term.

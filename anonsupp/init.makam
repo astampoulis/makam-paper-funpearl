@@ -1,3 +1,3 @@
-print_string "\n\n\n----------------------\n Welcome to Makam. \n Available files, corresponding to each chapter: \n\n    02-stlc \n    03-bindmany \n    04-gadts \n    05-miniml \n    06-synonyms \n    07-metaml \n    08-typgen \n To load one of the files, do: '%use \"02-stlc.md\".' \n To re-load a file after you've made changes, do: '%usenew \"02-stlc.md\".' \n Enjoy!\n" ?
+print_string "\n\n\n----------------------\n Welcome to Makam. \n Available files, corresponding to each chapter: \n\n    03-stlc \n    04-bindmany \n    05-gadts \n    06-patterns \n    07-structural \n    08-miniml \n    09-metaml \n    10-typgen \n To load one of the files, do: '%use \"03-stlc.md\".' \n To re-load a file after you've made changes, do: '%usenew \"03-stlc.md\".' \n Enjoy!\n" ?
 
 %directory "literate".

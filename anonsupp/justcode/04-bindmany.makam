@@ -1,4 +1,4 @@
-%use "02-stlc".
+%use "03-stlc".
 tests : testsuite. %testsuite tests.
 
 bindmany : type -> type -> type.

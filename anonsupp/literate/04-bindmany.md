@@ -2,7 +2,7 @@
 
 <!--
 ```makam
-%use "02-stlc.md".
+%use "03-stlc.md".
 tests : testsuite. %testsuite tests.
 ```
 -->

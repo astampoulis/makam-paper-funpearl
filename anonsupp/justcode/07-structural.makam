@@ -1,4 +1,4 @@
-%use "05-patterns".
+%use "06-patterns".
 tests: testsuite. %testsuite tests.
 
 typedef : (NewType: typ) (Definition: typ) -> prop.

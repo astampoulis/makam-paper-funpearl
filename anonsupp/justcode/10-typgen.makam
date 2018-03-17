@@ -1,4 +1,4 @@
-%use "07-miniml".
+%use "08-miniml".
 tests: testsuite. %testsuite tests.
 
 generalize : (Type: typ) (GeneralizedType: typ) -> prop.
