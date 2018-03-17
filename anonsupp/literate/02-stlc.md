@@ -1,4 +1,4 @@
-# Where our heroes get the easy stuff out of the way
+# In which our heroes get the easy stuff out of the way
 
 <!--
 ```makam
@@ -28,11 +28,12 @@ arrow : typ -> typ -> typ.
 
 STUDENT. So we add constructors to a type at any point; we do not list them out when we
 define it like in Haskell. But how about lambdas? I have heard that λProlog supports
-higher-order abstract syntax, which should make those really easy to add, too, right?
+higher-order abstract syntax \citep{hoas-standard-reference}, which should make those really easy to add, too, right?
 
-ADVISOR. Yes, functions at the meta-level are parametric, so they correspond exactly to
-single variable binding -- they cannot perform any computation, and thus we do not have to
-worry about exotic terms. So this works fine for Church-style lambdas:
+ADVISOR. Yes, functions at the meta level are parametric, so they correspond exactly to
+single-variable binding -- they cannot perform any computation such as pattern matching
+on their argument and thus we do not have to worry about exotic terms. So this works fine for
+Church-style lambdas:
 
 ```makam
 lam : typ -> (term -> term) -> term.
@@ -60,22 +61,22 @@ ADVISOR. Yes! That's exactly right. Makam uses capital letters for unification v
 STUDENT. I will need help with the lambda typing rule, though. What's the equivalent of
 extending the context as in $\Gamma, \; x : \tau$ ?
 
-ADVISOR. Simple; we introduce a fresh constructor for terms and a new typing rule for it:
+ADVISOR. Simple: we introduce a fresh constructor for terms and a new typing rule for it:
 
 ```makam
 typeof (lam T1 E) (arrow T1 T2) :- (x:term -> typeof x T1 -> typeof (E x) T2).
 ```
 
-STUDENT. Hmm, so `x:term ->` introduces the fresh constructor standing for the new
-variable, and `typeof x T1 ->` introduces the new assumption? Oh, and we need to get to
+STUDENT. Hmm, so '`x:term ->`' introduces the fresh constructor standing for the new
+variable, and '`typeof x T1 ->`' introduces the new assumption? Oh, and we need to get to
 the body of the lambda function in order to type-check it, so that's why you do `E x`.
 
 ADVISOR. Yes. Note that the introductions are locally scoped, so they are only in effect
-for the recursive call.
+for the recursive call '`typeof (E x) T2`'.
 
-STUDENT. Makes sense. So do we have a type checker already? Can we run queries?
+STUDENT. Makes sense. So do we have a type checker already?
 
-ADVISOR. We do! Observe:
+ADVISOR. We do! Queries of the `typeof` predicate can be used to type check terms. Observe:
 
 ```makam
 typeof (lam _ (fun x => x)) T ?
@@ -83,10 +84,10 @@ typeof (lam _ (fun x => x)) T ?
 >> T := arrow T1 T1.
 ```
 
-STUDENT. Cool! So underscores for unification variables we don't care about and `?` for
-queries. But wait, last time I implemented unification in my toy STLC implementation it
-was easy to make it go into an infinite loop with $\lambda x. x x$. How does that work
-here?
+STUDENT. Cool! So `fun` for metalevel functions, underscores for unification variables we don't care
+about, and `?` for queries. But wait, last time I implemented unification in my toy STLC
+implementation it was easy to make it go into an infinite loop with $\lambda x. x x$. How does that
+work here?
 
 ADVISOR. Well, you were missing the occurs-check. λProlog unification includes it:
 
@@ -103,7 +104,8 @@ are defined in the standard library:
 
 ```makam-noeval
 list : type -> type.
-nil : list A. cons : A -> list A -> list A.
+nil : list A.
+cons : A -> list A -> list A.
 
 map : (A -> B -> prop) -> list A -> list B -> prop.
 map P nil nil.
@@ -114,18 +116,19 @@ STUDENT. Nice! I guess that's why you wanted to go with λProlog for doing this 
 LF, since you cannot use polymorphism there?
 
 ADVISOR. Indeed. We will see, once we figure out what our language should be, one thing we
-could do is transcribe our definitions to LF, and then we could even use Beluga
+could do is monomorphize our definitions to LF, and then we could even use Beluga
 \citep{beluga-main-reference} to do all of our metatheoretic proofs. Or maybe we could
 use Abella \citep{abella-main-reference} directly.
 
 STUDENT. Sounds good. So, for tuples, this should work:
 
 ```makam
-tuple : list term -> term. product : list typ -> typ.
+tuple : list term -> term.
+product : list typ -> typ.
 typeof (tuple ES) (product TS) :- map typeof ES TS.
 ```
 
-ADVISOR. Yes, and we can use syntactic sugar for `cons` and `nil` too:
+ADVISOR. Yes, and there is syntactic sugar for `cons` and `nil` too:
 
 ```makam
 typeof (lam _ (fun x => lam _ (fun y => tuple [x, y]))) T ?

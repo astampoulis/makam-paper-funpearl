@@ -21,7 +21,8 @@ typeof (lam _ (fun x => x)) T ?
 typeof (lam _ (fun x => app x x)) T' ?
 >> Impossible.
 
-tuple : list term -> term. product : list typ -> typ.
+tuple : list term -> term.
+product : list typ -> typ.
 typeof (tuple ES) (product TS) :- map typeof ES TS.
 
 typeof (lam _ (fun x => lam _ (fun y => tuple [x, y]))) T ?

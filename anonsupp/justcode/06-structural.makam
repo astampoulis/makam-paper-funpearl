@@ -1,0 +1,107 @@
+%use "05-patterns".
+tests: testsuite. %testsuite tests.
+
+typedef : (NewType: typ) (Definition: typ) -> prop.
+
+program : type. 
+main : term -> program. 
+lettype : (Definition: typ) (A_Program: typ -> program) -> program.
+
+wfprogram : program -> prop.
+wfprogram (main E) :- typeof E T.
+wfprogram (lettype T A_Program) :-
+  (a:typ -> typedef a T -> wfprogram (A_Program a)).
+
+typeq : [Any] (T1: Any) (T2: Any) -> prop.
+
+typeof E T :- not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
+
+typeof_patt (P : patt A B) T S S' :-
+  not(refl.isunif T),
+  typeof_patt P T' S S',
+  typeq T T', not(eq T T').
+
+structural_recursion : [B] forall A (A -> A -> prop) -> B -> B -> prop.
+
+typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq T T' :- structural_recursion @typeq T T'.
+
+typenil : type. typecons : (T: type) (TS: type) -> type.
+hlist : (TypeList: type) -> type.
+hnil : hlist typenil. hcons : T -> hlist TS -> hlist (typecons T TS).
+
+hmap : [TS] (P: forall A (A -> A -> prop)) (XS: hlist TS) (YS: hlist TS) -> prop.
+hmap P hnil hnil.
+hmap P (hcons X XS) (hcons Y YS) :- apply P X Y, hmap P XS YS.
+
+hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
+>> Yes:
+>> YS := hcons 1 (hcons "foo" hnil).
+
+%extend refl.
+
+dyn_to_hlist : [T] list dyn -> hlist T -> prop.
+dyn_to_hlist [] hnil.
+dyn_to_hlist (dyn HD :: TL) (hcons HD TL') :- dyn_to_hlist TL TL'.
+
+headargs : (Term: A) (Head: B) (Arguments: hlist T) -> prop.
+headargs Term Head Arguments when refl.isunif Head :-
+  .refl.headargs Term Head DynList,
+  dyn_to_hlist DynList HList,
+  eq Arguments HList.
+headargs Term Head Arguments when not(refl.isunif Head) :-
+  dyn_to_hlist DynList Arguments,
+  .refl.headargs Term Head DynList.
+%end.
+
+structural_recursion Rec X Y :-
+  refl.headargs X Constructor Arguments,
+  refl.headargs Y Constructor Arguments',
+  hmap Rec Arguments Arguments'.
+
+structural_recursion Rec X Y :-
+  refl.headargs X Constructor Arguments,
+  hmap Rec Arguments Arguments',
+  refl.headargs Y Constructor Arguments'.
+
+structural_recursion Rec (X : A -> B) (Y : A -> B) :-
+  (x:A -> structural_recursion Rec x x ->
+    structural_recursion Rec (X x) (Y x)).
+
+typeof (lam (product [onat, onat])
+            (fun x => 
+    case_or_else x
+    (patt_tuple (pcons patt_wild (pcons patt_wild pnil)))
+    (vbody (tuple [x, ozero]))
+    (tuple [tuple [ozero, ozero], ozero])
+  )) T ?
+>> Yes:
+>> T := arrow (product (cons onat (cons onat nil))) (product (cons (product (cons onat (cons onat nil))) (cons onat nil))).
+
+(a:typ -> typedef a (product [onat, onat]) -> typeq a (product [onat, onat])) ?
+>> Yes.
+
+(a:typ -> typedef a (product [onat, onat]) -> typeq (product [onat, onat]) a) ?
+>> Yes.
+
+wfprogram (lettype (product [onat, onat]) (fun bintuple => main
+       (lam bintuple
+            (fun x => 
+    case_or_else x
+    (patt_tuple (pcons patt_wild (pcons patt_wild pnil)))
+    (vbody (tuple [x, ozero]))
+    (tuple [tuple [ozero, ozero], ozero])
+  )))) ?
+>> Yes.
+
+wfprogram (lettype (product [onat, onat]) (fun bintuple => main
+       (lam bintuple
+            (fun x => 
+    case_or_else x
+    (patt_tuple (pcons patt_wild pnil))
+    (vbody (tuple [x, ozero]))
+    (tuple [tuple [ozero, ozero], ozero])
+  )))) ?
+>> Impossible.
+

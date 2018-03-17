@@ -1,5 +1,3 @@
-%use eq_typeclass.
-
 (* Append a list to the end of another list. *)
 
 append : list A -> list A -> list A -> prop.
@@ -76,6 +74,9 @@ concat LS L <-
   map catenable LS LS', reverse LS' LS'rev,
   foldl (fun cur lst => eq (lst cur)) nil LS'rev L.
 
+prefix : list A -> list A -> list A -> prop.
+prefix [] L L.
+prefix (PrefHD :: PrefTL) (PrefHD :: TL) Rest :- prefix PrefTL TL Rest.
 
 (* Find element matching a predicate *)
 find : (A -> prop) -> list A -> A -> prop.
@@ -83,6 +84,7 @@ find Pred (HD :: TL) Res <- if (Pred HD) then eq Res HD else find Pred TL Res.
 
 (* Keep only elements that succeed on a predicate *)
 filter : (A -> prop) -> list A -> list A -> prop.
+filter Pred [] [].
 filter Pred (HD :: TL) Res <-
   if (Pred HD)
   then (eq Res (HD :: TL'), filter Pred TL TL')
@@ -97,18 +99,14 @@ filtermap Pred (HD :: TL) Res <-
 
 
 (* Succeeds if a list contains an element *)
-contains : eqT A -> A -> list A -> prop.
-contains_aux : eqT A -> A -> list A -> prop.
-contains_aux (eqT EQ) X (HD :: TL) <- unless (EQ X HD) (contains_aux (eqT EQ) X TL).
-contains Eq X L <- eqT_lookup Eq, contains_aux Eq X L.
+contains : A -> list A -> prop.
+contains X (HD :: TL) <- unless (eqv X HD) (contains X TL).
 
 (* Returns a list with the unique elements *)
-unique : eqT A -> list A -> list A -> prop.
-unique Eq L L' <-
-  eqT_lookup Eq,
-  foldl (pfun cur elm res => (if contains Eq elm cur then eq res cur else eq res (elm :: cur)) )
+unique : list A -> list A -> prop.
+unique L L' <-
+  foldl (pfun cur elm res => (if contains elm cur then eq res cur else eq res (elm :: cur)) )
         [] L L'', reverse L'' L'.
-
 
 
 (* Relates a number of lists to a lists where the corresponding elements are tupled together. Overloaded up to 4 lists. *)

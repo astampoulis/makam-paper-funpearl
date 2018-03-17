@@ -12,8 +12,9 @@ rm -rf justcode;
 cp -R ../makamcode/ ./literate/;
 mkdir justcode;
 
-rm literate/01-introduction.md;
-rm literate/09-summary.md;
+rm literate/*introduction.md;
+rm literate/*summary.md;
+rm literate/*related.md;
 
 cp literate/*.md justcode/;
 

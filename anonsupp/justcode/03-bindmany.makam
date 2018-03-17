@@ -11,8 +11,7 @@ refl.typstring (lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))) "t
 
 openmany : bindmany A B -> (list A -> B -> prop) -> prop.
 openmany (body Body) Q :- Q [] Body.
-openmany (bind F) Q :-
-  (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
+openmany (bind F) Q :- (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
 
 assumemany : (A -> B -> prop) -> list A -> list B -> prop -> prop.
 assumemany P [] [] Q :- Q.
@@ -23,24 +22,33 @@ typeof (lammany F) (arrowmany TS T) :-
   openmany F (fun xs body =>
     assumemany typeof xs TS (typeof body T)).
 
-applymany : bindmany A B -> list A -> B -> prop.
-applymany (body B) [] B.
-applymany (bind F) (X :: XS) B :-
-  applymany (F X) XS B.
-
 typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T ?
 >> Yes:
 >> T := arrowmany [T1, T2] (product [T2, T1]).
 
+appmany : term -> list term -> term.
+typeof (appmany E ES) T :-
+  typeof E (arrowmany TS T), map typeof ES TS.
+
+applymany : bindmany A B -> list A -> B -> prop.
+applymany (body B) [] B.
+applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
+eval (appmany E ES) V :-
+  eval E (lammany XS_E'), map eval ES VS,
+  applymany XS_E' VS E'', eval E'' V.
+
 letrec : bindmany term (list term * term) -> term.
 
 typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (pfun [XS Defs Body] XS (Defs, Body) =>
-    assumemany typeof XS TS (map typeof Defs TS),
-    assumemany typeof XS TS (typeof Body T')).
+  openmany XS_DefsBody (pfun xs (Defs, Body) =>
+    assumemany typeof xs TS (map typeof Defs TS),
+    assumemany typeof xs TS (typeof Body T')).
 
 typeof (letrec (bind (fun f => body ([lam T (fun x => app f (app f x))], f)))) T' ?
 >> Yes:
 >> T' := arrow T T,
 >> T := T.
+
+eval (letrec (bind (fun x => body ([Def x], Body x)))) V :-
+  eval (Body (Def (letrec (bind (fun x => body ([Def x], x)))))) V.
 

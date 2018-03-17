@@ -1,4 +1,4 @@
-# Where our heroes add parentheses and discover how to do multiple binding
+# In which our heroes add parentheses and discover how to do multiple binding
 
 <!--
 ```makam
@@ -11,7 +11,7 @@ STUDENT. Still, I feel like we've been playing to the strengths of λProlog.... 
 binding, substitutions, and so on work nicely, but how about any other form of binding? Say, binding
 multiple variables at the same time? We are definitely going to need that for the language we have
 in mind. I was under the impression that HOAS encodings do not work for that -- for example, I was
-reading \citet{keuchel2016needle} recently and I remember reading something to that end.
+reading \citet{keuchel2016needle} recently and I remember something to that end.
 
 ADVISOR. That's not really true; having first-class support for single-variable binders should be
 enough. But let's try it out, maybe adding multiple-argument functions for example -- I mean
@@ -35,9 +35,9 @@ means we cannot even get to the potential elements of the fresh `list` inside th
 STUDENT. Right. So I don't know, instead we want to use a type that stands for `term ->
 term`, `term -> term -> term`, and so on. Can we write `term -> ... -> term`?
 
-ADVISOR. Well, not quite, but we have already defined something similar, a type that
+ADVISOR. Well, not quite, but we have already seen something similar, a type that
 roughly stands for `term * ... * term`, and we did not need anything special
-for that...
+for that....
 
 STUDENT. You mean the `list` type?
 
@@ -50,7 +50,7 @@ bindcons : (term -> bindmanyterms) -> bindmanyterms.
 ```
 
 STUDENT. Hmm. That looks quite similar to lists; the parentheses in `cons` are
-different. `nil` gets an extra `term` argument, too...
+different. `nil` gets an extra `term` argument, too....
 
 ADVISOR. Yes... So what is happening here is that `bindcons` takes a single argument,
 introducing a binder; and `bindnil` is when we get to the body and don't need any more
@@ -65,7 +65,7 @@ body : Body -> bindmany Variable Body.
 bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
 ```
 
-ADVISOR. This looks great! That is exactly what's in the Makam standard library actually. And
+ADVISOR. This looks great! That is exactly what's in the Makam standard library, actually. And
 we can now define `lammany` using it -- and our example term from before.
 
 ```makam-noeval
@@ -95,12 +95,11 @@ ADVISOR. The rule is written like this, and I'll explain what goes into it:
 ```makam-noeval
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T) :-
-  openmany F (fun xs body =>
-    assumemany typeof xs TS (typeof body T)).
+  openmany F (fun xs body => assumemany typeof xs TS (typeof body T)).
 ```
 
 STUDENT. Let me see if I can read this... `openmany` somehow gives you fresh variables `xs` for the
-binders, and the `body` of the `lammany`; and then the `assumemany typeof` part is what corresponds
+binders, plus the `body` of the `lammany`; and then the `assumemany typeof` part is what corresponds
 to extending the $\Gamma$ context with multiple typing assumptions?
 
 ADVISOR. Yes, and then we typecheck the `body` in that local context that includes the fresh
@@ -112,8 +111,7 @@ the fresh variables we introduced.
 ```makam
 openmany : bindmany A B -> (list A -> B -> prop) -> prop.
 openmany (body Body) Q :- Q [] Body.
-openmany (bind F) Q :-
-  (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
+openmany (bind F) Q :- (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
 ```
 
 STUDENT. I see. I guess `assumemany` is similar, introducing one assumption at a time?
@@ -133,19 +131,9 @@ typeof (lammany F) (arrowmany TS T) :-
 ```
 -->
 
-<!--
-TODO. Figure out where to place this.
-```makam
-applymany : bindmany A B -> list A -> B -> prop.
-applymany (body B) [] B.
-applymany (bind F) (X :: XS) B :-
-  applymany (F X) XS B.
-```
--->
+ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons \citep{assumemany-issue}. Makam is allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time.
 
-ADVISOR. Yes, exactly! Just a note though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons. Makam is more lax, and so is ELPI, another recent \lamprolog implementation, and allows this form statically, though there are instantiations of `P` that will fail at run-time.
-
-STUDENT. I see. But we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
+STUDENT. I see. But in that case we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
 
 ```makam
 typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T ?
@@ -153,14 +141,47 @@ typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T ?
 >> T := arrowmany [T1, T2] (product [T2, T1]).
 ```
 
-Great, I think I got the hang of this. We could definitely add a multiple-argument application
-construct `appmany` or define the rules for `eval` for these. But that would be easy; we can do it
-later. Something that worries me, though -- all these fancy higher-order abstract binders, how do we
-... make them concrete? Say, how do we print them?
+\noindent
+Great, I think I got the hang of this. Let me try to see if I can add a multiple-argument application
+construct `appmany` and its evaluation rules. 
+
+```
+appmany : term -> list term -> term.
+typeof (appmany E ES) T :-
+  typeof E (arrowmany TS T), map typeof ES TS.
+eval (appmany E ES) V :-
+  eval E (lammany XS_E'), map eval ES VS, (...).
+```
+
+<!--
+```makam
+appmany : term -> list term -> term.
+typeof (appmany E ES) T :-
+  typeof E (arrowmany TS T), map typeof ES TS.
+```
+-->
+
+\noindent
+How can I do simultaneous substitution of all of the `XS` for `VS`?
+
+ADVISOR. You'll need another standard-library predicate for `bindmany`,
+which iteratively uses HOAS function application to perform a number of substitutions:
+
+```makam
+applymany : bindmany A B -> list A -> B -> prop.
+applymany (body B) [] B.
+applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
+eval (appmany E ES) V :-
+  eval E (lammany XS_E'), map eval ES VS,
+  applymany XS_E' VS E'', eval E'' V.
+```
+
+STUDENT. I see, that makes sense. Can I ask you something that worries me, though -- all these fancy higher-order abstract
+binders, how do we... make them concrete? Say, how do we print them?
 
 ADVISOR. That's actually quite easy. We just add a concrete name to them. A plain old `string`. Our
 typing rules etc. do not care about it, but we could use it for parsing concrete syntax into our
-abstract binding syntax, or for pretty-printing.... Let's not get into that for the time being, but
+abstract binding syntax, or for pretty-printing.... All those are stories for another time, though;
 let's just say that we could have defined `bind` with an extra `string` argument, representing the
 concrete name; and then `openmany` would just ignore it.
 
@@ -177,8 +198,9 @@ ADVISOR. Sure. Let's take this term for example:
 let rec f = f_def and g = g_def in body
 ```
 
+\noindent
 If we write this in a way where the binding structure is explicit, we would bind
-`f` and `g` simultaneously, and then write the definitions and the body in that scope:
+`f` and `g` simultaneously and then write the definitions and the body in that scope:
 
 ```
 letrec (fun f => fun g => ([f_def, g_def], body))
@@ -196,32 +218,24 @@ STUDENT. Maybe something like this?
 
 ```makam-noeval
 typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (fun xs (Defs, Body) =>
-    assumemany typeof xs TS (map typeof Defs TS),
-    assumemany typeof xs TS (typeof Body T')).
+  openmany XS_DefsBody (fun xs (defs, body) =>
+    assumemany typeof xs TS (map typeof defs TS),
+    assumemany typeof xs TS (typeof body T')).
 ```
 
-ADVISOR. Almost! The parser isn't clever enough to tell that the predicate argument to `openmany`
-is, in fact, a predicate, so we can't use the normal predicate syntax for it. We can use the
-syntactic form `pfun` for writing anonymous predicates instead. Since this will be a
-predicate, you are also able to destructure parameters like you do here -- that doesn't work for
-normal functions in the general case, since they need to treat arguments parametrically.
-And there is an actual issue here: could you guess what it is? It has to do with which free variables
-a unification variable is allowed to capture.
-
-STUDENT. Not really, but might have something to do with the fresh variables that `openmany` introduces?
-
-ADVISOR. Yes. See, a unification variable is allowed to capture all the free variables in scope at the
-point where it is introduced. By default, all unification variables used in a rule get introduced when we
-check whether the rule fires. But here we need to say explicitly that certain unification variables need to be
-introduced when `openmany` gets to use the `pfun` argument, and has therefore introduced all the needed fresh variables.
-So we have to write the rule like this:
+ADVISOR. Almost! You have used the syntax we use for writing rule premises in the `fun` argument of
+`openmany`; the Makam grammar only allows that with the syntactic form `pfun` instead, which is used
+to write anonymous predicates. Since this `pfun` argument will be a predicate and can thus perform
+computation, you are also able to destructure parameters like you did here on `(defs, body)` -- that
+doesn't work for normal functions in the general case, since they need to treat arguments
+parametrically.  This works by performing unification of the parameter with the given term -- so
+`defs` and `body` need to be capitalized so that they are understood to be unification variables.
 
 ```makam
 typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (pfun [XS Defs Body] XS (Defs, Body) =>
-    assumemany typeof XS TS (map typeof Defs TS),
-    assumemany typeof XS TS (typeof Body T')).
+  openmany XS_DefsBody (pfun xs (Defs, Body) =>
+    assumemany typeof xs TS (map typeof Defs TS),
+    assumemany typeof xs TS (typeof Body T')).
 ```
 <!--
 ```makam
@@ -232,13 +246,18 @@ typeof (letrec (bind (fun f => body ([lam T (fun x => app f (app f x))], f)))) T
 ```
 -->
 
-STUDENT. Ah, I see. So the `[XS Defs Body]` notation is like existential quantification then.
+<!--
+```makam
+eval (letrec (bind (fun x => body ([Def x], Body x)))) V :-
+  eval (Body (Def (letrec (bind (fun x => body ([Def x], x)))))) V.
+```
+-->
 
-ADVISOR. Exactly.
-
-STUDENT. One thing I noticed with our representation of `letrec` is that we have to be careful so
+STUDENT. Ah, I see\footnote{There is a subtlety here, having to do with the free variables that a unification variable
+can capture. In \lamprolog, a unification variable is allowed to capture all the free variables in scope at the
+point where it is introduced, as well as any variables it is explicitly applied to. \texttt{Defs} and \texttt{Body} are introduced as unification variables when we get to execute the \texttt{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \texttt{Defs} and \texttt{Body} can capture the \texttt{xs} variables that \texttt{openmany} introduces, whereas \texttt{T'} cannot. In \lamprolog terms, the \texttt{pfun} notation of Makam desugars to existential quantification of any (capitalized) unification variables that are mentioned while destructuring an argument, like the variables \texttt{Defs} and \texttt{Body}.}. Let me ask you something though: one thing I noticed with our representation of `letrec` is that we have to be careful so
 that the number of binders matches the number of definitions we give. Our typing rules disallow
-that, but I wonder if there's a way to have a more accurate representation for `letrec` that
-requires that to be the case?
+that, but I wonder if there's a way to have a more accurate representation for `letrec` which
+includes that requirement?
 
 ADVISOR. Funny you should ask that... Let me tell you a story.

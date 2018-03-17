@@ -1,0 +1,46 @@
+set : type -> type.
+
+nil : set A.
+cons : A -> set A -> set A.
+
+%extend set.
+remove, remove_if_member : set A -> A -> set A -> prop.
+remove_if_member nil A nil.
+remove_if_member (cons A S') A' Result :-
+  if (eqv A A')
+  then (remove_if_member S' A' Result)
+  else (remove_if_member S' A' S'', eq Result (cons A S'')).
+
+remove (cons A S') A' Result :-
+  if (eqv A A')
+  then (remove_if_member S' A' Result)
+  else (remove S' A' S'', eq Result (cons A S'')).
+
+member : set A -> A -> set A -> prop.
+member (cons A S') A' Result :-
+  if (eqv A A')
+  then (remove_if_member S' A' Result)
+  else (member S' A' S'', eq Result (cons A S'')).
+
+ccons : A -> set A -> set A -> prop.
+ccons A S S when (member S A _).
+ccons A S (cons A S) when not(member S A _).
+
+merge : set A -> set A -> set A -> prop.
+merge S nil S.
+merge S (cons A S') Result :- merge S S' S'', ccons A S'' Result.
+
+diff : set A -> set A -> set A -> prop.
+diff S nil S.
+diff S (cons A S') Result :- remove_if_member S A S'', diff S'' S' Result.
+
+to_list : set A -> list A -> prop.
+to_list nil nil.
+to_list (cons HD SetTL) (cons HD ListTL) :-
+  remove_if_member SetTL HD SetTL',
+  to_list SetTL' ListTL.
+  
+%end.
+
+eqv (nil : set A) nil.
+eqv (cons A B : set A) C :- set.member C A B', set.remove_if_member B A B'', eqv B' B''.
