@@ -44,7 +44,7 @@ rules for that, but those are mostly standard.
 transcribing this to Makam a try?
 
 \heroSTUDENT{} Yes, I got this. I'll add a new \texttt{typedef} predicate; I
-will only use it for local assumptions, to correspond to \(\Delta\)
+will only use it for local assumptions, to correspond to the \(\Delta\)
 context of type definitions. I will also do the well-formed program
 rules:
 
@@ -61,6 +61,7 @@ wfprogram (lettype T A_Program) \ensuremath{:\!-}
   (a:typ \ensuremath{\to} typedef a T \ensuremath{\to} wfprogram (A_Program a)).
 \end{verbatim}
 
+\noindent
 Well, I can do the conversion rule and the type-equality judgment
 too\ldots{}. I will name that \texttt{typeq}. I'll just write the one
 rule for now, which should be sufficient for a small example:
@@ -106,9 +107,10 @@ fail, but synthesizing the type anew could work?
 
 \heroADVISOR{} Exactly, and in that case we have to check that the two types
 are equal, using \texttt{typeq}. So we need to change the rule you wrote
-to apply only in the case where \texttt{T} starts with a concrete
-constructor, rather than when it is an uninstantiated unification
-variable.
+to apply only in the (analysis) case where \texttt{T} starts with a
+concrete constructor, rather than when it is an uninstantiated
+unification variable. We will then try synthesizing a type and use
+\texttt{typeq} to see whether the two types are equal.
 
 \heroSTUDENT{} Is that even possible? Is there a way in \foreignlanguage{greek}{λ}Prolog to tell
 whether something is a unification variable?

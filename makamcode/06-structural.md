@@ -38,7 +38,7 @@ STUDENT. Right, we will need the conversion rule, so that we identify types up t
 
 ADVISOR. Still, there are quite a few of those rules. Want to give transcribing this to Makam a try?
 
-STUDENT. Yes, I got this. I'll add a new `typedef` predicate; I will only use it for local assumptions, to correspond to $\Delta$ context of type definitions. I will also do the well-formed program rules:
+STUDENT. Yes, I got this. I'll add a new `typedef` predicate; I will only use it for local assumptions, to correspond to the $\Delta$ context of type definitions. I will also do the well-formed program rules:
 
 ```makam
 typedef : (NewType: typ) (Definition: typ) -> prop.
@@ -53,6 +53,7 @@ wfprogram (lettype T A_Program) :-
   (a:typ -> typedef a T -> wfprogram (A_Program a)).
 ```
 
+\noindent
 Well, I can do the conversion rule and the type-equality judgment too.... I will name that `typeq`. I'll just write the one rule for now, which should be sufficient for a small example:
 
 ```
@@ -89,8 +90,9 @@ STUDENT. Oh. Do you mean this in bidirectional typing terms? So, doing type anal
 an expression with a concrete type `T` might fail, but synthesizing the type anew could work?
 
 ADVISOR. Exactly, and in that case we have to check that the two types are equal, using `typeq`.
-So we need to change the rule you wrote to apply only in the case where `T` starts with a
-concrete constructor, rather than when it is an uninstantiated unification variable.
+So we need to change the rule you wrote to apply only in the (analysis) case where `T` starts with a
+concrete constructor, rather than when it is an uninstantiated unification variable. We will then
+try synthesizing a type and use `typeq` to see whether the two types are equal.
 
 STUDENT. Is that even possible? Is there a way in λProlog to tell whether something is a unification variable?
 
