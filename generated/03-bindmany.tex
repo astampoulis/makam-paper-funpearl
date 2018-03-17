@@ -39,9 +39,9 @@ stands for \texttt{term\ \ensuremath{\to}\ term},
 \texttt{term\ \ensuremath{\to}\ term\ \ensuremath{\to}\ term}, and so on.
 Can we write \texttt{term\ \ensuremath{\to}\ ...\ \ensuremath{\to}\ term}?
 
-\heroADVISOR{} Well, not quite, but we have already defined something similar,
-a type that roughly stands for \texttt{term\ *\ ...\ *\ term}, and we
-did not need anything special for that\ldots{}.
+\heroADVISOR{} Well, not quite, but we have already seen something similar, a
+type that roughly stands for \texttt{term\ *\ ...\ *\ term}, and we did
+not need anything special for that\ldots{}.
 
 \heroSTUDENT{} You mean the \texttt{list} type?
 
@@ -97,7 +97,7 @@ it:
 
 \begin{verbatim}
 arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
-typeof (lammany F) (arrowmany TS T) :-
+typeof (lammany F) (arrowmany TS T) \ensuremath{:\!-}
   openmany F (fun xs body \ensuremath{\Rightarrow}
     assumemany typeof xs TS (typeof body T)).
 \end{verbatim}
@@ -118,8 +118,8 @@ introduced.
 
 \begin{verbatim}
 openmany : bindmany A B \ensuremath{\to} (list A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} prop.
-openmany (body Body) Q :- Q [] Body.
-openmany (bind F) Q :-
+openmany (body Body) Q \ensuremath{:\!-} Q [] Body.
+openmany (bind F) Q \ensuremath{:\!-}
   (x:A \ensuremath{\to} openmany (F x) (fun xs \ensuremath{\Rightarrow} Q (x :: xs))).
 \end{verbatim}
 
@@ -128,8 +128,8 @@ assumption at a time?
 
 \begin{verbatim}
 assumemany : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} list A \ensuremath{\to} list B \ensuremath{\to} prop \ensuremath{\to} prop.
-assumemany P [] [] Q :- Q.
-assumemany P (X :: XS) (T :: TS) Q :- (P X T \ensuremath{\to} assumemany P XS TS Q).
+assumemany P [] [] Q \ensuremath{:\!-} Q.
+assumemany P (X :: XS) (T :: TS) Q \ensuremath{:\!-} (P X T \ensuremath{\to} assumemany P XS TS Q).
 \end{verbatim}
 
 \heroADVISOR{} Yes, exactly! Just a note, though -- \lamprolog typically does
@@ -158,9 +158,9 @@ evaluation rules.
 
 \begin{verbatim}
 appmany : term \ensuremath{\to} list term \ensuremath{\to} term.
-typeof (appmany E ES) T :-
+typeof (appmany E ES) T \ensuremath{:\!-}
   typeof E (arrowmany TS T), map typeof ES TS.
-eval (appmany E ES) V :-
+eval (appmany E ES) V \ensuremath{:\!-}
   eval E (lammany XS_E'), map eval ES VS, (...).
 \end{verbatim}
 
@@ -175,8 +175,8 @@ perform a number of substitutions:
 \begin{verbatim}
 applymany : bindmany A B \ensuremath{\to} list A \ensuremath{\to} B \ensuremath{\to} prop.
 applymany (body B) [] B.
-applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
-eval (appmany E ES) V :-
+applymany (bind F) (X :: XS) B \ensuremath{:\!-} applymany (F X) XS B.
+eval (appmany E ES) V \ensuremath{:\!-}
   eval E (lammany XS_E'), map eval ES VS,
   applymany XS_E' VS E'', eval E'' V.
 \end{verbatim}
@@ -227,25 +227,26 @@ letrec : bindmany term (list term * term) \ensuremath{\to} term.
 \heroSTUDENT{} Maybe something like this?
 
 \begin{verbatim}
-typeof (letrec XS_DefsBody) T' :-
+typeof (letrec XS_DefsBody) T' \ensuremath{:\!-}
   openmany XS_DefsBody (fun xs (defs, body) \ensuremath{\Rightarrow}
     assumemany typeof xs TS (map typeof defs TS),
     assumemany typeof xs TS (typeof body T')).
 \end{verbatim}
 
-\heroADVISOR{} Almost! The parser isn't clever enough to tell that the
-predicate argument to \texttt{openmany} is, in fact, a predicate, so we
-can't use the normal predicate syntax for it. We can use the syntactic
-form \texttt{pfun} for writing anonymous predicates instead. Since this
-will be a predicate, you are also able to destructure parameters like
-you did here on \texttt{(defs,\ body)} -- that doesn't work for normal
-functions in the general case, since they need to treat arguments
-parametrically. This works by performing unification of the parameter
-with the given term -- so \texttt{defs} and \texttt{body} need to be
-capitalized so that they are unification variables.
+\heroADVISOR{} Almost! You have used the syntax we use for writing rule
+premises in the \texttt{fun} argument of \texttt{openmany}; the Makam
+grammar only allows that with the syntactic form \texttt{pfun} instead,
+which is used to write anonymous predicates. Since this \texttt{pfun}
+argument will be a predicate and can thus perform computation, you are
+also able to destructure parameters like you did here on
+\texttt{(defs,\ body)} -- that doesn't work for normal functions in the
+general case, since they need to treat arguments parametrically. This
+works by performing unification of the parameter with the given term --
+so \texttt{defs} and \texttt{body} need to be capitalized so that they
+are understood to be unification variables.
 
 \begin{verbatim}
-typeof (letrec XS_DefsBody) T' :-
+typeof (letrec XS_DefsBody) T' \ensuremath{:\!-}
   openmany XS_DefsBody (pfun xs (Defs, Body) \ensuremath{\Rightarrow}
     assumemany typeof xs TS (map typeof Defs TS),
     assumemany typeof xs TS (typeof Body T')).

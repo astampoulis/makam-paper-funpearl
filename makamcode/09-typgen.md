@@ -183,8 +183,7 @@ get_types_in_environment : [A] A -> prop.
 generalize T Res :-
   findunif T Var, get_types_in_environment GammaTypes,
   (x:typ -> (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
-  if (hasunif Var GammaTypes)
-  then (eq Res (T'' Var))
+  if (hasunif Var GammaTypes) then (eq Res (T'' Var))
   else (eq Res (tforall T'')).
 ```
 

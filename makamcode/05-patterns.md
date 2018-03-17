@@ -8,7 +8,7 @@ tests: testsuite. %testsuite tests.
 -->
 
 \begin{scenecomment}
-(Our hero Roza had a meeting with another student, so Hagop took a small break, and is now back at his
+(Roza had a meeting with another student, so Hagop took a small break, and is now back at his
 office. He is trying to work out on his own how to encode patterns. He is fairly
 confident at this point that having explicit support for single-variable
 binding is enough to model most complicated forms of binding, especially when making use of

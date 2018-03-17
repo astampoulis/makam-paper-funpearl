@@ -2,7 +2,7 @@
 own}\label{where-our-hero-hagop-adds-pattern-matching-on-his-own}
 
 \begin{scenecomment}
-(Our hero Roza had a meeting with another student, so Hagop took a small break, and is now back at his
+(Roza had a meeting with another student, so Hagop took a small break, and is now back at his
 office. He is trying to work out on his own how to encode patterns. He is fairly
 confident at this point that having explicit support for single-variable
 binding is enough to model most complicated forms of binding, especially when making use of
@@ -58,8 +58,8 @@ the definition of \texttt{case\_or\_else}.
 
 \begin{verbatim}
 onat : typ. ozero : term. osucc : term \ensuremath{\to} term.
-typeof ozero onat. typeof (osucc N) onat :- typeof N onat.
-eval ozero ozero. eval (osucc E) (osucc V) :- eval E V.
+typeof ozero onat. typeof (osucc N) onat \ensuremath{:\!-} typeof N onat.
+eval ozero ozero. eval (osucc E) (osucc V) \ensuremath{:\!-} eval E V.
 \end{verbatim}
 
 \begin{verbatim}
@@ -71,7 +71,7 @@ case_or_else : (Scrutinee: term)
 Now for the typing rule -- it will be something like this:
 
 \begin{verbatim}
-typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
+typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT \ensuremath{:\!-}
   typeof Scrutinee T, typeof_patt Pattern T VarTypes,
   vopenmany Vars_Body (pfun vars body \ensuremath{\Rightarrow}
     vassumemany typeof vars VarTypes (typeof body BodyT)),
@@ -109,7 +109,7 @@ patt_ozero : patt zero.
 typeof_patt patt_ozero onat vnil.
 
 patt_osucc : patt N \ensuremath{\to} patt N.
-typeof_patt (patt_osucc P) onat VarTypes :- typeof_patt P onat VarTypes.
+typeof_patt (patt_osucc P) onat VarTypes \ensuremath{:\!-} typeof_patt P onat VarTypes.
 \end{verbatim}
 
 A wildcard pattern will match any value and should not introduce a
@@ -125,7 +125,7 @@ type for lists of patterns too.
 
 \begin{verbatim}
 patt_tuple : pattlist N \ensuremath{\to} patt N.
-typeof_patt (patt_tuple PS) (product TS) VarTypes :-
+typeof_patt (patt_tuple PS) (product TS) VarTypes \ensuremath{:\!-}
   typeof_pattlist PS TS VarTypes.
 pattlist : (N: type) \ensuremath{\to} type.
 pnil : patt zero.
@@ -176,7 +176,7 @@ includes an accumulator argument of its own:
 typeof_patt : [NBefore NAfter] patt NBefore NAfter \ensuremath{\to} typ \ensuremath{\to}
   vector typ NBefore \ensuremath{\to} vector typ NAfter \ensuremath{\to} prop.
 
-typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
+typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT \ensuremath{:\!-}
   typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
   vopenmany Vars_Body (pfun vars body \ensuremath{\Rightarrow}
     vassumemany typeof vars VarTypes (typeof body BodyT)),
@@ -186,7 +186,7 @@ typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
 All right, let's proceed to the typing rules for patterns themselves:
 
 \begin{verbatim}
-typeof_patt patt_var T VarTypes VarTypes' :-
+typeof_patt patt_var T VarTypes VarTypes' \ensuremath{:\!-}
   vsnoc VarTypes T VarTypes'.
 \end{verbatim}
 
@@ -197,7 +197,7 @@ I am visiting the pattern left-to-right after all.
 \begin{verbatim}
 vsnoc : [N] vector A N \ensuremath{\to} A \ensuremath{\to} vector A (succ N) \ensuremath{\to} prop.
 vsnoc vnil Y (vcons Y vnil).
-vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
+vsnoc (vcons X XS) Y (vcons X XS_Y) \ensuremath{:\!-} vsnoc XS Y XS_Y.
 \end{verbatim}
 
 The rest is easy to adapt\ldots{}.

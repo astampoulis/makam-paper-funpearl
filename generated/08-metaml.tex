@@ -126,14 +126,14 @@ classof_index : index \ensuremath{\to} class \ensuremath{\to} prop.
 subst_obj : (I_E: index \ensuremath{\to} term) (O: object) (E_OforI: term) \ensuremath{\to} prop.
 
 liftobj : object \ensuremath{\to} term. liftclass : class \ensuremath{\to} typ.
-typeof (liftobj O) (liftclass C) :- classof O C.
+typeof (liftobj O) (liftclass C) \ensuremath{:\!-} classof O C.
 
 letobj : term \ensuremath{\to} (index \ensuremath{\to} term) \ensuremath{\to} term.
-typeof (letobj E EF') T :-
+typeof (letobj E EF') T \ensuremath{:\!-}
   typeof E (liftclass C), (i:index \ensuremath{\to} classof_index i C \ensuremath{\to} typeof (EF' i) T).
 
 eval (liftobj O) (liftobj O).
-eval (letobj E I_E') V :-
+eval (letobj E I_E') V \ensuremath{:\!-}
   eval E (liftobj O), subst_obj I_E' O E', eval E' V.
 \end{verbatim}
 
@@ -156,8 +156,8 @@ aq : index \ensuremath{\to} term.
 
 \begin{verbatim}
 obj_term : stlc.term \ensuremath{\to} object. cls_typ : stlc.typ \ensuremath{\to} class.
-classof (obj_term E) (cls_typ T) :- stlc.typeof E T.
-stlc.typeof (stlc.aq I) T :- classof_index I (cls_typ T).
+classof (obj_term E) (cls_typ T) \ensuremath{:\!-} stlc.typeof E T.
+stlc.typeof (stlc.aq I) T \ensuremath{:\!-} classof_index I (cls_typ T).
 \end{verbatim}
 
 \begin{scenecomment}
@@ -178,10 +178,10 @@ example too is implementing \texttt{subst\_obj}. Thanks to
 \begin{verbatim}
 subst_obj_aux, subst_obj_cases : [Any]
   (Var: index) (Replacement: object) (Where: Any) (Result: Any) \ensuremath{\to} prop.
-subst_obj I_Term O Term_OforI :-
+subst_obj I_Term O Term_OforI \ensuremath{:\!-}
   (i:index \ensuremath{\to} subst_obj_aux i O (I_Term i) Term_OforI).
 
-subst_obj_aux Var Replacement Where Result :-
+subst_obj_aux Var Replacement Where Result \ensuremath{:\!-}
   if (subst_obj_cases Var Replacement Where Result)
   then success
   else (structural_recursion @(subst_obj_aux Var Replacement) Where Result).
@@ -297,15 +297,15 @@ cls_ctxtyp : list stlc.typ \ensuremath{\to} stlc.typ \ensuremath{\to} class.
 
 %extend stlc.
 aqopen : index \ensuremath{\to} list term \ensuremath{\to} term.
-typeof (aqopen I ES) T :-
+typeof (aqopen I ES) T \ensuremath{:\!-}
   classof_index I (cls_ctxtyp TS T), map typeof ES TS.
 %end.
 
-classof (obj_openterm XS_E) (cls_ctxtyp TS T) :-
+classof (obj_openterm XS_E) (cls_ctxtyp TS T) \ensuremath{:\!-}
   openmany XS_E (fun xs e \ensuremath{\Rightarrow}
     assumemany stlc.typeof xs TS (stlc.typeof e T)).
 
-subst_obj_cases Var (obj_openterm Replace) (stlc.aqopen Var Subst) Result :-
+subst_obj_cases Var (obj_openterm Replace) (stlc.aqopen Var Subst) Result \ensuremath{:\!-}
   applymany Replace Subst Intermediate,
   subst_obj_aux Var (obj_openterm Replace) Intermediate Result.
 \end{verbatim}

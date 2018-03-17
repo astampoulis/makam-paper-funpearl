@@ -31,7 +31,7 @@ match : [NBefore NAfter]
   (Pattern: patt NBefore NAfter) (Scrutinee: term)
   (SubstBefore: vector term NBefore) (SubstAfter: vector term NAfter) \ensuremath{\to}
   prop.
-eval (case_or_else Scrutinee Pattern Body Else) V' :-
+eval (case_or_else Scrutinee Pattern Body Else) V' \ensuremath{:\!-}
   eval Scrutinee V,
   if (match Pattern V vnil Subst)
   then (vapplymany Body Subst Body', eval Body' V')
@@ -61,17 +61,17 @@ HOAS function application for \texttt{vbindmany}:
 \begin{verbatim}
 vapplymany : [N] vbindmany Var N Body \ensuremath{\to} vector Var N \ensuremath{\to} Body \ensuremath{\to} prop.
 vapplymany (vbody Body) vnil Body.
-vapplymany (vbind F) (vcons E ES) Body :- vapplymany (F E) ES Body.
+vapplymany (vbind F) (vcons E ES) Body \ensuremath{:\!-} vapplymany (F E) ES Body.
 \end{verbatim}
 
 \heroSTUDENT{} I see\ldots{} OK, I think I know how to continue. I will write
 a few of the \texttt{match} rules down.
 
 \begin{verbatim}
-match patt_var X Subst Subst' :- vsnoc Subst X Subst'.
+match patt_var X Subst Subst' \ensuremath{:\!-} vsnoc Subst X Subst'.
 match patt_wild X Subst Subst.
 match patt_ozero ozero Subst Subst.
-match (patt_osucc P) (osucc V) Subst Subst' :-
+match (patt_osucc P) (osucc V) Subst Subst' \ensuremath{:\!-}
   match P V Subst Subst'.
 \end{verbatim}
 

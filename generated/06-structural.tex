@@ -55,8 +55,8 @@ main : term \ensuremath{\to} program.
 lettype : (Definition: typ) (A_Program: typ \ensuremath{\to} program) \ensuremath{\to} program.
 
 wfprogram : program \ensuremath{\to} prop.
-wfprogram (main E) :- typeof E T.
-wfprogram (lettype T A_Program) :-
+wfprogram (main E) \ensuremath{:\!-} typeof E T.
+wfprogram (lettype T A_Program) \ensuremath{:\!-}
   (a:typ \ensuremath{\to} typedef a T \ensuremath{\to} wfprogram (A_Program a)).
 \end{verbatim}
 
@@ -66,8 +66,8 @@ rule for now, which should be sufficient for a small example:
 
 \begin{verbatim}
 typeq : (T1: typ) (T2: typ) \ensuremath{\to} prop.
-typeof E T :- typeof E T', typeq T T'.
-typeq A T :- typedef A T.
+typeof E T \ensuremath{:\!-} typeof E T', typeq T T'.
+typeq A T \ensuremath{:\!-} typedef A T.
 
 wfprogram (lettype (arrow onat onat) (fun a \ensuremath{\Rightarrow}
           (main (lam a (fun f \ensuremath{\Rightarrow} (app f ozero)))))) ?
@@ -120,7 +120,7 @@ also using logical
 negation\footnote{Makam follows \citet{kiselyov05backtracking} closely in terms of the semantics for logical if-then-else and logical negation.}:
 
 \begin{verbatim}
-typeof E T :- not(refl.isunif T), typeof E T', typeq T T'.
+typeof E T \ensuremath{:\!-} not(refl.isunif T), typeof E T', typeq T T'.
 \end{verbatim}
 
 \heroSTUDENT{} Interesting. But wouldn't this lead to an infinite loop, too?
@@ -136,7 +136,7 @@ let's do a trick to side-step this issue -- let's check that \texttt{T}
 and \texttt{T\textquotesingle{}} are not identical:
 
 \begin{verbatim}
-typeof E T :- not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
+typeof E T \ensuremath{:\!-} not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
 \end{verbatim}
 
 By the way, \texttt{eq} is a standard-library predicate that simply
@@ -152,8 +152,8 @@ should add the conversion rule for \texttt{typeof\_patt}, but that's
 almost the same as for terms. (\ldots{}) I'll do \texttt{typeq} next.
 
 \begin{verbatim}
-typeq A T' :- typedef A T, typeq T T'.
-typeq T' A :- typedef A T, typeq T T'.
+typeq A T' \ensuremath{:\!-} typedef A T, typeq T T'.
+typeq T' A \ensuremath{:\!-} typedef A T, typeq T T'.
 \end{verbatim}
 
 \heroADVISOR{} I like how you added the symmetric rule, but\ldots{} this is
@@ -163,17 +163,17 @@ is concrete
 somehow\footnote{Though not supported in Makam, an alternative to this in other languages based on higher-order logic programming would be to add a \texttt{mode (i o)} declaration for \texttt{typedef}, so that \texttt{typedef A T} would fail if \texttt{A} is not concrete.}:
 
 \begin{verbatim}
-typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
-typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq A T' \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
+typeq T' A \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
 \end{verbatim}
 
 \heroSTUDENT{} I see what you mean. OK, I'll continue on to the rest of the
 cases\ldots{}.
 
 \begin{verbatim}
-typeq (arrow T1 T2) (arrow T1' T2') :-
+typeq (arrow T1 T2) (arrow T1' T2') \ensuremath{:\!-}
   typeq T1 T1', typeq T2 T2'.
-typeq (arrowmany TS T) (arrowmany TS' T') :-
+typeq (arrowmany TS T) (arrowmany TS' T') \ensuremath{:\!-}
   map typeq TS TS', typeq T T'.
 \end{verbatim}
 
@@ -193,9 +193,9 @@ and adds a few lines:)
 \end{scenecomment}
 
 \begin{verbatim}
-typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
-typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
-typeq T T' :- structural_recursion @typeq T T'.
+typeq A T' \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
+typeq T' A \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
+typeq T T' \ensuremath{:\!-} structural_recursion @typeq T T'.
 \end{verbatim}
 
 \heroSTUDENT{} \ldots{} What just happened. Is \texttt{structural\_recursion}
@@ -216,7 +216,7 @@ to make sure that their constructors are the same and also that any
 \texttt{typeq}ual. So something like this:
 
 \begin{verbatim}
-typeq (Constructor Arguments) (Constructor Arguments') :-
+typeq (Constructor Arguments) (Constructor Arguments') \ensuremath{:\!-}
   map typeq Arguments Arguments'.
 \end{verbatim}
 
@@ -248,7 +248,7 @@ we'll have to use it for \texttt{Arguments} of different types:
 \begin{verbatim}
 hmap : [TS] (P: forall A (A \ensuremath{\to} A \ensuremath{\to} prop)) (XS: hlist TS) (YS: hlist TS) \ensuremath{\to} prop.
 hmap P hnil hnil.
-hmap P (hcons X XS) (hcons Y YS) :- apply P X Y, hmap P XS YS.
+hmap P (hcons X XS) (hcons Y YS) \ensuremath{:\!-} apply P X Y, hmap P XS YS.
 \end{verbatim}
 
 As I mentioned before, the rank-2 polymorphism support in Makam is quite
@@ -280,7 +280,7 @@ new constructor, roughly like this:
 refl.headargs : (Term: TermT) (Constr: ConstrT) (Args: hlist ArgsTS) \ensuremath{\to} prop.
 
 arrowmany : (TS: list typ) (T: typ) \ensuremath{\to} typ.
-refl.headargs Term Constructor Args :-
+refl.headargs Term Constructor Args \ensuremath{:\!-}
   not(refl.isunif Term), eq Term (arrowmany TS T),
   eq Constructor arrowmany, eq Args (hcons TS (hcons T hnil)).
 \end{verbatim}
@@ -289,7 +289,7 @@ refl.headargs Term Constructor Args :-
 now then!
 
 \begin{verbatim}
-typeq T T' :-
+typeq T T' \ensuremath{:\!-}
   refl.headargs T Constr Args,
   refl.headargs T' Constr Args',
   hmap @typeq Args Args'.
@@ -312,7 +312,7 @@ doing this in open-recursion style? I see. Well, I can adapt the case I
 just wrote above.
 
 \begin{verbatim}
-structural_recursion Rec X Y :-
+structural_recursion Rec X Y \ensuremath{:\!-}
   refl.headargs X Constructor Arguments,
   refl.headargs Y Constructor Arguments',
   hmap Rec Arguments Arguments'.
@@ -324,24 +324,25 @@ isn't, or the other way around? Hint: you can use \texttt{refl.headargs}
 in the other direction, to reconstruct a term from a constructor and a
 list of arguments.
 
-\heroSTUDENT{} Let me think about that a bit. How is this?
+\heroSTUDENT{} How about this? This way, we will deconstruct the concrete
+\texttt{X}, perform the transformation on the \texttt{Arguments}, and
+then reapply the \texttt{Constructor} to get the result for \texttt{Y}.
 
 \begin{verbatim}
-structural_recursion Rec X Y :-
+structural_recursion Rec X Y \ensuremath{:\!-}
   refl.headargs X Constructor Arguments,
   hmap Rec Arguments Arguments',
   refl.headargs Y Constructor Arguments'.
 \end{verbatim}
 
-\heroADVISOR{} That is exactly right. You need the symmetric case too, where
-\texttt{Y} is concrete and \texttt{X} isn't, but that's entirely
-similar. Also, there is another type of concrete terms in Makam:
-meta-level functions! It does not make sense to destructure functions
-using \texttt{refl.headargs}; so, that predicate \texttt{refl.headargs}
-fails for functions, and we have to treat them specially:
+\heroADVISOR{} That is exactly right. You need the symmetric case too but
+that's entirely similar. Also, there is another type of concrete terms
+in Makam: meta-level functions! It does not make sense to destructure
+functions using \texttt{refl.headargs}, so it fails in that case, and we
+have to treat them specially:
 
 \begin{verbatim}
-structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) :-
+structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) \ensuremath{:\!-}
   (x:A \ensuremath{\to} structural_recursion Rec x x \ensuremath{\to} structural_recursion Rec (X x) (Y x)).
 \end{verbatim}
 

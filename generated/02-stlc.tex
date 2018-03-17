@@ -31,8 +31,9 @@ add, too, right?
 
 \heroADVISOR{} Yes, functions at the meta level are parametric, so they
 correspond exactly to single-variable binding -- they cannot perform any
-computation, and thus we do not have to worry about exotic terms. So
-this works fine for Church-style lambdas:
+computation such as pattern matching on their argument and thus we do
+not have to worry about exotic terms. So this works fine for
+Church-style lambdas:
 
 \begin{verbatim}
 lam : typ \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
@@ -50,10 +51,10 @@ typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
 
 \heroSTUDENT{} Let me see if I can get the typing rule for application. I know
 that in Prolog we write the conclusion of a rule first, and the premises
-follow the \texttt{:-} sign. Does something like this work?
+follow the \texttt{\ensuremath{:\!-}} sign. Does something like this work?
 
 \begin{verbatim}
-typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
+typeof (app E1 E2) T' \ensuremath{:\!-} typeof E1 (arrow T T'), typeof E2 T.
 \end{verbatim}
 
 \heroADVISOR{} Yes! That's exactly right. Makam uses capital letters for
@@ -66,22 +67,22 @@ the equivalent of extending the context as in \(\Gamma, \; x : \tau\) ?
 typing rule for it:
 
 \begin{verbatim}
-typeof (lam T1 E) (arrow T1 T2) :- (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
+typeof (lam T1 E) (arrow T1 T2) \ensuremath{:\!-} (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
 \end{verbatim}
 
-\heroSTUDENT{} Hmm, so \texttt{x:term\ \ensuremath{\to}} introduces the fresh
+\heroSTUDENT{} Hmm, so `\texttt{x:term\ \ensuremath{\to}}' introduces the fresh
 constructor standing for the new variable, and
-\texttt{typeof\ x\ T1\ \ensuremath{\to}} introduces the new assumption?
+`\texttt{typeof\ x\ T1\ \ensuremath{\to}}' introduces the new assumption?
 Oh, and we need to get to the body of the lambda function in order to
 type-check it, so that's why you do \texttt{E\ x}.
 
 \heroADVISOR{} Yes. Note that the introductions are locally scoped, so they
-are only in effect for the recursive call.
+are only in effect for the recursive call `\texttt{typeof\ (E\ x)\ T2}'.
 
-\heroSTUDENT{} Makes sense. So do we have a type checker already? Can we run
-queries?
+\heroSTUDENT{} Makes sense. So do we have a type checker already?
 
-\heroADVISOR{} We do! Observe:
+\heroADVISOR{} We do! Queries of the \texttt{typeof} predicate can be used to
+type check terms. Observe:
 
 \begin{verbatim}
 typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T ?
@@ -89,10 +90,11 @@ typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T ?
 >> T := arrow T1 T1.
 \end{verbatim}
 
-\heroSTUDENT{} Cool! So underscores for unification variables we don't care
-about and \texttt{?} for queries. But wait, last time I implemented
-unification in my toy STLC implementation it was easy to make it go into
-an infinite loop with \(\lambda x. x x\). How does that work here?
+\heroSTUDENT{} Cool! So \texttt{fun} for metalevel functions, underscores for
+unification variables we don't care about, and \texttt{?} for queries.
+But wait, last time I implemented unification in my toy STLC
+implementation it was easy to make it go into an infinite loop with
+\(\lambda x. x x\). How does that work here?
 
 \heroADVISOR{} Well, you were missing the occurs-check. \foreignlanguage{greek}{λ}Prolog unification
 includes it:
@@ -110,18 +112,19 @@ predicates. Here's how lists are defined in the standard library:
 
 \begin{verbatim}
 list : type \ensuremath{\to} type.
-nil : list A. cons : A \ensuremath{\to} list A \ensuremath{\to} list A.
+nil : list A.
+cons : A \ensuremath{\to} list A \ensuremath{\to} list A.
 
 map : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} list A \ensuremath{\to} list B \ensuremath{\to} prop.
 map P nil nil.
-map P (cons X XS) (cons Y YS) :- P X Y, map P XS YS.
+map P (cons X XS) (cons Y YS) \ensuremath{:\!-} P X Y, map P XS YS.
 \end{verbatim}
 
 \heroSTUDENT{} Nice! I guess that's why you wanted to go with \foreignlanguage{greek}{λ}Prolog for
 doing this instead of LF, since you cannot use polymorphism there?
 
 \heroADVISOR{} Indeed. We will see, once we figure out what our language
-should be, one thing we could do is transcribe our definitions to LF,
+should be, one thing we could do is monomorphize our definitions to LF,
 and then we could even use Beluga \citep{beluga-main-reference} to do
 all of our metatheoretic proofs. Or maybe we could use Abella
 \citep{abella-main-reference} directly.
@@ -129,11 +132,12 @@ all of our metatheoretic proofs. Or maybe we could use Abella
 \heroSTUDENT{} Sounds good. So, for tuples, this should work:
 
 \begin{verbatim}
-tuple : list term \ensuremath{\to} term. product : list typ \ensuremath{\to} typ.
-typeof (tuple ES) (product TS) :- map typeof ES TS.
+tuple : list term \ensuremath{\to} term.
+product : list typ \ensuremath{\to} typ.
+typeof (tuple ES) (product TS) \ensuremath{:\!-} map typeof ES TS.
 \end{verbatim}
 
-\heroADVISOR{} Yes, and we can use syntactic sugar for \texttt{cons} and
+\heroADVISOR{} Yes, and there is syntactic sugar for \texttt{cons} and
 \texttt{nil} too:
 
 \begin{verbatim}
@@ -150,7 +154,7 @@ too?
 \begin{verbatim}
 eval : term \ensuremath{\to} term \ensuremath{\to} prop.
 eval (lam T F) (lam T F).
-eval (tuple ES) (tuple VS) :- map eval ES VS.
+eval (tuple ES) (tuple VS) \ensuremath{:\!-} map eval ES VS.
 \end{verbatim}
 
 \heroSTUDENT{} OK, let me try my hand at the beta-redex case. I'll just do
@@ -158,7 +162,7 @@ call-by-value. I know that when using HOAS, function application is
 exactly capture-avoiding substitution, so this should be fine:
 
 \begin{verbatim}
-eval (app E E') V'' :- eval E (lam _ F), eval E' V', eval (F V') V''.
+eval (app E E') V'' \ensuremath{:\!-} eval E (lam _ F), eval E' V', eval (F V') V''.
 \end{verbatim}
 
 \heroADVISOR{} Exactly! See, I told you this would be easy!

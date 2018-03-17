@@ -20,8 +20,8 @@ you can take a break too / like Lambros from next door.''
 tforall : (typ \ensuremath{\to} typ) \ensuremath{\to} typ.
 lamt : (typ \ensuremath{\to} term) \ensuremath{\to} term.
 appt : term \ensuremath{\to} typ \ensuremath{\to} term.
-typeof (lamt E) (tforall T) :- (a:typ \ensuremath{\to} typeof (E a) (T a)).
-typeof (appt E T) T' :- typeof E (tforall TF), eq T' (TF T).
+typeof (lamt E) (tforall T) \ensuremath{:\!-} (a:typ \ensuremath{\to} typeof (E a) (T a)).
+typeof (appt E T) T' \ensuremath{:\!-} typeof E (tforall TF), eq T' (TF T).
 \end{verbatim}
 
 \begin{versy}
@@ -84,7 +84,7 @@ constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) \ensuremath{\t
 
 \begin{verbatim}
 wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
-                    (bind_datatype DT_Constrs_Rest)) :-
+                    (bind_datatype DT_Constrs_Rest)) \ensuremath{:\!-}
   (dt:typ \ensuremath{\to} openmany (DT_Constrs_Rest dt) (pfun constrs rest \ensuremath{\Rightarrow}
     assumemany (constructor_typ dt) constrs (DT_ConstrArgTypes dt)
     (wfprogram rest))).
@@ -98,9 +98,9 @@ We can't use the constructors, though / remember \texttt{term}s and \texttt{patt
 \begin{verbatim}
 constr : (C: constructor) (Arg: term) \ensuremath{\to} term.
 patt_constr : (C: constructor) (Arg: patt N N') \ensuremath{\to} patt N N'.
-typeof (constr C Arg) Datatype :-
+typeof (constr C Arg) Datatype \ensuremath{:\!-}
   constructor_typ Datatype C ArgType, typeof Arg ArgType.
-typeof_patt (patt_constr C Arg) Datatype S S' :-
+typeof_patt (patt_constr C Arg) Datatype S S' \ensuremath{:\!-}
   constructor_typ Datatype C ArgType, typeof_patt Arg ArgType S S'.
 \end{verbatim}
 

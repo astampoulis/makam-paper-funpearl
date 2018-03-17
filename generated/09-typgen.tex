@@ -44,7 +44,7 @@ predicate for generalizing the type, for now:
 \begin{verbatim}
 generalize : (Type: typ) (GeneralizedType: typ) \ensuremath{\to} prop.
 let : term \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
-typeof (let E F) T' :-
+typeof (let E F) T' \ensuremath{:\!-}
   typeof E T, generalize T Tgen, (x:term \ensuremath{\to} typeof x Tgen \ensuremath{\to} typeof (F x) T').
 \end{verbatim}
 
@@ -93,14 +93,14 @@ with no new surprises.
 findunif_aux : [Any VarType]
   (Var: option VarType) (Current: Any) (Var': option VarType) \ensuremath{\to} prop.
 findunif_aux (some Var) _ (some Var).
-findunif_aux none (Current : CurrentType) (Result: option VarType) :-
+findunif_aux none (Current : CurrentType) (Result: option VarType) \ensuremath{:\!-}
   refl.isunif Current,
   if (dyn.eq Result (some Current)) then success
   else (eq Result none).
-findunif_aux (In: option B) Current Out :-
+findunif_aux (In: option B) Current Out \ensuremath{:\!-}
   generic_fold @findunif_aux In Current Out.
 findunif : [Any VarType] (Search: Any) (Found: VarType) \ensuremath{\to} prop.
-findunif Search Found :- findunif_aux none Search (some Found).
+findunif Search Found \ensuremath{:\!-} findunif_aux none Search (some Found).
 \end{verbatim}
 
 Here, the second rule of \texttt{findunif\_aux} is the important one --
@@ -142,11 +142,11 @@ which is not what we want.
 \begin{verbatim}
 replaceunif : [VarType Any]
   (Which: VarType) (ToWhat: VarType) (Where: Any) (Result: Any) \ensuremath{\to} prop.
-replaceunif Which ToWhat Where ToWhat :-
+replaceunif Which ToWhat Where ToWhat \ensuremath{:\!-}
   refl.isunif Where, refl.sameunif Which Where.
-replaceunif Which ToWhat Where Where :-
+replaceunif Which ToWhat Where Where \ensuremath{:\!-}
   refl.isunif Where, not(refl.sameunif Which Where).
-replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
+replaceunif Which ToWhat Where Result \ensuremath{:\!-} not(refl.isunif Where),
   structural_recursion @(replaceunif Which ToWhat) Where Result.
 \end{verbatim}
 
@@ -157,11 +157,11 @@ the above.
 \begin{verbatim}
 hasunif : [VarType Any] VarType \ensuremath{\to} bool \ensuremath{\to} Any \ensuremath{\to} bool \ensuremath{\to} prop.
 hasunif _ true _ true.
-hasunif X false Y true :- refl.sameunif X Y.
-hasunif X In Y Out :- generic_fold @(hasunif X) In Y Out.
+hasunif X false Y true \ensuremath{:\!-} refl.sameunif X Y.
+hasunif X In Y Out \ensuremath{:\!-} generic_fold @(hasunif X) In Y Out.
 
 hasunif : [VarType Any] VarType \ensuremath{\to} Any \ensuremath{\to} prop.
-hasunif Var Term :- hasunif Var false Term true.
+hasunif Var Term \ensuremath{:\!-} hasunif Var false Term true.
 \end{verbatim}
 
 We are now mostly ready to implement \texttt{generalize}. We'll do this
@@ -169,7 +169,7 @@ recursively. The base case is when there are no unification variables
 within a type left:
 
 \begin{verbatim}
-generalize T T :- not(findunif T X).
+generalize T T \ensuremath{:\!-} not(findunif T X).
 \end{verbatim}
 
 For the recursive case, we will pick out the first unification variable
@@ -182,11 +182,10 @@ write the recursive case down:
 
 \begin{verbatim}
 get_types_in_environment : [A] A \ensuremath{\to} prop.
-generalize T Res :-
+generalize T Res \ensuremath{:\!-}
   findunif T Var, get_types_in_environment GammaTypes,
   (x:typ \ensuremath{\to} (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
-  if (hasunif Var GammaTypes)
-  then (eq Res (T'' Var))
+  if (hasunif Var GammaTypes) then (eq Res (T'' Var))
   else (eq Res (tforall T'')).
 \end{verbatim}
 
@@ -206,7 +205,7 @@ predicate; it turns out that all the rules and connectives are normal
 And those assumptions will include just the types in \(\Gamma\)\ldots{}.
 
 \begin{verbatim}
-get_types_in_environment Assumptions :-
+get_types_in_environment Assumptions \ensuremath{:\!-}
   refl.assume_get typeof Assumptions.
 \end{verbatim}
 

@@ -44,8 +44,8 @@ doing a \texttt{typecase} and we choose a rule depending on the
 
 \begin{verbatim}
 print : [A] A \ensuremath{\to} prop.
-print (I: int) :- (... code for printing integers ...)
-print (S: string) :- (... code for printing strings ...)
+print (I: int) \ensuremath{:\!-} (... code for printing integers ...)
+print (S: string) \ensuremath{:\!-} (... code for printing strings ...)
 \end{verbatim}
 
 The local dialects Teyjus
@@ -80,7 +80,7 @@ And now for the essential \texttt{vmap}:
 \begin{verbatim}
 vmap : [N] (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} vector A N \ensuremath{\to} vector B N \ensuremath{\to} prop.
 vmap P vnil vnil.
-vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
+vmap P (vcons X XS) (vcons Y YS) \ensuremath{:\!-} P X Y, vmap P XS YS.
 \end{verbatim}
 
 In each rule, the first argument already specializes the \texttt{N} type
@@ -90,7 +90,7 @@ specialization would not be accepted as well-typed sayings in our
 language:
 
 \begin{verbatim}
-vmap P vnil (vcons X XS) :- ...
+vmap P vnil (vcons X XS) \ensuremath{:\!-} ...
 \end{verbatim}
 
 And we should note that in this usage of Ad-Hoc Polymorphism for GADTs,
@@ -119,8 +119,8 @@ exactly as before, though the static type is more precise:
 
 \begin{verbatim}
 vopenmany : [N] vbindmany Var N Body \ensuremath{\to} (vector Var N \ensuremath{\to} Body \ensuremath{\to} prop) \ensuremath{\to} prop.
-vopenmany (vbody Body) Q :- Q vnil Body.
-vopenmany (vbind F) Q :-
+vopenmany (vbody Body) Q \ensuremath{:\!-} Q vnil Body.
+vopenmany (vbind F) Q \ensuremath{:\!-}
   (x:A \ensuremath{\to} vopenmany (F x) (fun xs \ensuremath{\Rightarrow} Q (vcons x xs))).
 \end{verbatim}
 

@@ -35,7 +35,7 @@ means we cannot even get to the potential elements of the fresh `list` inside th
 STUDENT. Right. So I don't know, instead we want to use a type that stands for `term ->
 term`, `term -> term -> term`, and so on. Can we write `term -> ... -> term`?
 
-ADVISOR. Well, not quite, but we have already defined something similar, a type that
+ADVISOR. Well, not quite, but we have already seen something similar, a type that
 roughly stands for `term * ... * term`, and we did not need anything special
 for that....
 
@@ -224,13 +224,13 @@ typeof (letrec XS_DefsBody) T' :-
     assumemany typeof xs TS (typeof body T')).
 ```
 
-ADVISOR. Almost! The parser isn't clever enough to tell that the predicate argument to `openmany`
-is, in fact, a predicate, so we can't use the normal predicate syntax for it. We can use the
-syntactic form `pfun` for writing anonymous predicates instead. Since this will be a
-predicate, you are also able to destructure parameters like you did here on `(defs, body)` -- that doesn't work for
-normal functions in the general case, since they need to treat arguments parametrically.
-This works by performing unification of the parameter with the given term -- so `defs` and `body`
-need to be capitalized so that they are unification variables.
+ADVISOR. Almost! You have used the syntax we use for writing rule premises in the `fun` argument of
+`openmany`; the Makam grammar only allows that with the syntactic form `pfun` instead, which is used
+to write anonymous predicates. Since this `pfun` argument will be a predicate and can thus perform
+computation, you are also able to destructure parameters like you did here on `(defs, body)` -- that
+doesn't work for normal functions in the general case, since they need to treat arguments
+parametrically.  This works by performing unification of the parameter with the given term -- so
+`defs` and `body` need to be capitalized so that they are understood to be unification variables.
 
 ```makam
 typeof (letrec XS_DefsBody) T' :-

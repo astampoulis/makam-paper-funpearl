@@ -38,10 +38,10 @@ adequacy of encodings in that case. Specializing such datatypes to their uses sh
 transcribe our examples that do not make use of meta-logical reflective predicates.
 -->
 
-\hero{\bf Racket} The Racket programming language aims to be a language for creating new
+The **Racket programming language** was designed to support creation of new
 programming languages \citep{racket-manifesto} and has been used to implement a very wide variety of DSLs
 serving specific purposes,
-including typed languages such as Typed Racket \citet{typed-racket-main-reference}. We believe
+including typed languages such as Typed Racket by \citet{typed-racket-main-reference}. We believe
 that one of the key characteristics of the Racket approach to language implementation is the
 ability to treat code as data. Makam is largely inspired by this approach and follows along
 the same lines; this is not demonstrated in the present work to a large extent, save for the
@@ -50,7 +50,7 @@ use of `refl.assume_get`, which turns code (the local assumptions for a predicat
 support in the form of higher-order abstract syntax makes the \lamprolog setting significantly
 different from Racket.
 
-The recent development of a methodology for developing type systems as macros
+The recent development of a methodology for developing **type systems as macros** by
 \citet{racket-type-systems-as-macros} is a great validation of the Racket approach and is especially
 relevant to our use case, as it has been used to encode type systems similar to ML. The integration
 that this methodology provides with the rest of the Racket ecosystem offers a number of advantages,
@@ -58,7 +58,7 @@ as does the \rulename{Turnstile} DSL for writing typing rules close to the pen-a
 versions. We do believe that the higher-order logic programming setting allows for more expressivity
 and genericity -- for example, we have used the same techniques to define not only typing rules but
 evaluation rules as well. Evaluation rules can be implemented using another DSL of the Racket
-ecosystem, namely PLT Redex \citep{felleisen2009semantics}. We believe that staying within the same
+ecosystem, namely **PLT Redex** \citep{felleisen2009semantics}. We believe that staying within the same
 framework for both aspects offers other advantages, especially for encoding languages where the two
 aspects are more linked, such as dependently typed languages with the conversion rule. We give one
 small example of that in the form of the type synonyms example. We also find that the presence of
@@ -66,7 +66,7 @@ first-class substitution support and the support for structural recursion in Mak
 over PLT Redex.  Last, we are also exploring an approach similar to \rulename{Turnstile} to
 implement a higher-level surface language for writing typing rules using Makam itself.
 
-\hero{\bf Other frameworks} The **Spoofax language workbench** \citep{spoofax-main-reference} offers a series of DSLs
+The **Spoofax language workbench** \citep{spoofax-main-reference} offers a series of DSLs
 for implementing different aspects of a language, such as parsing, binding, typing and
 dynamic semantics. We have found that some of these DSLs have restrictions that would make
 the implementation of type systems similar to the ones we present in the present work
@@ -79,6 +79,6 @@ them as abstract machines that compute types rather than values. The recent addi
 a builtin unification procedure has made this approach more effective; however, the fact
 that \lamprolog supports higher-order unification as well renders it applicable in
 further situations such as dependently typed systems. As future work, we are exploring
-the design of a core calculus to aid in the bootstrapping of a language such as Makam
-and we believe that a connection with the rewriting logic core of the K framework
+the design of a core calculus to aid in the bootstrapping of a language such as Makam,
+and we believe that a connection with the rewriting-logic core of the K framework
 will prove beneficial in this endeavor.

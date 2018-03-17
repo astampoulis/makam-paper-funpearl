@@ -289,7 +289,7 @@ structural_recursion Rec X Y :-
 
 ADVISOR. Nice. Now, this assumes that `X` and `Y` are both concrete terms. What happens when `X` is concrete and `Y` isn't, or the other way around? Hint: you can use `refl.headargs` in the other direction, to reconstruct a term from a constructor and a list of arguments.
 
-STUDENT. Let me think about that a bit. How is this?
+STUDENT. How about this? This way, we will deconstruct the concrete `X`, perform the transformation on the `Arguments`, and then reapply the `Constructor` to get the result for `Y`.
 
 ```makam
 structural_recursion Rec X Y :-
@@ -298,7 +298,7 @@ structural_recursion Rec X Y :-
   refl.headargs Y Constructor Arguments'.
 ```
 
-ADVISOR. That is exactly right. You need the symmetric case too, where `Y` is concrete and `X` isn't, but that's entirely similar. Also, there is another type of concrete terms in Makam: meta-level functions! It does not make sense to destructure functions using `refl.headargs`; so, that predicate `refl.headargs` fails for functions, and we have to treat them specially:
+ADVISOR. That is exactly right. You need the symmetric case too but that's entirely similar. Also, there is another type of concrete terms in Makam: meta-level functions! It does not make sense to destructure functions using `refl.headargs`, so it fails in that case, and we have to treat them specially:
 
 ```makam
 structural_recursion Rec (X : A -> B) (Y : A -> B) :-
