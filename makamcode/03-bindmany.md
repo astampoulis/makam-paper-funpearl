@@ -95,8 +95,7 @@ ADVISOR. The rule is written like this, and I'll explain what goes into it:
 ```makam-noeval
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T) :-
-  openmany F (fun xs body =>
-    assumemany typeof xs TS (typeof body T)).
+  openmany F (fun xs body => assumemany typeof xs TS (typeof body T)).
 ```
 
 STUDENT. Let me see if I can read this... `openmany` somehow gives you fresh variables `xs` for the
@@ -112,8 +111,7 @@ the fresh variables we introduced.
 ```makam
 openmany : bindmany A B -> (list A -> B -> prop) -> prop.
 openmany (body Body) Q :- Q [] Body.
-openmany (bind F) Q :-
-  (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
+openmany (bind F) Q :- (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
 ```
 
 STUDENT. I see. I guess `assumemany` is similar, introducing one assumption at a time?
@@ -133,7 +131,7 @@ typeof (lammany F) (arrowmany TS T) :-
 ```
 -->
 
-ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons\footnote{See \citet{assumemany-issue} for a discussion of the issue.}. Makam is more lax, and so is ELPI, another recent \lamprolog implementation, and allows this form statically, though there are instantiations of `P` that will fail at run-time.
+ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons\footnote{See \citet{assumemany-issue} for a discussion of the issue.}. Makam is allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time.
 
 STUDENT. I see. But in that case we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
 
@@ -200,6 +198,7 @@ ADVISOR. Sure. Let's take this term for example:
 let rec f = f_def and g = g_def in body
 ```
 
+\noindent
 If we write this in a way where the binding structure is explicit, we would bind
 `f` and `g` simultaneously and then write the definitions and the body in that scope:
 
@@ -256,7 +255,7 @@ eval (letrec (bind (fun x => body ([Def x], Body x)))) V :-
 
 STUDENT. Ah, I see\footnote{There is a subtlety here, having to do with the free variables that a unification variable
 can capture. In \lamprolog, a unification variable is allowed to capture all the free variables in scope at the
-point where it is introduced, as well as any variables it is explicitly applied to. \texttt{Defs} and \texttt{Body} are introduced as unification variables when we get to execute the \texttt{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \texttt{Defs} and \texttt{Body} can capture the \texttt{xs} variables that \texttt{openmany} introduces, whereas \texttt{T'} cannot. In \lamprolog terms, the \texttt{pfun} notation desugars to existential quantification of any (capitalized) unification variables that are mentioned while destructuring an argument, like the variables \texttt{Defs} and \texttt{Body}.}. Let me ask you something though: one thing I noticed with our representation of `letrec` is that we have to be careful so
+point where it is introduced, as well as any variables it is explicitly applied to. \texttt{Defs} and \texttt{Body} are introduced as unification variables when we get to execute the \texttt{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \texttt{Defs} and \texttt{Body} can capture the \texttt{xs} variables that \texttt{openmany} introduces, whereas \texttt{T'} cannot. In \lamprolog terms, the \texttt{pfun} notation of Makam desugars to existential quantification of any (capitalized) unification variables that are mentioned while destructuring an argument, like the variables \texttt{Defs} and \texttt{Body}.}. Let me ask you something though: one thing I noticed with our representation of `letrec` is that we have to be careful so
 that the number of binders matches the number of definitions we give. Our typing rules disallow
 that, but I wonder if there's a way to have a more accurate representation for `letrec` which
 includes that requirement?
