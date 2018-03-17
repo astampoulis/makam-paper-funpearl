@@ -169,8 +169,8 @@ case_or_else : (Scrutinee: term)
   (Else: term) \ensuremath{\to} term.
 \end{verbatim}
 
-I think I'll also have to change \texttt{typeof\_patt}, so that it
-includes an accumulator argument of its own:
+I also have to change \texttt{typeof\_patt}, so that it includes an
+accumulator argument of its own:
 
 \begin{verbatim}
 typeof_patt : [NBefore NAfter] patt NBefore NAfter \ensuremath{\to} typ \ensuremath{\to}

@@ -158,7 +158,7 @@ case_or_else : (Scrutinee: term)
   (Else: term) -> term.
 ```
 
-I think I'll also have to change `typeof_patt`, so that it includes an accumulator argument of its
+I also have to change `typeof_patt`, so that it includes an accumulator argument of its
 own:
 
 ```makam

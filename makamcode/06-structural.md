@@ -31,6 +31,7 @@ ADVISOR. I think we will face a couple of interesting issues with it, the main o
 \inferrule[TypEq-Def]
           {\alpha = \tau \in \Delta}
           {\Delta \vdash \alpha =_\delta \tau}
+\cdots
 \end{mathpar}
 
 STUDENT. Right, we will need the conversion rule, so that we identify types up to expanding their definitions; that's $\delta$-equality... And I see you haven't listed out all the rules for that, but those are mostly standard.
