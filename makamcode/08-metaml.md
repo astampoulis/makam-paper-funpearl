@@ -1,4 +1,4 @@
-# Where our heroes tackle a new level of meta, contexts and substitutions
+# In which our heroes tackle a new level of meta, contexts and substitutions
 
 <!--
 ```makam
@@ -32,11 +32,11 @@ characterize those objects through a typing relation of the form $\Psi \odash o 
 unfortunate that these names suggest object-orientation, but this is not the intent.
 
 STUDENT. I see what you are saying. Let's keep the objects simple -- to start, let's just do the
-terms of the simply typed lambda calculus (STLC). In that cases our classes will just be the types
+terms of the simply typed lambda calculus (STLC). In that case our classes will just be the types
 of STLC. The objects are run-time entities: essentially, our programs will be able to "compute"
 objects. So we need a way to return (or "lift") an object $o$ as a meta-level value $\lift{o}$.
 
-ADVISOR. Good idea. We are getting into many levels of meta -- there's the metalanguage we're
+ADVISOR. We are getting into many levels of meta -- there's the metalanguage we're
 using, Makam; there's the object language we are encoding, which is now becoming a metalanguage in
 itself, let's call that Heterogeneous Meta ML Light (HMML?); and there's the "object-object"
 language that HMML is manipulating. One option would be to have the object-object language be the
@@ -57,13 +57,13 @@ let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
 
 ADVISOR. It's a plan. So, let's get to it. Should we write some of the system down on paper first?
 
-STUDENT. Yes, that would be very useful. For this example, we will need a lifting construct $\lift{\cdot}$ and the
+STUDENT. Yes, that would be very useful. For this example, we will need the lifting construct $\lift{\cdot}$ and the
 `letobj` form. Here are their typing
 rules, which depend on an appropriately defined typing judgment $\Psi \odash o : c$ for objects. In
-our case, this will initially match the $\Delta \vdash \hat{t} : \hat{e}$ typing judgment for STLC (I'll use hats for terms of STLC, to disambiguate them from terms of HMML). We
+our case, this will initially match the $\Delta \vdash \hat{e} : \hat{t}$ typing judgment for STLC (I'll use hats for terms of STLC, to disambiguate them from terms of HMML). We
 use $\dep{i}$ for variables standing for objects, which we will call *indices*. And we will need
 a way to antiquote indices inside STLC terms, which means that we will have to *extend* the STLC terms as well as their
-typing judgment accordingly. We store indices in the $\Psi$ context, so the STLC typing judgment will end up having the form $\Psi; \Delta \vdash t : e$. Last, I'll also write down the evaluation rules of the new constructs, as they are quite simple.
+typing judgment accordingly. We store indices in the $\Psi$ context, so the STLC typing judgment will end up having the form $\Psi; \Delta \vdash \hat{e} : \hat{t}$. Last, I'll also write down the evaluation rules of the new constructs, as they are quite simple.
 
 \newcommand\stlce[0]{\hat{e}}
 \newcommand\stlct[0]{\hat{t}}
@@ -72,7 +72,7 @@ typing judgment accordingly. We store indices in the $\Psi$ context, so the STLC
 \begin{mathpar}
 \begin{array}{ll}
 \rulename{Ob-Ob-Syntax}                                                   & \rulename{HMML-Syntax} \\
-\stlce  ::= \lambda x:\stlct.\stlce \; | \; \stlce_1 \; \stlce_2 \; | \; x \; | \; n \; | \; \stlce_1 * \stlce_2 \; | \; \textbf{\aq{i}} & e ::= \text{...} \; | \; \lift{\dep{o}} \; | \; \texttt{letobj} \; \dep{i} = \dep{o} \; \texttt{in} \; e \\
+\stlce  ::= \lambda x:\stlct.\stlce \; | \; \stlce_1 \; \stlce_2 \; | \; x \; | \; n \; | \; \stlce_1 * \stlce_2 \; | \; \textbf{\aq{i}} & e ::= \text{...} \; | \; \lift{\dep{o}} \; | \; \texttt{letobj} \; \dep{i} = \dep{e} \; \texttt{in} \; e' \\
 \stlct  ::= \stlct_1 \to \stlct_2 \; | \; \stlc{\text{nat}} & \tau ::= \text{...} \; | \; \lift{\dep{c}} \\
 \dep{o} ::= \stlce \hspace{1.5em} \dep{c} ::= \stlct &
 \end{array}
@@ -125,7 +125,7 @@ eval (letobj E I_E') V :-
 ```
 
 ADVISOR. Great. I'll add the object language in a separate namespace prefix -- we can use `\texttt{\%extend}' for going
-into a namespace -- and I'll just copy-paste our STLC code from earlier on. Let me also add our new antiquote as a new STLC term constructor!
+into a namespace -- and I'll just copy-paste our STLC code from earlier on, plus natural numbers. Let me also add our new antiquote as a new STLC term constructor!
 
 ```
 %extend stlc.
@@ -341,8 +341,8 @@ We have to list out explicitly the variables that an open term depends on, so th
 
 STUDENT. Good thing I've already printed the paper out. (...) OK, so it says here that we can use
 contextual types to record, at the type level, the context that open terms depend on. So let's say
-an open `stlc.term` of type $t$ that mentions variables of a $\Phi$ context would have a contextual
-type of the form $[\Phi] t$. This is some sort of modal typing, with a precise context.
+an open `stlc.term` of type $t$ that mentions variables of a $\Delta$ context would have a contextual
+type of the form $[\Delta] t$. This is some sort of modal typing, with a precise context.
 
 ADVISOR. Right. We now get to the tricky part: referring to variables that stand for open
 terms within other terms! You know what those are, right? Those are Object-level
@@ -352,7 +352,7 @@ STUDENT. My head hurts; I'm getting [OOM](https://en.wikipedia.org/wiki/Out_of_m
 this is easier to implement in Makam than to talk about.
 
 ADVISOR. Maybe so. Well, let me just say this: those variables will stand for open terms that depend
-on a specific context $\Phi$, but we might use them at a different context $\Phi'$. We need a
+on a specific context $\Delta$, but we might use them at a different context $\Delta'$. We need a
 *substitution* $\sigma$ to go from the context of definition into the current context.
 I think writing down the rules on paper will help:
 
@@ -372,7 +372,7 @@ I think writing down the rules on paper will help:
 
 \inferrule[STLC-TypeOf-AntiquoteOpen]
           {\dep{i} : [\stlct_1, \text{...}, \stlct_n] \stlct \in \Psi \\
-           \forall i.\Psi \odash \stlce_i : \stlct_i}
+           \forall i.\Psi; \Delta \vdash \stlce_i : \stlct_i}
           {\Psi; \Delta \vdash \aqopen{\dep{i}}/[\stlce_1, \text{...}, \stlce_n] : \stlct}
 \end{mathpar}
 \begin{mathpar}
@@ -387,7 +387,7 @@ I think writing down the rules on paper will help:
 STUDENT. I've seen that rule for \rulename{SubstObj} before, and it is still tricky... We need
 to replace the open variables in $e$ through the substitution $\sigma = [\stlce^*_1, \text{...}, \stlce^*_n]$.
 However, the terms $\stlce^*_1$ through $\stlce^*_n$ might mention the $i$ index themselves, so we first
-need to apply the top-level substitution to $\sigma$ itself! After that, we do replace the open
+need to apply the top-level substitution for $i$ to $\sigma$ itself! After that, we do replace the open
 variables in $\stlce$.
 
 ADVISOR. I feel that we are getting to the point where it's easier to write things
@@ -404,12 +404,12 @@ typeof (aqopen I ES) T :-
 %end.
 
 classof (obj_openterm XS_E) (cls_ctxtyp TS T) :-
-  openmany XS_E (fun xs e =>
+  openmany XS_E (fun xs e => 
     assumemany stlc.typeof xs TS (stlc.typeof e T)).
 
-subst_obj_cases Var (obj_openterm Replace) (stlc.aqopen Var Subst) Result :-
-  applymany Replace Subst Intermediate,
-  subst_obj_aux Var (obj_openterm Replace) Intermediate Result.
+subst_obj_cases I (obj_openterm XS_E) (stlc.aqopen I ES) Result :-
+  subst_obj_aux I (obj_openterm XS_E) ES ES',
+  applymany XS_E ES' Result.
 ```
 
 STUDENT. I think that's all! This is exciting -- let me try it out:
@@ -464,7 +464,7 @@ AUDIENCE. We cannot possibly believe that you are claiming this was easy!
 
 AUTHOR. Still, try implementing something like this without a metalanguage...  It takes a long time!
 As a result, it limits our ability to experiment with and iterate on new language-design
-ideas. That's why I started working on Makam. That took a few years, but now we can at least show
+ideas. That's why we started working on Makam. That took a few years, but now we can at least show
 a type system like this in 27 pages of a single-column PDF!
 
 ADVISOR. I wonder where all these voices are coming from?

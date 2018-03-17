@@ -1,4 +1,4 @@
-# Where our heroes summarize what they've done and our story concludes before the credits start rolling
+# In which our heroes summarize what they've done and our story concludes before the credits start rolling
 
 STUDENT. I feel like we've done a lot here. And some of the things we did I don't think
 I've seen in the literature before, but then again, it's not clear to me what's
@@ -17,17 +17,16 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   `bindmany` has never been shown as a reusable datatype that \lamprolog makes possible.  We have
   made use of GADTs to encode some of these binding structures precisely, which we show are
   supported in \lamprolog through ad-hoc polymorphism.  This we believe is a novel usage for this
-  \lamprolog feature. Our binding constructions should be replicable in the standard λProlog/Teyjus
-  implementation \citep{teyjus-main-reference} and in ELPI \citep{elpi-main-reference}.
+  \lamprolog feature. Our binding constructions should be replicable in other λProlog implementations
+  like Teyjus \citep{teyjus-main-reference,teyjus-2-implementation} and in ELPI \citep{elpi-main-reference}.
 
 - We defined a generic predicate to perform structural recursion using a very concise
   definition. It allows us to define structurally recursive predicates that only explicitly
   list out the important cases, in what we believe is a novel encoding for the \lamprolog
   setting. Any new definitions, such as constructors or datatypes we introduce later, do
   not need any special provision to be covered by the same predicates. They depend on a
-  number of reflective predicates, which are available in other Prolog dialects; however,
-  we are not aware of a published example that makes use of them in the \lamprolog
-  setting. These predicates are used to reflect on the structure of Makam terms and to
+  number of reflective predicates, most of which are available in other Prolog and \lamprolog dialects.
+  These predicates are used to reflect on the structure of Makam terms and to
   get the list of local assumptions; for the most part, their use is limited to predicates
   that would be part of the standard library, not in user code.
 

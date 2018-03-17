@@ -1,4 +1,4 @@
-# Where our hero Roza implements type generalization, tying loose ends
+# In which our hero Roza implements type generalization, tying loose ends
 
 <!--
 ```makam
@@ -7,7 +7,7 @@ tests: testsuite. %testsuite tests.
 ```
 -->
 
-\begin{verse}
+\begin{versy}
 ``We mentioned Hindley-Milner / we don't want you to be sad. \\
 This paper's going to end soon / and it wasn't all that bad. \\
 \hspace{1em}\vspace{-0.5em} \\
@@ -16,10 +16,10 @@ If taksims seem monotonous / then put on some Nick Drake.) \\
 \hspace{1em}\vspace{-0.5em} \\
 We'll gather unif-variables / with structural recursion \\
 and if you haven't guessed it yet / we'll get to use reflection.''
-\end{verse}
+\end{versy}
 
-ADVISOR. Let me now show you how to implement type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}. I've done this before\footnote{Existing work that has considered the problem of ML type generalization
-in the \lamprolog setting can be found in \citet{typgen-lamprolog-1} and \citet{typgen-lamprolog-2}.}, and I need to leave for home soon, so bear with me
+ADVISOR. Let me now show you how to implement type generalization for polymorphic `let` in the style of \citet{damas1984type,hindley1969principal,milner1978theory}. I've done this before\footnote{There is existing work that has considered the problem of ML type generalization
+in the \lamprolog setting \citep{typgen-lamprolog-1,typgen-lamprolog-2}. Our presentation here follows a different approach based on reflective and generic predicates.}, and I need to leave for home soon, so bear with me
 for a bit. The gist will be to reuse the unification support of our metalanguage,
 capturing the *metalevel unification variables* and generalizing over them. That way we will
 have a very short implementation, and we won't have to do a deep embedding of unification!
@@ -52,7 +52,7 @@ Now, for generalization itself, we need the following ingredients based on the t
 
 - something that picks out free variables from a type, standing for the $\text{fv}(\tau)$ part -- or, in our setting, this should really be read as uninstantiated unification variables. Those are the Makam-level unification variables that have not been forced to unify with concrete types because of the rest of the typing rules.
 - something that picks out free variables from the local context: the $\text{fv}(\Gamma)$ part. Again, these are the uninstantiated unification variables rather than the free variables. In our case, the context $\Gamma$ is represented by the local `typeof` assumptions that our typing rules add, so we'll have to look at those somehow.
-- a way to turn something that includes unification variables into a $\forall$ type, corresponding to the $\forall \vec{a}.\tau$ part. This essentially abstracts over a number of variables and uses them as the replacement for the ones inside $\tau$.
+- a way to turn something that includes unification variables into a $\forall$ type, corresponding to the $\forall \vec{a}.\tau$ part. This essentially abstracts over a number of variables and uses them as the replacement for the unification variables inside $\tau$.
 
 All of those look like things that we should be able to do with our generic recursion and with the
 reflective predicates we've been using! However, to make the implementation simpler, we will
@@ -112,12 +112,13 @@ dyn.eq : [A B] A -> B -> prop.
 dyn.eq X X.
 ```
 
-The difference between this and `eq` is that the types `A` and `B` are only unified at runtime,
-rather than statically too. Otherwise, our rule would only apply when the type `CurrentType` of the
-current unification variable we are visiting already matches the type that we are searching for,
-`VarType`.
+Though this predicate succeeds for the same case as the standard `eq` does (when its two arguments
+are unifiable), the different is that `dyn.eq` only forces the types `A` and `B` to be unified at
+runtime, rather than statically too. Otherwise, our rule would only apply when the type
+`CurrentType` of the current unification variable we are visiting already matches the type that we
+are searching for, `VarType`.
 
-With this predicate, we should already be able to find *one* (as opposed to all, as described above)
+With `findunif` defined, we should already be able to find *one* (as opposed to all, as described above)
 uninstantiated unification variable from a type. Here is an example of its use:
 
 ```
@@ -137,7 +138,7 @@ findunif (arrowmany TS T) (X: typ) ?
 -->
 
 Now we add a predicate `replaceunif` that, given a specific unification variable and a
-specific term, replaces its occurrences with the term. This will be needed as part of the
+specific term, replaces the variable's occurrences with the term. This will be needed as part of the
 $\forall \vec{a}.\tau$ operation of the rule. Here I'll need another reflective predicate,
 `refl.sameunif`, that succeeds when its two arguments are the same exact unification variable;
 `eq` would just unify them, which is not what we want.
@@ -169,7 +170,7 @@ hasunif Var Term :- hasunif Var false Term true.
 We are now mostly ready to implement `generalize`. We'll do this recursively. The base case is when there are no unification variables within a type left:
 
 ```makam
-generalize T T :- not(findunif T X).
+generalize T T :- not(findunif T (X: typ)).
 ```
 
 For the recursive case, we will pick out the first unification variable that we come upon using
@@ -190,14 +191,15 @@ generalize T Res :-
 \identDialog
 
 STUDENT. Oh, clever. But what should `get_types_in_environment` be? Don't we have to go
-back and thread a list of types through our `typeof` predicate, every time we introduce a
-new `typeof x T ->` assumption?
+back and thread a list of types through our `typeof` predicate, that we add a type `T` to
+every time we introduce a new `typeof x T` assumption?
 
 ADVISOR. Well, we came this far without significantly rewriting our rules, so it's a shame to do
 that now!  Maybe we'll be excused to use yet another reflective predicate that does what we want?
-There is a way to get a list of all the local assumptions for the `typeof` predicate; it turns out
-that all the rules and connectives are normal \lamprolog terms like any other, so there's not really
-much magic to it. And those assumptions will include just the types in $\Gamma$....
+There is a way to get a list of all the local assumptions for a predicate, through the
+reflexive predicate `refl.assume_get`. It turns out that all the rules and connectives we
+have been using are normal \lamprolog terms like any other, so there's not really
+much magic to it. And those assumptions will include all the types in $\Gamma$....
 
 ```makam
 get_types_in_environment Assumptions :-

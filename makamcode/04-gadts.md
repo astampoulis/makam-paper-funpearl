@@ -1,4 +1,4 @@
-# Where the legend of the GADTs and the Ad-Hoc Polymorphism is recounted
+# In which the legend of the GADTs and the Ad-Hoc Polymorphism is recounted
 
 <!--
 ```makam

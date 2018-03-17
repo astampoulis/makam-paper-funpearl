@@ -1,4 +1,4 @@
-# Where our heroes reflect on structural recursion
+# In which our heroes reflect on structural recursion
 
 <!--
 ```makam

@@ -1,6 +1,6 @@
-\section{Where our heroes add parentheses and discover how to do
+\section{In which our heroes add parentheses and discover how to do
 multiple
-binding}\label{where-our-heroes-add-parentheses-and-discover-how-to-do-multiple-binding}
+binding}\label{in-which-our-heroes-add-parentheses-and-discover-how-to-do-multiple-binding}
 
 \heroSTUDENT{} Still, I feel like we've been playing to the strengths of
 \foreignlanguage{greek}{λ}Prolog\ldots{}. Yes, single-variable binding, substitutions, and so on
@@ -133,11 +133,10 @@ assumemany P (X :: XS) (T :: TS) Q \ensuremath{:\!-} (P X T \ensuremath{\to} ass
 \heroADVISOR{} Yes, exactly! Just a note, though -- \lamprolog typically does
 not allow the definition of \texttt{assumemany}, where a non-concrete
 predicate like \texttt{P\ X\ Y} is used as an assumption, because of
-logical
-reasons\footnote{See \citet{assumemany-issue} for a discussion of the issue.}.
-Makam is allows this form statically and so does ELPI
-\citep{elpi-main-reference}, another \lamprolog implementation, though
-there are instantiations of \texttt{P} that will fail at run-time.
+logical reasons \citep{assumemany-issue}. Makam is allows this form
+statically and so does ELPI \citep{elpi-main-reference}, another
+\lamprolog implementation, though there are instantiations of \texttt{P}
+that will fail at run-time.
 
 \heroSTUDENT{} I see. But in that case we could just manually inline
 \texttt{assumemany\ typeof} instead, so that's not a big problem, just

@@ -1,4 +1,4 @@
-# Where our heroes set out on a road to prototype a type system
+# In which our heroes set out on a road to prototype a type system
 
 \hero{HAGOP (Student)} (...) So yes, I think my next step should be writing a toy implementation of the
 type system we have in mind, so that we can try out some examples and see what works
@@ -36,7 +36,7 @@ let's work on this together; it'll be fun. I'll show you how things work along t
 (Our heroes install Makam from --elided for blind reviewing-- and figure out how to run the REPL.)
 \end{scenecomment}
 
-# Where we get a premonition of things to come
+# In which we get a premonition of things to come
 
 \identNormal
 

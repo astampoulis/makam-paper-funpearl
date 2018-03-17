@@ -1,4 +1,4 @@
-# Where our heroes add parentheses and discover how to do multiple binding
+# In which our heroes add parentheses and discover how to do multiple binding
 
 <!--
 ```makam
@@ -131,7 +131,7 @@ typeof (lammany F) (arrowmany TS T) :-
 ```
 -->
 
-ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons\footnote{See \citet{assumemany-issue} for a discussion of the issue.}. Makam is allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time.
+ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons \citep{assumemany-issue}. Makam is allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time.
 
 STUDENT. I see. But in that case we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
 

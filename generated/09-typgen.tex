@@ -1,7 +1,8 @@
-\section{Where our hero Roza implements type generalization, tying loose
-ends}\label{where-our-hero-roza-implements-type-generalization-tying-loose-ends}
+\section{In which our hero Roza implements type generalization, tying
+loose
+ends}\label{in-which-our-hero-roza-implements-type-generalization-tying-loose-ends}
 
-\begin{verse}
+\begin{versy}
 ``We mentioned Hindley-Milner / we don't want you to be sad. \\
 This paper's going to end soon / and it wasn't all that bad. \\
 \hspace{1em}\vspace{-0.5em} \\
@@ -10,14 +11,14 @@ If taksims seem monotonous / then put on some Nick Drake.) \\
 \hspace{1em}\vspace{-0.5em} \\
 We'll gather unif-variables / with structural recursion \\
 and if you haven't guessed it yet / we'll get to use reflection.''
-\end{verse}
+\end{versy}
 
 \heroADVISOR{} Let me now show you how to implement type generalization for
 polymorphic \texttt{let} in the style of
 \citet{damas1984type,hindley1969principal,milner1978theory}. I've done
 this
-before\footnote{Existing work that has considered the problem of ML type generalization
-in the \lamprolog setting can be found in \citet{typgen-lamprolog-1} and \citet{typgen-lamprolog-2}.},
+before\footnote{There is existing work that has considered the problem of ML type generalization
+in the \lamprolog setting \citep{typgen-lamprolog-1,typgen-lamprolog-2}. Our presentation here follows a different approach based on reflective and generic predicates.},
 and I need to leave for home soon, so bear with me for a bit. The gist
 will be to reuse the unification support of our metalanguage, capturing
 the \emph{metalevel unification variables} and generalizing over them.
@@ -70,7 +71,7 @@ on the typing rule:
   a way to turn something that includes unification variables into a
   \(\forall\) type, corresponding to the \(\forall \vec{a}.\tau\) part.
   This essentially abstracts over a number of variables and uses them as
-  the replacement for the ones inside \(\tau\).
+  the replacement for the unification variables inside \(\tau\).
 \end{itemize}
 
 All of those look like things that we should be able to do with our
@@ -115,15 +116,17 @@ dyn.eq : [A B] A \ensuremath{\to} B \ensuremath{\to} prop.
 dyn.eq X X.
 \end{verbatim}
 
-The difference between this and \texttt{eq} is that the types \texttt{A}
-and \texttt{B} are only unified at runtime, rather than statically too.
-Otherwise, our rule would only apply when the type \texttt{CurrentType}
-of the current unification variable we are visiting already matches the
-type that we are searching for, \texttt{VarType}.
+Though this predicate succeeds for the same case as the standard
+\texttt{eq} does (when its two arguments are unifiable), the different
+is that \texttt{dyn.eq} only forces the types \texttt{A} and \texttt{B}
+to be unified at runtime, rather than statically too. Otherwise, our
+rule would only apply when the type \texttt{CurrentType} of the current
+unification variable we are visiting already matches the type that we
+are searching for, \texttt{VarType}.
 
-With this predicate, we should already be able to find \emph{one} (as
-opposed to all, as described above) uninstantiated unification variable
-from a type. Here is an example of its use:
+With \texttt{findunif} defined, we should already be able to find
+\emph{one} (as opposed to all, as described above) uninstantiated
+unification variable from a type. Here is an example of its use:
 
 \begin{verbatim}
 findunif (arrowmany TS T) (X: typ) ?
@@ -132,12 +135,12 @@ findunif (arrowmany TS T) (X: typ) ?
 \end{verbatim}
 
 Now we add a predicate \texttt{replaceunif} that, given a specific
-unification variable and a specific term, replaces its occurrences with
-the term. This will be needed as part of the \(\forall \vec{a}.\tau\)
-operation of the rule. Here I'll need another reflective predicate,
-\texttt{refl.sameunif}, that succeeds when its two arguments are the
-same exact unification variable; \texttt{eq} would just unify them,
-which is not what we want.
+unification variable and a specific term, replaces the variable's
+occurrences with the term. This will be needed as part of the
+\(\forall \vec{a}.\tau\) operation of the rule. Here I'll need another
+reflective predicate, \texttt{refl.sameunif}, that succeeds when its two
+arguments are the same exact unification variable; \texttt{eq} would
+just unify them, which is not what we want.
 
 \begin{verbatim}
 replaceunif : [VarType Any]
@@ -169,7 +172,7 @@ recursively. The base case is when there are no unification variables
 within a type left:
 
 \begin{verbatim}
-generalize T T \ensuremath{:\!-} not(findunif T X).
+generalize T T \ensuremath{:\!-} not(findunif T (X: typ)).
 \end{verbatim}
 
 For the recursive case, we will pick out the first unification variable
@@ -193,16 +196,18 @@ generalize T Res \ensuremath{:\!-}
 
 \heroSTUDENT{} Oh, clever. But what should
 \texttt{get\_types\_in\_environment} be? Don't we have to go back and
-thread a list of types through our \texttt{typeof} predicate, every time
-we introduce a new \texttt{typeof\ x\ T\ \ensuremath{\to}} assumption?
+thread a list of types through our \texttt{typeof} predicate, that we
+add a type \texttt{T} to every time we introduce a new
+\texttt{typeof\ x\ T} assumption?
 
 \heroADVISOR{} Well, we came this far without significantly rewriting our
 rules, so it's a shame to do that now! Maybe we'll be excused to use yet
 another reflective predicate that does what we want? There is a way to
-get a list of all the local assumptions for the \texttt{typeof}
-predicate; it turns out that all the rules and connectives are normal
-\lamprolog terms like any other, so there's not really much magic to it.
-And those assumptions will include just the types in \(\Gamma\)\ldots{}.
+get a list of all the local assumptions for a predicate, through the
+reflexive predicate \texttt{refl.assume\_get}. It turns out that all the
+rules and connectives we have been using are normal \lamprolog terms
+like any other, so there's not really much magic to it. And those
+assumptions will include all the types in \(\Gamma\)\ldots{}.
 
 \begin{verbatim}
 get_types_in_environment Assumptions \ensuremath{:\!-}

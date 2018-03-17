@@ -1,4 +1,4 @@
-# Where our hero Hagop adds pattern matching on his own
+# In which our hero Hagop adds pattern matching on his own
 
 <!--
 ```makam

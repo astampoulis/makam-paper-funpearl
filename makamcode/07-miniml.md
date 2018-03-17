@@ -1,4 +1,4 @@
-# Where our heroes break into song and add more ML features
+# In which our heroes break into song and add more ML features
 
 <!--
 ```makam

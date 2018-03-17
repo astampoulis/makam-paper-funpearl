@@ -1,4 +1,4 @@
-# Where our heroes get the easy stuff out of the way
+# In which our heroes get the easy stuff out of the way
 
 <!--
 ```makam
