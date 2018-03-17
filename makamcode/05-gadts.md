@@ -2,7 +2,7 @@
 
 <!--
 ```makam
-%use "03-bindmany.md".
+%use "04-bindmany.md".
 tests: testsuite. %testsuite tests.
 ```
 -->
