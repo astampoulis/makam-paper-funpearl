@@ -1,4 +1,4 @@
-%use "07-structural".
+%use "08-miniml".
 tests: testsuite. %testsuite tests.
 
 object, class, index : type.

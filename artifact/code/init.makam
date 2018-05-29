@@ -1,0 +1,44 @@
+print_string {{
+
+
+----------------------
+ Welcome to Makam. 
+ Available files, corresponding to each chapter: 
+
+    03-stlc 
+    04-bindmany 
+    05-gadts 
+    06-patterns 
+    07-structural 
+    08-miniml 
+    09-metaml 
+    10-typgen 
+
+ To load one of the files, do:
+
+    %use "03-stlc".
+
+ To re-load a file after you've made changes, do:
+
+    %usenew "03-stlc". 
+
+ You can define new types, constructors and rules, and also run your own queries
+ with the same syntax as described in the paper. For example, after loading "03-stlc":
+
+    typeof (lam _ (fun x => x)) T ?
+
+ To run the tests within each file, do:
+
+    run_tests tests ?
+
+ To view this message again, run this query:
+
+    help ?
+
+ Enjoy!
+----------------------
+
+
+}} ?
+
+%directory "justcode".

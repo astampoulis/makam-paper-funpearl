@@ -242,6 +242,6 @@ Great! Time to show this to Roza.
 
 <!--
 ```makam
-%use "05-removed-patterns-eval.md".
+%use "06-removed-patterns-eval.md".
 ```
 -->

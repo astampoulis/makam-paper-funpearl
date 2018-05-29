@@ -71,5 +71,5 @@ typeof (lam _ (fun n => case_or_else n
 >> Yes:
 >> T := arrow onat onat.
 
-%use "05-removed-patterns-eval".
+%use "06-removed-patterns-eval".
 

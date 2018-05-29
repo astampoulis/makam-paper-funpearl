@@ -185,3 +185,7 @@ tmp/
 
 # Makam
 .makam-cache
+
+artifact/code/justcode
+artifact/code/literate
+artifact/docker-image.tar
