@@ -173,6 +173,9 @@ perform a number of substitutions:
 applymany : bindmany A B \ensuremath{\to} list A \ensuremath{\to} B \ensuremath{\to} prop.
 applymany (body B) [] B.
 applymany (bind F) (X :: XS) B \ensuremath{:\!-} applymany (F X) XS B.
+\end{verbatim}
+
+\begin{verbatim}
 eval (appmany E ES) V \ensuremath{:\!-}
   eval E (lammany XS_E'), map eval ES VS,
   applymany XS_E' VS E'', eval E'' V.

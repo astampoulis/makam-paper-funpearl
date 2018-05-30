@@ -1,4 +1,3 @@
-- artifact: rename generate-no-comments to something reasonable
 - fix meta-printing in Makam
 - artifact: update Makam version and commit
 - artifact: add anything extra as needed?

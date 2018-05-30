@@ -1,2 +1,2 @@
-FROM ablu/ubuntu-texlive-full:b1bb5e40a22e
+FROM ablu/ubuntu-texlive-full
 RUN apt-get update && apt-get install -y pandoc wamerican
