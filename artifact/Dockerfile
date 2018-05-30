@@ -11,7 +11,7 @@ RUN apk update && apk add bash
 RUN mkdir makam
 COPY --from=makam /home/opam/makam-code/makam /home/opam/makam-code/nativerepl.native makam/
 COPY --from=makam /home/opam/makam-code/stdlib makam/stdlib
-RUN sed -i -e "s/%extend peg/(\* %extend peg/" -e 's/%use "syntax\/init"./%use "syntax.init". \*)/' makam/stdlib/init.makam
+RUN sed -i -e "s/%extend peg/(\* %extend peg/" -e 's/%use "syntax\/init"./%use "syntax\/init". \*)/' makam/stdlib/init.makam
 RUN ln -s $(pwd)/makam/makam /usr/local/bin/makam
 ADD code /static
 
