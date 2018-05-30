@@ -43,7 +43,7 @@ STUDENT. You mean the `list` type?
 
 ADVISOR. Exactly. What do you think about this definition?
 
-```makam-noeval
+```
 bindmanyterms : type.
 bindnil : term -> bindmanyterms.
 bindcons : (term -> bindmanyterms) -> bindmanyterms.
@@ -68,7 +68,7 @@ bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
 ADVISOR. This looks great! That is exactly what's in the Makam standard library, actually. And
 we can now define `lammany` using it -- and our example term from before.
 
-```makam-noeval
+```
 lammany : bindmany term term -> term.
 lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))
 ```
@@ -92,7 +92,7 @@ STUDENT. Interesting. So how do we work with `bindmany`? What's the typing rule 
 
 ADVISOR. The rule is written like this, and I'll explain what goes into it:
 
-```makam-noeval
+```
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T) :-
   openmany F (fun xs body => assumemany typeof xs TS (typeof body T)).
@@ -187,7 +187,7 @@ abstract binding syntax, or for pretty-printing.... All those are stories for an
 let's just say that we could have defined `bind` with an extra `string` argument, representing the
 concrete name; and then `openmany` would just ignore it.
 
-```makam-noeval
+```
 bind : string -> (Var -> bindmany Var Body) -> bindmany Var Body.
 ```
 
@@ -218,7 +218,7 @@ ADVISOR. Exactly! Want to try writing the typing rules?
 
 STUDENT. Maybe something like this?
 
-```makam-noeval
+```
 typeof (letrec XS_DefsBody) T' :-
   openmany XS_DefsBody (fun xs (defs, body) =>
     assumemany typeof xs TS (map typeof defs TS),
