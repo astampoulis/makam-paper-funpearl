@@ -23,7 +23,7 @@ jobs:
           path: main.pdf
   artifact:
     docker:
-      - image: docker:18.05.0-ce
+      - image: node:9.4.0
     steps:
       - checkout
       - setup_remote_docker
