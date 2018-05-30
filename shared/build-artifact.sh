@@ -29,5 +29,5 @@ docker rmi makam-icfp2018-artifact ;
 
 cd ../ ;
 rm -f artifact.tgz ;
-tar --transform='s/^artifact/^artifact88/' -cvzf artifact.tgz artifact
+tar --transform='s/^artifact/artifact88/' -cvzf artifact.tgz artifact
 )
