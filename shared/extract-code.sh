@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ "x$1" == "x" ]; then echo "usage: $0 <markdown-directory> <makamcode-directory>"; exit 1; fi
 if [ "x$2" == "x" ]; then echo "usage: $0 <markdown-directory> <makamcode-directory>"; exit 1; fi
 

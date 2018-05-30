@@ -235,9 +235,9 @@ repository:
 
     https://github.com/astampoulis/makam
 
-This artifact bundles Makam version 0.7.8, accessible through the URL:
+This artifact bundles Makam version 0.7.9, accessible through the URL:
 
-    https://github.com/astampoulis/makam/releases/tag/v0.7.8
+    https://github.com/astampoulis/makam/releases/tag/v0.7.9
 
 The source code of the paper, along with Docker-based scripts to build the
 paper and this artifact, is available at:

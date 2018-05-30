@@ -2,7 +2,8 @@ FROM ocaml/opam:alpine_ocaml-4.06.0 as makam
 RUN sudo apk update && sudo apk add git m4
 RUN git clone https://github.com/astampoulis/makam.git makam-code
 WORKDIR makam-code
-RUN git checkout 1b03c699c1d30b9a69d8c24ed4ccbf57cb695bc4
+# switch to makam version 0.7.9:
+RUN git checkout 6fda1ca006e0c98a6b15dd4542548174964eee7a
 RUN opam pin add makam . --no-action && opam install makam --deps-only && opam config exec make
 
 FROM node:9-alpine
