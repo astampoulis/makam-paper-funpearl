@@ -188,4 +188,7 @@ tmp/
 
 artifact/code/justcode
 artifact/code/literate
+artifact/code/ArtifactOverview*
 artifact/docker-image.tar
+artifact/code/scripts/*.sh
+artifact/code/scripts/*.awk

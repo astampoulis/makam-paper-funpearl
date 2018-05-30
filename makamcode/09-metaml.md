@@ -219,7 +219,7 @@ typeof (letrec
     lam onat (fun n =>
     case_or_else n
       (patt_ozero) 
-        (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
+        (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
       (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.ozero))))
     )], power)))) T ?
 >> Yes:
@@ -232,10 +232,10 @@ typeof (letrec
     lam onat (fun n =>
     case_or_else n
       (patt_ozero) 
-        (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
+        (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
     (case_or_else n
       (patt_osucc patt_var)
-        (* |-> *) (vbind (fun n' => vbody (
+        (vbind (fun n' => vbody (
            letobj (app power n')
            (fun i =>
              liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.mult x (stlc.app (stlc.aq i) x))))))))
@@ -289,10 +289,10 @@ eval (letrec
     lam onat (fun n =>
     case_or_else n
       (patt_ozero) 
-        (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
+        (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
     (case_or_else n
       (patt_osucc patt_var)
-        (* |-> *) (vbind (fun n' => vbody (
+        (vbind (fun n' => vbody (
            letobj (app power n')
            (fun i =>
              liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.mult x (stlc.app (stlc.aq i) x))))))))
@@ -307,10 +307,10 @@ eval (letrec
     lam onat (fun n =>
     case_or_else n
       (patt_ozero) 
-        (* |-> *) (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
+        (vbody (liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.osucc stlc.ozero)))))
     (case_or_else n
       (patt_osucc patt_var)
-        (* |-> *) (vbind (fun n' => vbody (
+        (vbind (fun n' => vbody (
            letobj (app power n')
            (fun i =>
              liftobj (obj_term (stlc.lam stlc.onat (fun x => stlc.mult x (stlc.app (stlc.aq i) x))))))))
@@ -439,11 +439,11 @@ STUDENT. I think that's all! This is exciting -- let me try it out:
 (eq _TERM (letrec (bind (fun power => body ([
     lam onat (fun n =>
     case_or_else n
-      (patt_ozero) (* |-> *)
+      (patt_ozero)
         (vbody (liftobj (obj_openterm (bind (fun x =>
           body (stlc.osucc stlc.ozero))))))
     (case_or_else n
-      (patt_osucc patt_var) (* |-> *) (vbind (fun n' => vbody (
+      (patt_osucc patt_var) (vbind (fun n' => vbody (
          letobj (app power n') (fun i =>
          liftobj (obj_openterm (bind (fun x =>
            body (stlc.mult x (stlc.aqopen i [x])))))))))

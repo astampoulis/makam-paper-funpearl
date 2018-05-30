@@ -145,7 +145,7 @@ Yes, I think that should work. I have a little editing to do in my existing pred
 representation instead. For top-level patterns, we should always start with the accumulator being `zero`...
 
 <!--
-```makam
+```makam-stdlib
 vsnoc : [N] vector A N -> A -> vector A (succ N) -> prop.
 vsnoc vnil Y (vcons Y vnil).
 vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
@@ -216,13 +216,6 @@ typeof_pattlist (pcons P PS) (T :: TS) VarTypes VarTypes'' :-
 
 typeof_patt (patt_tuple PS) (product TS) VarTypes VarTypes' :-
   typeof_pattlist PS TS VarTypes VarTypes'.
-
-(eq _PRED (lam _ (fun n => case_or_else n
-  (patt_osucc patt_var) (vbind (fun pred => vbody pred))
-  ozero)),
- typeof _PRED T) ?
->> Yes:
->> T := arrow onat onat.
 ```
 -->
 

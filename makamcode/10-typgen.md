@@ -67,7 +67,7 @@ standard, really, and its code is similar to what we did already for `structural
 new surprises.
 
 <!--
-```makam
+```makam-stdlib
 generic_fold : [A'] forall A (B -> A -> B -> prop) -> B -> A' -> B -> prop.
 
 generic_fold F Acc X Acc when refl.isconst X.
@@ -88,7 +88,7 @@ generic_fold F Acc X Acc' when refl.isbaseterm X <-
 ```
 -->
 
-```makam
+```makam-stdlib
 findunif_aux : [Any VarType]
   (Var: option VarType) (Current: Any) (Var': option VarType) -> prop.
 findunif_aux (some Var) _ (some Var).
@@ -143,7 +143,7 @@ $\forall \vec{a}.\tau$ operation of the rule. Here I'll need another reflective 
 `refl.sameunif`, that succeeds when its two arguments are the same exact unification variable;
 `eq` would just unify them, which is not what we want.
 
-```makam
+```makam-stdlib
 replaceunif : [VarType Any]
   (Which: VarType) (ToWhat: VarType) (Where: Any) (Result: Any) -> prop.
 replaceunif Which ToWhat Where ToWhat :-
@@ -157,7 +157,7 @@ replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
 Last, we'll need an auxiliary predicate that tells us whether a unification variable exists within a
 term. This is easy; it's similar to the above.
 
-```makam
+```makam-stdlib
 hasunif : [VarType Any] VarType -> bool -> Any -> bool -> prop.
 hasunif _ true _ true.
 hasunif X false Y true :- refl.sameunif X Y.
@@ -216,10 +216,10 @@ typeof (let (lam _ (fun x => let x (fun y => y))) (fun id => id)) T ?
 ADVISOR. And yet, it can.
 
 <!--
-(Just checking the issue where we don't remove all unification variables in the context -- this
-is a hack, if we need to do this we can show the above in two steps instead:)
-
 ```makam
+(* Simulate the naive rule where we don't remove all the unification variables that appear in
+   the context: *)
+
 (get_types_in_environment [] ->
   typeof (let (lam _ (fun x => let x (fun y => y)))
             (fun z => z)) T) ?

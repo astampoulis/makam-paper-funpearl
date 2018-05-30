@@ -9,5 +9,5 @@ cp $1/*.md $2/
 
 for i in $2/*.md; do
   sed -i -e 's/\.md"/"/' $i;
-  awk -f ../shared/generate-no-comments.awk $i; rm $i;
+  awk -f $(dirname $(realpath $0))/generate-isolated-makam.awk $i; rm $i;
 done

@@ -3,6 +3,7 @@
 <!--
 ```makam
 tests : testsuite. %testsuite tests.
+%use "00-adapted-stdlib.md".
 ```
 -->
 

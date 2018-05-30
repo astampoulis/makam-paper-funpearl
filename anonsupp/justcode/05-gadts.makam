@@ -1,33 +1,7 @@
 %use "04-bindmany".
 tests: testsuite. %testsuite tests.
 
-zero : type. succ : type -> type.
-vector : type -> type -> type.
-vnil : vector A zero.
-vcons : A -> vector A N -> vector A (succ N).
-
-vmap : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop.
-vmap P vnil vnil.
-vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
-
-vbindmany : (Var: type) (N: type) (Body: type) -> type.
-vbody : Body -> vbindmany Var zero Body.
-vbind : (Var -> vbindmany Var N Body) -> vbindmany Var (succ N) Body.
-
-vopenmany : [N] vbindmany Var N Body -> (vector Var N -> Body -> prop) -> prop.
-vopenmany (vbody Body) Q :- Q vnil Body.
-vopenmany (vbind F) Q :-
-  (x:A -> vopenmany (F x) (fun xs => Q (vcons x xs))).
-
 vletrec : vbindmany term N (vector term N * term) -> term.
-
-vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
-vapplymany (vbody Body) vnil Body.
-vapplymany (vbind F) (vcons X XS) Body :- vapplymany (F X) XS Body.
-
-vassumemany : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop -> prop.
-vassumemany P vnil vnil Q :- Q.
-vassumemany P (vcons X XS) (vcons Y YS) Q :- (P X Y -> vassumemany P XS YS Q).
 
 typeof (vletrec XS_DefsBody) T' :-
   vopenmany XS_DefsBody (pfun xs (Defs, Body) =>

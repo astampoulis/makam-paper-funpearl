@@ -6,58 +6,11 @@ let : term -> (term -> term) -> term.
 typeof (let E F) T' :-
   typeof E T, generalize T Tgen, (x:term -> typeof x Tgen -> typeof (F x) T').
 
-generic_fold : [A'] forall A (B -> A -> B -> prop) -> B -> A' -> B -> prop.
-
-generic_fold F Acc X Acc when refl.isconst X.
-
-generic_fold F Acc (X : A -> B) Acc' <-
-  (x:A -> (instantiate F F', F' Acc (X x) Acc')).
-
-polyrec_foldl : forall A (B -> A -> B -> prop) -> B -> list dyn -> B -> prop.
-polyrec_foldl P S nil S.
-polyrec_foldl P S (cons (dyn HD) TL) S'' <-
-  instantiate P P', 
-  P' S HD S',
-  polyrec_foldl P S' TL S''.
-
-generic_fold F Acc X Acc' when refl.isbaseterm X <-
-  refl.headargs X HD Args,
-  polyrec_foldl F Acc Args Acc'.
-
-findunif_aux : [Any VarType]
-  (Var: option VarType) (Current: Any) (Var': option VarType) -> prop.
-findunif_aux (some Var) _ (some Var).
-findunif_aux none (Current : CurrentType) (Result: option VarType) :-
-  refl.isunif Current,
-  if (dyn.eq Result (some Current)) then success
-  else (eq Result none).
-findunif_aux (In: option B) Current Out :-
-  generic_fold @findunif_aux In Current Out.
-findunif : [Any VarType] (Search: Any) (Found: VarType) -> prop.
-findunif Search Found :- findunif_aux none Search (some Found).
-
 findunif (arrowmany TS T) (X: typ) ?
 >> Yes:
 >> X := T,
 >> T := T,
 >> TS := TS.
-
-replaceunif : [VarType Any]
-  (Which: VarType) (ToWhat: VarType) (Where: Any) (Result: Any) -> prop.
-replaceunif Which ToWhat Where ToWhat :-
-  refl.isunif Where, refl.sameunif Which Where.
-replaceunif Which ToWhat Where Where :-
-  refl.isunif Where, not(refl.sameunif Which Where).
-replaceunif Which ToWhat Where Result :- not(refl.isunif Where),
-  structural_recursion @(replaceunif Which ToWhat) Where Result.
-
-hasunif : [VarType Any] VarType -> bool -> Any -> bool -> prop.
-hasunif _ true _ true.
-hasunif X false Y true :- refl.sameunif X Y.
-hasunif X In Y Out :- generic_fold @(hasunif X) In Y Out.
-
-hasunif : [VarType Any] VarType -> Any -> prop.
-hasunif Var Term :- hasunif Var false Term true.
 
 generalize T T :- not(findunif T (X: typ)).
 
@@ -74,6 +27,9 @@ get_types_in_environment Assumptions :-
 typeof (let (lam _ (fun x => let x (fun y => y))) (fun id => id)) T ?
 >> Yes:
 >> T := tforall (fun a => arrow a a).
+
+(* Simulate the naive rule where we don't remove all the unification variables that appear in
+   the context: *)
 
 (get_types_in_environment [] ->
   typeof (let (lam _ (fun x => let x (fun y => y)))

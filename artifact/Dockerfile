@@ -12,5 +12,7 @@ COPY --from=makam /home/opam/makam-code/makam /home/opam/makam-code/nativerepl.n
 COPY --from=makam /home/opam/makam-code/stdlib makam/stdlib
 RUN sed -i -e "s/%extend peg/(\* %extend peg/" -e 's/%use "syntax\/init"./%use "syntax.init". \*)/' makam/stdlib/init.makam
 RUN ln -s $(pwd)/makam/makam /usr/local/bin/makam
-WORKDIR /code
+ADD code /static
+
+WORKDIR /static
 CMD bash

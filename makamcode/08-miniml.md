@@ -30,27 +30,24 @@ typeof (lamt E) (tforall T) :- (a:typ -> typeof (E a) (T a)).
 typeof (appt E T) T' :- typeof E (tforall TF), eq T' (TF T).
 ```
 
+<!--
+```makam
+typeof (lamt (fun a => lam a (fun x => x))) T ?
+>> Yes:
+>> T := tforall (fun a => arrow a a).
+
+typeof (appt (lamt (fun a => lam a (fun x => x))) onat) T ?
+>> Yes:
+>> T := arrow onat onat.
+```
+-->
+
 \begin{versy}
 ``The algebraic datatypes / caused all sorts of trouble \\
 in the previous version / and since it was a double- \\
 blind submission process / reviewers quite diverse \\
 wonder who's the lunatic / who writes papers in verse.''
 \end{versy}
-
-<!--
-```makam
-typedef : (NewType: typ) (Definition: typ) -> prop.
-
-program : type. 
-main : term -> program. 
-lettype : (Definition: typ) (A_Program: typ -> program) -> program.
-
-wfprogram : program -> prop.
-wfprogram (main E) :- typeof E T.
-wfprogram (lettype T A_Program) :-
-  (a:typ -> typedef a T -> wfprogram (A_Program a)).
-```
--->
 
 ```makam
 datadef : type. datatype_bind : (Into: type) -> type.

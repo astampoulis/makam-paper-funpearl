@@ -3,7 +3,7 @@
 <!--
 ```makam
 tests : testsuite. %testsuite tests.
-%use "adapted-stdlib.md".
+%use "00-adapted-stdlib.md".
 ```
 -->
 
@@ -103,7 +103,7 @@ Can we use something like a polymorphic list?
 ADVISOR. Sure, λProlog has polymorphic types and higher-order predicates. Here's how lists
 are defined in the standard library:
 
-```makam-noeval
+```
 list : type -> type.
 nil : list A.
 cons : A -> list A -> list A.
