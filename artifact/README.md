@@ -28,11 +28,12 @@ start a Docker container running the Makam REPL:
 The REPL will give brief usage instructions on startup.  Each chapter
 of the paper corresponds to a single Makam file, stored in the
 `code/justcode/` directory within the artifact. To load a chapter
-within the Makam REPL, issue:
+within the Makam REPL, issue, for example:
 
     %use "04-bindmany".
 
-(You do not need to include the `.makam` suffix of each file.)
+(You do not need to include the `.makam` suffix of each file. For the
+list of chapter files, see "Step-by-Step instructions" below.)
 This will also load all dependencies and run all the contained queries.
 
 Each query shown in the paper (and some additional queries that are
@@ -63,12 +64,11 @@ artifact is mounted within the Docker container -- so, you can
 make changes to the Makam code in `code/justcode/` in your host
 environment (using your favorite editor etc.) and these will be
 reflected within the Docker container. To reload a chapter after you
-have made changes, issue:
+have made changes, issue, for example:
 
     %usenew "04-bindmany".
 
-To exit the Makam REPL, issue an EOF (Ctrl-D on Linux or Cmd-D on
-MacOS X).
+To exit the Makam REPL, issue an EOF (usually Ctrl-D).
 
 The artifact also contains the literate code that the paper is
 generated from in the `code/literate/` directory, as Markdown files
@@ -127,8 +127,8 @@ We also include one file, `06-removed-pattern-eval`, that is not part
 of the paper. This contains the evaluation rules for the pattern
 matching extension (Chapter 6); we believe they should not have any
 surprises for somebody who has followed the paper up to that point,
-but we elide them for space reasons. This file is used in subsequent
-chapters to
+but we elide them for space reasons. The rules contained in this file
+is used in subsequent chapters in some cases of `eval` queries.
 
 One way we would recommend evaluating each chapter is to read through
 the corresponding isolated Makam code in these files, load the file
@@ -172,6 +172,9 @@ exact order of the Makam code. As a result, we have some "hidden"
 Makam code blocks that are not part of the paper, which are enclosed
 within HTML comments in the corresponding literate files.
 
+- We also use hidden blocks for additional examples and a few extras,
+like evaluation of programs.
+
 The literate files can be loaded directly into the Makam REPL, in which
 case the code blocks marked with `makam` or `makam-stdlib` will be
 executed.
@@ -210,7 +213,7 @@ it's similar to tracing all of the predicates:
 
     debug (typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T) ?
 
-Of course, print-style debugging is also possible -- you can use the
+Of course, printf-style debugging is also possible -- you can use the
 `print` predicate to print an arbitrary Makam term or `print_string`
 to print a string as is.
 
@@ -239,7 +242,7 @@ This artifact bundles Makam version 0.7.9, accessible through the URL:
 
     https://github.com/astampoulis/makam/releases/tag/v0.7.9
 
-The source code of the paper, along with Docker-based scripts to build the
-paper and this artifact, is available at:
+The source code of the paper, along with CircleCI integration which builds the
+paper and this artifact, are available at:
 
     https://github.com/astampoulis/makam-paper-funpearl
