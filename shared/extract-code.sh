@@ -9,7 +9,8 @@ mkdir -p $2
 
 cp $1/*.md $2/
 
-for i in $2/*.md; do
+for i in $(ls $2/*.md | sort); do
+  rm -f $(echo $i | sed -e 's/md$/makam/' -)
   sed -i -e 's/\.md"/"/' $i;
   awk -f $(dirname $(realpath $0))/generate-isolated-makam.awk $i; rm $i;
 done

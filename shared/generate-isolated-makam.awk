@@ -5,7 +5,7 @@ BEGIN { inmakam = 0;
 
 /^```makam$/ { inmakam = 1; }
 /^```makam-stdlib$/ { inmakam = 2; }
-/^```$/ { if (inmakam == 1) { inmakam = 0; print "" >> outputfile; } else if (inmakam == 2) { inmakam = 0; print "" > stdlibfile; }; }
+/^```$/ { if (inmakam == 1) { inmakam = 0; print "" >> outputfile; } else if (inmakam == 2) { inmakam = 0; print "" >> stdlibfile; }; }
 
 !(/^```$/ || /^```makam$/ || /^```makam-stdlib$/ || \
   /^<\!--/ || /^-->/ || /^\.\.\./ \
