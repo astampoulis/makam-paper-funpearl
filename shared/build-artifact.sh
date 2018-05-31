@@ -28,6 +28,6 @@ docker save --output docker-image.tar makam-icfp2018-artifact ;
 docker rmi makam-icfp2018-artifact ;
 
 cd ../ ;
-rm -f artifact.tgz ;
-tar --transform='s/^artifact/artifact88/' -cvzf artifact.tgz artifact
+rm -f artifact88.tgz ;
+tar --transform='s/^artifact/artifact88/' -cvzf artifact88.tgz artifact
 )

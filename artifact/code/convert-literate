@@ -1,3 +1,4 @@
 #!/usr/bin/env bash
 
-./scripts/extract-code.sh literate justcode
+TOPDIR=$(dirname $(realpath $0))
+(cd $TOPDIR; ./scripts/extract-code.sh literate justcode)

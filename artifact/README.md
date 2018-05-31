@@ -10,7 +10,7 @@ development, we include the literate code of the paper itself as well.
 To use this artifact, you will need to have Docker installed. Please
 follow instructions for your system from:
 
-    https://www.docker.com/get-docker
+<https://www.docker.com/community-edition>
 
 (At the time of writing, the latest Docker version is 18.03.1-ce-0.)
 
@@ -35,6 +35,7 @@ within the Makam REPL, issue, for example:
 (You do not need to include the `.makam` suffix of each file. For the
 list of chapter files, see "Step-by-Step instructions" below.)
 This will also load all dependencies and run all the contained queries.
+Note that all examples here should execute within a few seconds.
 
 Each query shown in the paper (and some additional queries that are
 included in the code) is accompanied by a test case that captures
@@ -60,7 +61,7 @@ REPL, using the same syntax that is shown in the paper.
 
 For larger additions or changes to the existing code, you can edit the
 files in `code/justcode/` directly. The `code/` directory of the
-artifact is mounted within the Docker container -- so, you can
+artifact is mounted within the Docker container — so, you can
 make changes to the Makam code in `code/justcode/` in your host
 environment (using your favorite editor etc.) and these will be
 reflected within the Docker container. To reload a chapter after you
@@ -110,7 +111,7 @@ As mentioned above, each chapter of the paper is generated from a
 literate Markdown file that contains embedded Makam code. Though the
 literate files can be inspected and loaded into the Makam REPL directly,
 we find that isolating the code from each chapter makes the code easier
-to follow once somebody is comfortable with the material.
+to follow for someone comfortable with the material.
 
 The list of files corresponding to each chapter is:
 
@@ -127,19 +128,19 @@ We also include one file, `06-removed-pattern-eval`, that is not part
 of the paper. This contains the evaluation rules for the pattern
 matching extension (Chapter 6); we believe they should not have any
 surprises for somebody who has followed the paper up to that point,
-but we elide them for space reasons. The rules contained in this file
-is used in subsequent chapters in some cases of `eval` queries.
+so we elide them for space reasons. The rules contained in this file
+are used in subsequent chapters in some cases of `eval` queries.
 
 One way we would recommend evaluating each chapter is to read through
 the corresponding isolated Makam code in these files, load the file
 into the Makam REPL as above, and run the corresponding tests with
 `run_tests [tests] ?`.  Each query corresponds to a single test: the
 notation with `>>` that we use generates a test case that checks
-whether the query yields the given result -- success or failure, and a
+whether the query yields the given result — success or failure, and a
 particular instantiation of the unification variables.
 
-For example, this is an example of a successful query and the
-corresponding expected result:
+For example, after loading `03-stlc`, this is an example of a
+successful query, along with the corresponding expected result:
 
     typeof (lam _ (fun x => x)) T ?
     >> Yes:
@@ -208,12 +209,12 @@ the `typeof` predicate for a particular query we can use:
 
     trace typeof (typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T) ?
 
-`debug Q` can be used to keep track of *all* of the intermediate goals --
+`debug Q` can be used to keep track of *all* of the intermediate goals —
 it's similar to tracing all of the predicates:
 
     debug (typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T) ?
 
-Of course, printf-style debugging is also possible -- you can use the
+Of course, printf-style debugging is also possible — you can use the
 `print` predicate to print an arbitrary Makam term or `print_string`
 to print a string as is.
 
@@ -233,16 +234,16 @@ within the Docker container, if you navigate to `/makam/stdlib`:
 
 ## Makam and paper source
 
-Makam is open-source software licensed under the GPL, hosted in the Github
+Makam is open-source software licensed under the GPL, hosted in the GitHub
 repository:
 
-    https://github.com/astampoulis/makam
+<https://github.com/astampoulis/makam>
 
 This artifact bundles Makam version 0.7.9, accessible through the URL:
 
-    https://github.com/astampoulis/makam/releases/tag/v0.7.9
+<https://github.com/astampoulis/makam/releases/tag/v0.7.9>
 
 The source code of the paper, along with CircleCI integration which builds the
 paper and this artifact, are available at:
 
-    https://github.com/astampoulis/makam-paper-funpearl
+<https://github.com/astampoulis/makam-paper-funpearl>

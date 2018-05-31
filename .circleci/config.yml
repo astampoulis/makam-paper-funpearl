@@ -38,7 +38,7 @@ jobs:
             apt-get update && apt-get install -y gawk
       - run: make artifact
       - store_artifacts:
-          path: artifact.tgz
+          path: artifact88.tgz
 
 workflows:
   version: 2

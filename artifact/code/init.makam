@@ -4,25 +4,25 @@ help :- print_string {{
 
 
 ----------------------
- Welcome to Makam. 
- Available files, corresponding to each chapter: 
+ Welcome to Makam.
+ Available files, corresponding to each chapter:
 
-    03-stlc 
-    04-bindmany 
-    05-gadts 
-    06-patterns 
-    07-structural 
-    08-miniml 
-    09-metaml 
-    10-typgen 
+    03-stlc
+    04-bindmany
+    05-gadts
+    06-patterns
+    07-structural
+    08-miniml
+    09-metaml
+    10-typgen
 
- To load one of the files, do:
+ To load one of the files, do (for example):
 
-    %use "03-stlc".
+    %use "04-bindmany".
 
  To re-load a file after you've made changes, do:
 
-    %usenew "03-stlc". 
+    %usenew "04-bindmany".
 
  You can define new types, constructors and rules, and also run your own queries
  with the same syntax as described in the paper. For example, after loading "03-stlc":
