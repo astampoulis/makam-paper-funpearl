@@ -20,6 +20,8 @@ help :- print_string {{
 
     %use "04-bindmany".
 
+ Note the dot at the end!
+
  To re-load a file after you've made changes, do:
 
     %usenew "04-bindmany".

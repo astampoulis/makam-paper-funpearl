@@ -32,10 +32,14 @@ within the Makam REPL, issue, for example:
 
     %use "04-bindmany".
 
-(You do not need to include the `.makam` suffix of each file. For the
-list of chapter files, see "Step-by-Step instructions" below.)
-This will also load all dependencies and run all the contained queries.
-Note that all examples here should execute within a few seconds.
+Note the dot at the end! Makam statements end either with a dot (`.`) or
+a question-mark (`?`).
+
+The corresponding file ends in a `.makam` extension, which you do not
+need to include. For the list of chapter files, see "Step-by-Step
+instructions" below. This will also load all dependencies and run all
+the contained queries. Note that all examples here should execute
+within a few seconds.
 
 Each query shown in the paper (and some additional queries that are
 included in the code) is accompanied by a test case that captures
@@ -82,14 +86,22 @@ Markdown files directly within the Makam REPL:
 
     %use "literate/04-bindmany.md".
 
+The Makam REPL does not support line editing. The Docker image
+includes `rlwrap` that which should enable line editing in most
+environments. To use that, you have to use the `run-shell.sh` script
+in your host system, which will create a Docker container that gives
+you access to a shell (instead of dropping you directly onto the Makam
+REPL). Then you can run the Makam REPL with `rlwrap makam`:
+
+    ./run-shell.sh
+    rlwrap makam
+
 If for any reason volume mounting does not work in your system (if
 that's the case, some of the things above won't work, e.g. you do not
 get the usage message when you start up the Makam REPL), the Makam
 code is also available within the Docker image, in the `/static`
-directory. In order to use those, use the `run-shell.sh` script in
-your host system, which will create a Docker container that gives you
-access to a shell (instead of dropping you directly onto the Makam
-REPL), and switch to the `/static` directory before starting the Makam
+directory. In order to use those, use the `run-shell.sh` script as above,
+and switch to the `/static` directory before starting the Makam
 REPL and following the instructions above:
 
     ./run-shell.sh
