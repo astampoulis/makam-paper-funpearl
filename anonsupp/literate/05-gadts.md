@@ -58,7 +58,7 @@ But alas! Is it not type specialization during pattern matching that is an essen
 GADTs of your land?  Maybe that means that we can use Ad-Hoc Polymorphism not just to do `typecase`
 but also to work with GADTs in our land? Consider this! The venerable List that Knows Its Length:
 
-```makam
+```makam-stdlib
 zero : type. succ : type -> type.
 vector : type -> type -> type.
 vnil : vector A zero.
@@ -67,7 +67,7 @@ vcons : A -> vector A N -> vector A (succ N).
 
 And now for the essential `vmap`:
 
-```makam
+```makam-stdlib
 vmap : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop.
 vmap P vnil vnil.
 vmap P (vcons X XS) (vcons Y YS) :- P X Y, vmap P XS YS.
@@ -89,7 +89,7 @@ whether each rule applies, rather than relying on the `typecase` aspects we spok
 Coupling this with the binding constructs that I talked to you earlier about, we can build
 new magical beings, like the *Bind that Knows Its Length*:
 
-```makam
+```makam-stdlib
 vbindmany : (Var: type) (N: type) (Body: type) -> type.
 vbody : Body -> vbindmany Var zero Body.
 vbind : (Var -> vbindmany Var N Body) -> vbindmany Var (succ N) Body.
@@ -101,7 +101,7 @@ parameters, purely for the purposes of increased clarity.)
 In the `openmany` version for `vbindmany`, the rules are exactly as before, though the static
 type is more precise:
 
-```makam
+```makam-stdlib
 vopenmany : [N] vbindmany Var N Body -> (vector Var N -> Body -> prop) -> prop.
 vopenmany (vbody Body) Q :- Q vnil Body.
 vopenmany (vbind F) Q :-
@@ -120,7 +120,7 @@ of any feature, all thanks to the existing support for Ad-Hoc Polymorphism.
 \identDialog
 
 <!--
-```makam
+```makam-stdlib
 vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
 vapplymany (vbody Body) vnil Body.
 vapplymany (vbind F) (vcons X XS) Body :- vapplymany (F X) XS Body.
@@ -128,7 +128,9 @@ vapplymany (vbind F) (vcons X XS) Body :- vapplymany (F X) XS Body.
 vassumemany : [N] (A -> B -> prop) -> vector A N -> vector B N -> prop -> prop.
 vassumemany P vnil vnil Q :- Q.
 vassumemany P (vcons X XS) (vcons Y YS) Q :- (P X Y -> vassumemany P XS YS Q).
+```
 
+```makam
 typeof (vletrec XS_DefsBody) T' :-
   vopenmany XS_DefsBody (pfun xs (Defs, Body) =>
     vassumemany typeof xs TS (vmap typeof Defs TS),
@@ -138,46 +140,5 @@ typeof (vletrec (vbind (fun f => vbody (vcons (lam T (fun x => app f (app f x)))
 >> Yes:
 >> T' := arrow T T,
 >> T := T.
-```
--->
-
-<!--
-TODO. Get rid of dbind once we've replaced all uses in following chapters.
-
-```makam
-dbind : type -> type -> type -> type.
-dbindbase : B -> dbind A unit B.
-dbindnext : (A -> dbind A T B) -> dbind A (A * T) B.
-
-subst : type -> type -> type.
-nil : subst A unit.  cons : A -> subst A T -> subst A (A * T).
-
-intromany : [T] dbind A T B -> (subst A T -> prop) -> prop.
-applymany : [T] dbind A T B -> subst A T -> B -> prop.
-openmany : [T] dbind A T B -> (subst A T -> B -> prop) -> prop.
-assumemany : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop -> prop.
-map : [T T'] (A -> B -> prop) -> subst A T -> subst B T' -> prop.
-
-intromany (dbindbase F) P :- P [].
-intromany (dbindnext F) P :- (x:A -> intromany (F x) (pfun t => P (x :: t))).
-
-applymany (dbindbase Body) [] Body.
-applymany (dbindnext F) (X :: XS) Body :- applymany (F X) XS Body.
-
-openmany F P :-
-  intromany F (pfun xs => [Body] applymany F xs Body, P xs Body).
-
-assumemany P [] [] Q :- Q.
-assumemany P (X :: XS) (Y :: YS) Q :- (P X Y -> assumemany P XS YS Q).
-
-map P [] [].
-map P (X :: XS) (Y :: YS) :- P X Y, map P XS YS.
-
-letrec : dbind term T (subst term T * term) -> term.
-typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (pfun xs defsbody => [Defs Body]
-    eq defsbody (Defs, Body),
-    assumemany typeof xs TS (map typeof Defs TS),
-    assumemany typeof xs TS (typeof Body T')).
 ```
 -->

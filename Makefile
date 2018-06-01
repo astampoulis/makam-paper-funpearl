@@ -41,4 +41,8 @@ watch-build:
 test:
 	@ ./shared/run_tests.sh
 
-.PHONY: all build build-to-tmp clean tmpclean watch test docker-build watch-test watch-build
+artifact:
+	@ ./shared/convert-anonsupp.sh
+	@ ./shared/build-artifact.sh
+
+.PHONY: all build build-to-tmp clean tmpclean watch test docker-build watch-test watch-build artifact

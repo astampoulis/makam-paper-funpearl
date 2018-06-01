@@ -7,16 +7,13 @@ appt : term -> typ -> term.
 typeof (lamt E) (tforall T) :- (a:typ -> typeof (E a) (T a)).
 typeof (appt E T) T' :- typeof E (tforall TF), eq T' (TF T).
 
-typedef : (NewType: typ) (Definition: typ) -> prop.
+typeof (lamt (fun a => lam a (fun x => x))) T ?
+>> Yes:
+>> T := tforall (fun a => arrow a a).
 
-program : type. 
-main : term -> program. 
-lettype : (Definition: typ) (A_Program: typ -> program) -> program.
-
-wfprogram : program -> prop.
-wfprogram (main E) :- typeof E T.
-wfprogram (lettype T A_Program) :-
-  (a:typ -> typedef a T -> wfprogram (A_Program a)).
+typeof (appt (lamt (fun a => lam a (fun x => x))) onat) T ?
+>> Yes:
+>> T := arrow onat onat.
 
 datadef : type. datatype_bind : (Into: type) -> type.
 datatype : (Def: datadef) (Rest: datatype_bind program) -> program.
@@ -60,4 +57,42 @@ wfprogram
         (constr ccons (tuple [ozero, constr cnil (tuple [])]))))))))))))) ?
 >> Yes:
 >> T := fun llist => llist.
+
+evalprogram : program -> program -> prop.
+evalprogram (main E) (main V) :- eval E V.
+evalprogram (lettype T E) V :- evalprogram (E T) V.
+evalprogram (datatype (mkdatadef DT_ConstrArgTypes)
+                      (bind_datatype DT_Constrs_Rest))
+            (datatype (mkdatadef DT_ConstrArgTypes)
+                      (bind_datatype DT_Constrs_Rest'))
+:-
+  (dt:typ -> openmany (DT_Constrs_Rest dt) (pfun constrs rest => [Rest']
+    applymany (DT_Constrs_Rest' dt) constrs Rest',
+    assumemany (constructor_typ dt) constrs (DT_ConstrArgTypes dt)
+    (evalprogram rest Rest'))).
+
+eval (constr C Arg) (constr C Arg') :- eval Arg Arg'.
+match (patt_constr C P) (constr C V) Subst Subst' :-
+  match P V Subst Subst'.
+
+evalprogram
+  (datatype
+    (mkdatadef (fun llist =>
+    [ product [] (* nil *) ,
+      product [onat, llist] ]))
+  (bind_datatype (fun llist => bind (fun cnil => bind (fun ccons => body
+  (main
+    (letrec
+      (bind (fun append => body (
+      [ lam llist (fun l1 => lam _ (fun l2 =>
+        case_or_else l1
+          (patt_constr ccons (patt_tuple (pcons patt_var (pcons patt_var pnil))))
+            (vbind (fun hd => vbind (fun tl => vbody (
+            constr ccons (tuple [hd, app (app append tl) l2])))))
+          l2)) ],
+      (app (app append
+        (constr ccons (tuple [ozero, constr cnil (tuple [])])))
+        (constr ccons (tuple [ozero, constr cnil (tuple [])]))))))))))))) V ?
+>> Yes:
+>> V := (datatype (mkdatadef (fun llist => [ product [] (* nil *), product [onat, llist] ])) (bind_datatype (fun llist => bind (fun cnil => bind (fun ccons => body (main (constr ccons (tuple [ozero, constr ccons (tuple [ozero, constr cnil (tuple [])])])))))))).
 

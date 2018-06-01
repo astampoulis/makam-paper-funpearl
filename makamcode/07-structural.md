@@ -170,7 +170,7 @@ and adds a few lines:)
 \end{scenecomment}
 
 <!--
-```makam
+```makam-stdlib
 structural_recursion : [B] forall A (A -> A -> prop) -> B -> B -> prop.
 ```
 -->
@@ -205,7 +205,7 @@ ADVISOR. Exactly. Now, the list of `Arguments` -- can you come up with a type fo
 STUDENT. We can use the GADT of heterogeneous lists for them; not all the arguments of each constructor need to be of the
 same type!
 
-```makam
+```makam-stdlib
 typenil : type. typecons : (T: type) (TS: type) -> type.
 hlist : (TypeList: type) -> type.
 hnil : hlist typenil. hcons : T -> hlist TS -> hlist (typecons T TS).
@@ -214,7 +214,7 @@ hnil : hlist typenil. hcons : T -> hlist TS -> hlist (typecons T TS).
 ADVISOR. Great! We will need a heterogeneous `map` for these lists too. We'll need a polymorphic predicate as
 an argument, since we'll have to use it for `Arguments` of different types:
 
-```makam
+```makam-stdlib
 hmap : [TS] (P: forall A (A -> A -> prop)) (XS: hlist TS) (YS: hlist TS) -> prop.
 hmap P hnil hnil.
 hmap P (hcons X XS) (hcons Y YS) :- apply P X Y, hmap P XS YS.
@@ -224,7 +224,7 @@ hmap P (hcons X XS) (hcons Y YS) :- apply P X Y, hmap P XS YS.
 As I mentioned before, the rank-2 polymorphism support in Makam is quite limited, so you have to use `apply` explicitly to instantiate the polymorphic `P` predicate accordingly and apply it.
 
 STUDENT. Let me try out an example of that:
-```makam
+```makam-stdlib
 hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
 >> Yes:
 >> YS := hcons 1 (hcons "foo" hnil).
@@ -236,21 +236,24 @@ Looks good enough. So, going back to our generic rule -- is there a way to actua
 <!--
 Switch to a refl.headargs that returns a heterogeneous list.
 
-```makam
+```makam-stdlib
 %extend refl.
 
 dyn_to_hlist : [T] list dyn -> hlist T -> prop.
 dyn_to_hlist [] hnil.
 dyn_to_hlist (dyn HD :: TL) (hcons HD TL') :- dyn_to_hlist TL TL'.
 
+dyn_headargs : (Term: A) (Head: B) (Arguments: list dyn) -> prop.
+dyn_headargs Term Head Arguments :- headargs Term Head Arguments.
+
 headargs : (Term: A) (Head: B) (Arguments: hlist T) -> prop.
 headargs Term Head Arguments when refl.isunif Head :-
-  .refl.headargs Term Head DynList,
+  dyn_headargs Term Head DynList,
   dyn_to_hlist DynList HList,
   eq Arguments HList.
 headargs Term Head Arguments when not(refl.isunif Head) :-
   dyn_to_hlist DynList Arguments,
-  .refl.headargs Term Head DynList.
+  dyn_headargs Term Head DynList.
 %end.
 ```
 -->
@@ -285,7 +288,7 @@ structural_recursion : [Any]
 
 STUDENT. Let me see. Oh, so, the first argument is a predicate -- are we doing this in open-recursion style? I see. Well, I can adapt the case I just wrote above.
 
-```makam
+```makam-stdlib
 structural_recursion Rec X Y :-
   refl.headargs X Constructor Arguments,
   refl.headargs Y Constructor Arguments',
@@ -296,7 +299,7 @@ ADVISOR. Nice. Now, this assumes that `X` and `Y` are both concrete terms. What 
 
 STUDENT. How about this? This way, we will decocompose the concrete `X`, perform the transformation on the `Arguments`, and then reapply the `Constructor` to get the result for `Y`.
 
-```makam
+```makam-stdlib
 structural_recursion Rec X Y :-
   refl.headargs X Constructor Arguments,
   hmap Rec Arguments Arguments',
@@ -305,7 +308,7 @@ structural_recursion Rec X Y :-
 
 ADVISOR. That is exactly right. You need the symmetric case too but that's entirely similar. Also, there is another type of concrete terms in Makam: meta-level functions! It does not make sense to destructure functions using `refl.headargs`, so it fails in that case, and we have to treat them specially:
 
-```makam
+```makam-stdlib
 structural_recursion Rec (X : A -> B) (Y : A -> B) :-
   (x:A -> structural_recursion Rec x x ->
     structural_recursion Rec (X x) (Y x)).
@@ -325,7 +328,7 @@ ADVISOR. You are correct, it would fail in that case. But in my experience, it's
 \end{scenecomment}
 
 <!--
-Let us try out an example:
+Examples:
 
 ```makam
 typeof (lam (product [onat, onat])
@@ -359,7 +362,7 @@ wfprogram (lettype (product [onat, onat]) (fun bintuple => main
 >> Yes.
 ```
 
-Let us make sure we do not diverge on type error:
+Make sure we don't diverge on type error:
 
 ```makam
 wfprogram (lettype (product [onat, onat]) (fun bintuple => main

@@ -1,21 +1,9 @@
 %use "03-stlc".
 tests : testsuite. %testsuite tests.
 
-bindmany : type -> type -> type.
-body : Body -> bindmany Variable Body.
-bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
-
 lammany : bindmany term term -> term.
 refl.typstring (lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))) "term" ?
 >> Yes.
-
-openmany : bindmany A B -> (list A -> B -> prop) -> prop.
-openmany (body Body) Q :- Q [] Body.
-openmany (bind F) Q :- (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
-
-assumemany : (A -> B -> prop) -> list A -> list B -> prop -> prop.
-assumemany P [] [] Q :- Q.
-assumemany P (X :: XS) (T :: TS) Q :- (P X T -> assumemany P XS TS Q).
 
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T) :-
@@ -30,9 +18,6 @@ appmany : term -> list term -> term.
 typeof (appmany E ES) T :-
   typeof E (arrowmany TS T), map typeof ES TS.
 
-applymany : bindmany A B -> list A -> B -> prop.
-applymany (body B) [] B.
-applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
 eval (appmany E ES) V :-
   eval E (lammany XS_E'), map eval ES VS,
   applymany XS_E' VS E'', eval E'' V.

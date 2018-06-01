@@ -8,10 +8,6 @@ eval (case_or_else Scrutinee Pattern Body Else) V' :-
   then (vapplymany Body Subst Body', eval Body' V')
   else (eval Else V').
 
-vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
-vapplymany (vbody Body) vnil Body.
-vapplymany (vbind F) (vcons E ES) Body :- vapplymany (F E) ES Body.
-
 match patt_var X Subst Subst' :- vsnoc Subst X Subst'.
 match patt_wild X Subst Subst.
 match patt_ozero ozero Subst Subst.

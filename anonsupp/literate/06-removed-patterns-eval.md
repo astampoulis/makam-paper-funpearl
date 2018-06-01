@@ -41,7 +41,7 @@ STUDENT. I see. Now, I noticed a `vapplymany` predicate -- what is that?
 
 ADVISOR. That is a standard-library predicate. It is used to perform simultaneous substitution for all the variables in our multiple binding type, `vbindmany` (also available as `appmany` for `bindmany`). Or another way to say it, it's the equivalent of HOAS function application for `vbindmany`:
 
-```makam
+```
 vapplymany : [N] vbindmany Var N Body -> vector Var N -> Body -> prop.
 vapplymany (vbody Body) vnil Body.
 vapplymany (vbind F) (vcons E ES) Body :- vapplymany (F E) ES Body.

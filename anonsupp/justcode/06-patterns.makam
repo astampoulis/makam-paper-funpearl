@@ -15,10 +15,6 @@ patt_tuple : pattlist N N' -> patt N N'.
 pnil : pattlist N N.
 pcons : patt N N' -> pattlist N' N'' -> pattlist N N''.
 
-vsnoc : [N] vector A N -> A -> vector A (succ N) -> prop.
-vsnoc vnil Y (vcons Y vnil).
-vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
-
 case_or_else : (Scrutinee: term)
   (Patt: patt zero N) (Vars_Body: vbindmany term N term)
   (Else: term) -> term.
@@ -58,18 +54,11 @@ typeof_pattlist (pcons P PS) (T :: TS) VarTypes VarTypes'' :-
 typeof_patt (patt_tuple PS) (product TS) VarTypes VarTypes' :-
   typeof_pattlist PS TS VarTypes VarTypes'.
 
-(eq _PRED (lam _ (fun n => case_or_else n
-  (patt_osucc patt_var) (vbind (fun pred => vbody pred))
-  ozero)),
- typeof _PRED T) ?
->> Yes:
->> T := arrow onat onat.
-
 typeof (lam _ (fun n => case_or_else n
   (patt_osucc patt_var) (vbind (fun pred => vbody pred))
   ozero)) T ?
 >> Yes:
 >> T := arrow onat onat.
 
-%use "05-removed-patterns-eval".
+%use "06-removed-patterns-eval".
 

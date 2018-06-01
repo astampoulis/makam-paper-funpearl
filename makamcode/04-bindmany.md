@@ -43,7 +43,7 @@ STUDENT. You mean the `list` type?
 
 ADVISOR. Exactly. What do you think about this definition?
 
-```makam-noeval
+```
 bindmanyterms : type.
 bindnil : term -> bindmanyterms.
 bindcons : (term -> bindmanyterms) -> bindmanyterms.
@@ -59,7 +59,7 @@ binders. Maybe we should name them accordingly.
 STUDENT. Right, and could we generalize their types? Maybe that will help me get a better
 grasp of it. How is this?
 
-```makam
+```makam-stdlib
 bindmany : type -> type -> type.
 body : Body -> bindmany Variable Body.
 bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
@@ -68,7 +68,7 @@ bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
 ADVISOR. This looks great! That is exactly what's in the Makam standard library, actually. And
 we can now define `lammany` using it -- and our example term from before.
 
-```makam-noeval
+```
 lammany : bindmany term term -> term.
 lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))
 ```
@@ -92,7 +92,7 @@ STUDENT. Interesting. So how do we work with `bindmany`? What's the typing rule 
 
 ADVISOR. The rule is written like this, and I'll explain what goes into it:
 
-```makam-noeval
+```
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T) :-
   openmany F (fun xs body => assumemany typeof xs TS (typeof body T)).
@@ -108,7 +108,7 @@ iterate through the nested binders, introducing one fresh variable at a time. We
 each bound variable for the current fresh variable, so that when we get to the body, it only uses
 the fresh variables we introduced.
 
-```makam
+```makam-stdlib
 openmany : bindmany A B -> (list A -> B -> prop) -> prop.
 openmany (body Body) Q :- Q [] Body.
 openmany (bind F) Q :- (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
@@ -116,7 +116,7 @@ openmany (bind F) Q :- (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
 
 STUDENT. I see. I guess `assumemany` is similar, introducing one assumption at a time?
 
-```makam
+```makam-stdlib
 assumemany : (A -> B -> prop) -> list A -> list B -> prop -> prop.
 assumemany P [] [] Q :- Q.
 assumemany P (X :: XS) (T :: TS) Q :- (P X T -> assumemany P XS TS Q).
@@ -167,10 +167,12 @@ How can I do simultaneous substitution of all of the `XS` for `VS`?
 ADVISOR. You'll need another standard-library predicate for `bindmany`,
 which iteratively uses HOAS function application to perform a number of substitutions:
 
-```makam
+```makam-stdlib
 applymany : bindmany A B -> list A -> B -> prop.
 applymany (body B) [] B.
 applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
+```
+```makam
 eval (appmany E ES) V :-
   eval E (lammany XS_E'), map eval ES VS,
   applymany XS_E' VS E'', eval E'' V.
@@ -185,7 +187,7 @@ abstract binding syntax, or for pretty-printing.... All those are stories for an
 let's just say that we could have defined `bind` with an extra `string` argument, representing the
 concrete name; and then `openmany` would just ignore it.
 
-```makam-noeval
+```
 bind : string -> (Var -> bindmany Var Body) -> bindmany Var Body.
 ```
 
@@ -216,7 +218,7 @@ ADVISOR. Exactly! Want to try writing the typing rules?
 
 STUDENT. Maybe something like this?
 
-```makam-noeval
+```
 typeof (letrec XS_DefsBody) T' :-
   openmany XS_DefsBody (fun xs (defs, body) =>
     assumemany typeof xs TS (map typeof defs TS),
