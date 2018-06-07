@@ -62,11 +62,11 @@ to a \texttt{typecase}, statically, it means that rules might specialize
 their type variables, and this remains so for type-checking the whole
 rule.
 
-But alas! Is it not type specialization during pattern matching that is
-an essential feature of the GADTs of your land? Maybe that means that we
-can use Ad-Hoc Polymorphism not just to do \texttt{typecase} but also to
-work with GADTs in our land? Consider this! The venerable List that
-Knows Its Length:
+But\ldots{} aha! Is it not type specialization during pattern matching
+that is an essential feature of the GADTs of your land? Maybe that means
+that we can use Ad-Hoc Polymorphism not just to do \texttt{typecase} but
+also to work with GADTs in our land? Consider this! The venerable List
+that Knows Its Length:
 
 \begin{verbatim}
 zero : type. succ : type \ensuremath{\to} type.

@@ -1,4 +1,4 @@
-# In which are heroes are nowhere to be found, lost in a sea of references to related work
+# In which our heroes are nowhere to be found, lost in a sea of references to related work
 
 \identNormal
 

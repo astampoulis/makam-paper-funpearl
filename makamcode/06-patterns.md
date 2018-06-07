@@ -68,8 +68,8 @@ Now for the typing rule -- it will be something like this:
 ```
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
   typeof Scrutinee T, typeof_patt Pattern T VarTypes,
-  vopenmany Vars_Body (pfun vars body =>
-    vassumemany typeof vars VarTypes (typeof body BodyT)),
+  vopenmany Vars_Body (pfun Vars Body =>
+    vassumemany typeof Vars VarTypes (typeof Body BodyT)),
   typeof Else BodyT.
 ```
 
@@ -167,8 +167,8 @@ typeof_patt : [NBefore NAfter] patt NBefore NAfter -> typ ->
 
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
   typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
-  vopenmany Vars_Body (pfun vars body =>
-    vassumemany typeof vars VarTypes (typeof body BodyT)),
+  vopenmany Vars_Body (pfun Vars Body =>
+    vassumemany typeof Vars VarTypes (typeof Body BodyT)),
   typeof Else BodyT.
 ```
 

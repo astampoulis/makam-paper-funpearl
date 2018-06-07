@@ -103,9 +103,9 @@ constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) -> prop.
 ```makam
 wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
                     (bind_datatype DT_Constrs_Rest)) :-
-  (dt:typ -> openmany (DT_Constrs_Rest dt) (pfun constrs rest =>
-    assumemany (constructor_typ dt) constrs (DT_ConstrArgTypes dt)
-    (wfprogram rest))).
+  (dt:typ -> openmany (DT_Constrs_Rest dt) (pfun Constrs Rest =>
+    assumemany (constructor_typ dt) Constrs (DT_ConstrArgTypes dt)
+    (wfprogram Rest))).
 ```
 
 \begin{versy}
@@ -164,10 +164,10 @@ evalprogram (datatype (mkdatadef DT_ConstrArgTypes)
             (datatype (mkdatadef DT_ConstrArgTypes)
                       (bind_datatype DT_Constrs_Rest'))
 :-
-  (dt:typ -> openmany (DT_Constrs_Rest dt) (pfun constrs rest => [Rest']
-    applymany (DT_Constrs_Rest' dt) constrs Rest',
-    assumemany (constructor_typ dt) constrs (DT_ConstrArgTypes dt)
-    (evalprogram rest Rest'))).
+  (dt:typ -> openmany (DT_Constrs_Rest dt) (pfun Constrs Rest => [Rest']
+    applymany (DT_Constrs_Rest' dt) Constrs Rest',
+    assumemany (constructor_typ dt) Constrs (DT_ConstrArgTypes dt)
+    (evalprogram Rest Rest'))).
 
 eval (constr C Arg) (constr C Arg') :- eval Arg Arg'.
 match (patt_constr C P) (constr C V) Subst Subst' :-

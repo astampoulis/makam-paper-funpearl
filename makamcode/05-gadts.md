@@ -54,7 +54,7 @@ Of course, this feature has both to do with the statics as well as the dynamics 
 while dynamically it means something akin to a `typecase`, statically, it means that rules might
 specialize their type variables, and this remains so for type-checking the whole rule.
 
-But alas! Is it not type specialization during pattern matching that is an essential feature of the
+But... aha! Is it not type specialization during pattern matching that is an essential feature of the
 GADTs of your land?  Maybe that means that we can use Ad-Hoc Polymorphism not just to do `typecase`
 but also to work with GADTs in our land? Consider this! The venerable List that Knows Its Length:
 
@@ -132,9 +132,9 @@ vassumemany P (vcons X XS) (vcons Y YS) Q :- (P X Y -> vassumemany P XS YS Q).
 
 ```makam
 typeof (vletrec XS_DefsBody) T' :-
-  vopenmany XS_DefsBody (pfun xs (Defs, Body) =>
-    vassumemany typeof xs TS (vmap typeof Defs TS),
-    vassumemany typeof xs TS (typeof Body T')).
+  vopenmany XS_DefsBody (pfun XS (Defs, Body) =>
+    vassumemany typeof XS TS (vmap typeof Defs TS),
+    vassumemany typeof XS TS (typeof Body T')).
 
 typeof (vletrec (vbind (fun f => vbody (vcons (lam T (fun x => app f (app f x))) vnil, f)))) T' ?
 >> Yes:

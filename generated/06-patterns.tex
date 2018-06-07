@@ -73,8 +73,8 @@ Now for the typing rule -- it will be something like this:
 \begin{verbatim}
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT \ensuremath{:\!-}
   typeof Scrutinee T, typeof_patt Pattern T VarTypes,
-  vopenmany Vars_Body (pfun vars body \ensuremath{\Rightarrow}
-    vassumemany typeof vars VarTypes (typeof body BodyT)),
+  vopenmany Vars_Body (pfun Vars Body \ensuremath{\Rightarrow}
+    vassumemany typeof Vars VarTypes (typeof Body BodyT)),
   typeof Else BodyT.
 \end{verbatim}
 
@@ -178,8 +178,8 @@ typeof_patt : [NBefore NAfter] patt NBefore NAfter \ensuremath{\to} typ \ensurem
 
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT \ensuremath{:\!-}
   typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
-  vopenmany Vars_Body (pfun vars body \ensuremath{\Rightarrow}
-    vassumemany typeof vars VarTypes (typeof body BodyT)),
+  vopenmany Vars_Body (pfun Vars Body \ensuremath{\Rightarrow}
+    vassumemany typeof Vars VarTypes (typeof Body BodyT)),
   typeof Else BodyT.
 \end{verbatim}
 
