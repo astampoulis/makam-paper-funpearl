@@ -101,16 +101,15 @@ the typing rule for \texttt{app} required that
 \texttt{T\textquotesingle{}\ =\ arrow\ T1\ T2} for some \texttt{T1},
 \texttt{T2}.
 
-\heroSTUDENT{} Oh. Do you mean this in bidirectional typing terms? So, doing
-type analysis of an expression with a concrete type \texttt{T} might
-fail, but synthesizing the type anew could work?
+\heroSTUDENT{} Oh. In that case we could try \emph{not} propagating the
+concrete type information we have? We could then use the conversion rule
+to check that the type we end up with matches what we expect.
 
-\heroADVISOR{} Exactly, and in that case we have to check that the two types
-are equal, using \texttt{typeq}. So we need to change the rule you wrote
-to apply only in the (analysis) case where \texttt{T} starts with a
-concrete constructor, rather than when it is an uninstantiated
-unification variable. We will then try synthesizing a type and use
-\texttt{typeq} to see whether the two types are equal.
+\heroADVISOR{} Exactly. So we need to change the rule you wrote to apply only
+in the case where \texttt{T} starts with a concrete constructor, rather
+than when it is an uninstantiated unification variable. We will then
+check whether the resulting type \texttt{T\textquotesingle{}} is equal
+to \texttt{T}, using our \texttt{typeq} predicate.
 
 \heroSTUDENT{} Is that even possible? Is there a way in \foreignlanguage{greek}{λ}Prolog to tell
 whether something is a unification variable?
