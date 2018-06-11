@@ -322,11 +322,17 @@ structural_recursion Rec X Y \ensuremath{:\!-}
   hmap Rec Arguments Arguments'.
 \end{verbatim}
 
-\heroADVISOR{} Nice. Now, this assumes that \texttt{X} and \texttt{Y} are both
-concrete terms. What happens when \texttt{X} is concrete and \texttt{Y}
-isn't, or the other way around? Hint: you can use \texttt{refl.headargs}
-in the other direction, to reconstruct a term from a constructor and a
-list of arguments.
+\heroADVISOR{} Nice. Now, here you assume that \texttt{X} and \texttt{Y} are
+both concrete terms. What happens when \texttt{X} is concrete and
+\texttt{Y} isn't, or the other way around? Hint: you can use this
+\texttt{happly} predicate, to apply a list of arguments to a
+constructor, and thus reconstruct a term:
+
+\begin{verbatim}
+happly : [Constr Args Terms] Constr \ensuremath{\to} hlist Args \ensuremath{\to} Term \ensuremath{\to} prop.
+happly Constr hnil Constr.
+happly Constr (hcons A AS) Term \ensuremath{:\!-} happly (Constr A) AS Term.
+\end{verbatim}
 
 \heroSTUDENT{} How about this? This way, we will decocompose the concrete
 \texttt{X}, perform the transformation on the \texttt{Arguments}, and
@@ -336,7 +342,7 @@ then reapply the \texttt{Constructor} to get the result for \texttt{Y}.
 structural_recursion Rec X Y \ensuremath{:\!-}
   refl.headargs X Constructor Arguments,
   hmap Rec Arguments Arguments',
-  refl.headargs Y Constructor Arguments'.
+  happly Constructor Arguments' Y.
 \end{verbatim}
 
 \heroADVISOR{} That is exactly right. You need the symmetric case too but

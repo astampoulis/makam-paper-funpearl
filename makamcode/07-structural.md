@@ -233,7 +233,7 @@ hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
 Looks good enough. So, going back to our generic rule -- is there a way to actually write it? Maybe there's a reflective predicate we can use, similar to how we used `refl.isunif` before to tell if a term is an uninstantiated unification variable?
 
 <!--
-Switch to a refl.headargs that returns a heterogeneous list.
+Switch to a refl.headargs that returns a heterogeneous list and only applies when the term is concrete.
 
 ```makam-stdlib
 %extend refl.
@@ -246,13 +246,10 @@ dyn_headargs : (Term: A) (Head: B) (Arguments: list dyn) -> prop.
 dyn_headargs Term Head Arguments :- headargs Term Head Arguments.
 
 headargs : (Term: A) (Head: B) (Arguments: hlist T) -> prop.
-headargs Term Head Arguments when refl.isunif Head :-
+headargs Term Head Arguments when refl.isbaseterm Term :-
   dyn_headargs Term Head DynList,
   dyn_to_hlist DynList HList,
   eq Arguments HList.
-headargs Term Head Arguments when not(refl.isunif Head) :-
-  dyn_to_hlist DynList Arguments,
-  dyn_headargs Term Head DynList.
 %end.
 ```
 -->
@@ -294,7 +291,13 @@ structural_recursion Rec X Y :-
   hmap Rec Arguments Arguments'.
 ```
 
-ADVISOR. Nice. Now, this assumes that `X` and `Y` are both concrete terms. What happens when `X` is concrete and `Y` isn't, or the other way around? Hint: you can use `refl.headargs` in the other direction, to reconstruct a term from a constructor and a list of arguments.
+ADVISOR. Nice. Now, here you assume that `X` and `Y` are both concrete terms. What happens when `X` is concrete and `Y` isn't, or the other way around? Hint: you can use this `happly` predicate, to apply a list of arguments to a constructor, and thus reconstruct a term:
+
+```makam-stdlib
+happly : [Constr Args Terms] Constr -> hlist Args -> Term -> prop.
+happly Constr hnil Constr.
+happly Constr (hcons A AS) Term :- happly (Constr A) AS Term.
+```
 
 STUDENT. How about this? This way, we will decocompose the concrete `X`, perform the transformation on the `Arguments`, and then reapply the `Constructor` to get the result for `Y`.
 
@@ -302,8 +305,17 @@ STUDENT. How about this? This way, we will decocompose the concrete `X`, perform
 structural_recursion Rec X Y :-
   refl.headargs X Constructor Arguments,
   hmap Rec Arguments Arguments',
-  refl.headargs Y Constructor Arguments'.
+  happly Constructor Arguments' Y.
 ```
+
+<!--
+```makam-stdlib
+structural_recursion Rec X Y :-
+  refl.headargs Y Constructor Arguments',
+  hmap Rec Arguments Arguments',
+  happly Constructor Arguments X.
+```
+-->
 
 ADVISOR. That is exactly right. You need the symmetric case too but that's entirely similar. Also, there is another type of concrete terms in Makam: meta-level functions! It does not make sense to destructure functions using `refl.headargs`, so it fails in that case, and we have to treat them specially:
 
@@ -372,6 +384,39 @@ wfprogram (lettype (product [onat, onat]) (fun bintuple => main
     (vbody (tuple [x, ozero]))
     (tuple [tuple [ozero, ozero], ozero])
   )))) ?
+>> Impossible.
+```
+
+A few extra tests:
+
+```makam
+wfprogram (lettype (product [onat, arrow onat onat]) (fun a => main (
+  app (lam a (fun x => x)) ozero))) ?
+>> Impossible.
+
+wfprogram (lettype onat (fun a => main (
+  app (lam a (fun x => x)) ozero))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a => main (
+  app (lam (product [a, onat]) (fun x => x)) (tuple [ozero, ozero])))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a => main (
+  lam a (fun x =>
+  app (lam (product [a, onat]) (fun x => x)) (tuple [ozero, x]))))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a =>
+          (lettype (product [a, onat]) (fun b => main (
+  lam a (fun x =>
+  app (lam b (fun x => x)) (tuple [ozero, x]))))))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a =>
+          (lettype (product [a, onat]) (fun b => main (
+  lam a (fun x =>
+  app (lam b (fun x => x)) ozero)))))) ?
 >> Impossible.
 ```
 -->
