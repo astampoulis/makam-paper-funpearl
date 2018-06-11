@@ -16,7 +16,8 @@ the present work to a large extent, save for the use of
 \texttt{refl.assume\_get}, which turns code (the local assumptions for a
 predicate) into data (a reified list of the assumptions). Still, we
 believe the presence of first-class binding support in the form of
-higher-order abstract syntax makes the \lamprolog setting significantly
+higher-order abstract syntax, together with the built-in support for
+higher-order unification, makes the \lamprolog setting significantly
 different from Racket.
 
 The recent development of a methodology for developing \textbf{type
@@ -30,10 +31,11 @@ pen-and-paper versions. We do believe that the higher-order logic
 programming setting allows for more expressivity and genericity -- for
 example, we have used the same techniques to define not only typing
 rules but evaluation rules as well, and it is not immediately clear to
-us whether examples such as our MetaML fragment would be as easy to
-implement in \rulename{Turnstile}. We are exploring an approach similar
-to \rulename{Turnstile} to implement a higher-level surface language for
-writing typing rules using Makam itself.
+us whether examples such as our MetaML fragment or Hindley-Milner type
+inference would be as easy to implement in \rulename{Turnstile}. We are
+exploring an approach similar to \rulename{Turnstile} to implement a
+higher-level surface language for writing typing rules using Makam
+itself.
 
 Evaluation rules can be implemented using another DSL of the Racket
 ecosystem, namely \textbf{PLT Redex} \citep{felleisen2009semantics}. We

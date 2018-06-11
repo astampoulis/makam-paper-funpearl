@@ -47,8 +47,8 @@ ability to treat code as data. Makam is largely inspired by this approach and fo
 the same lines; this is not demonstrated in the present work to a large extent, save for the
 use of `refl.assume_get`, which turns code (the local assumptions for a predicate) into data
 (a reified list of the assumptions). Still, we believe the presence of first-class binding
-support in the form of higher-order abstract syntax makes the \lamprolog setting significantly
-different from Racket.
+support in the form of higher-order abstract syntax, together with the built-in support for
+higher-order unification, makes the \lamprolog setting significantly different from Racket.
 
 The recent development of a methodology for developing **type systems as macros** by
 \citet{racket-type-systems-as-macros} is a great validation of the Racket approach and is especially
@@ -58,9 +58,9 @@ as does the \rulename{Turnstile} DSL for writing typing rules close to the pen-a
 versions. We do believe that the higher-order logic programming setting allows for more expressivity
 and genericity -- for example, we have used the same techniques to define not only typing rules but
 evaluation rules as well, and it is not immediately clear to us whether examples such as our MetaML
-fragment would be as easy to implement in \rulename{Turnstile}. We are exploring an approach similar
-to \rulename{Turnstile} to implement a higher-level surface language for writing typing rules using
-Makam itself.
+fragment or Hindley-Milner type inference would be as easy to implement in \rulename{Turnstile}. We
+are exploring an approach similar to \rulename{Turnstile} to implement a higher-level surface
+language for writing typing rules using Makam itself.
 
 Evaluation rules can be implemented using another DSL of the Racket ecosystem, namely **PLT Redex**
 \citep{felleisen2009semantics}. We believe that staying within the same framework for both aspects
