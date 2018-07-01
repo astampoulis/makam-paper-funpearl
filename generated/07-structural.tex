@@ -250,13 +250,14 @@ we'll have to use it for \texttt{Arguments} of different types:
 \begin{verbatim}
 hmap : [TS] (P: forall A (A \ensuremath{\to} A \ensuremath{\to} prop)) (XS: hlist TS) (YS: hlist TS) \ensuremath{\to} prop.
 hmap P hnil hnil.
-hmap P (hcons X XS) (hcons Y YS) \ensuremath{:\!-} apply P X Y, hmap P XS YS.
+hmap P (hcons X XS) (hcons Y YS) \ensuremath{:\!-} forall.call P X Y, hmap P XS YS.
 \end{verbatim}
 
 \noindent
 As I mentioned before, the rank-2 polymorphism support in Makam is quite
-limited, so you have to use \texttt{apply} explicitly to instantiate the
-polymorphic \texttt{P} predicate accordingly and apply it.
+limited, so you have to use \texttt{forall.call} explicitly to
+instantiate the polymorphic \texttt{P} predicate accordingly and call
+it.
 
 \heroSTUDENT{} Let me try out an example of that:
 

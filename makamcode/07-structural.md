@@ -216,11 +216,11 @@ an argument, since we'll have to use it for `Arguments` of different types:
 ```makam-stdlib
 hmap : [TS] (P: forall A (A -> A -> prop)) (XS: hlist TS) (YS: hlist TS) -> prop.
 hmap P hnil hnil.
-hmap P (hcons X XS) (hcons Y YS) :- apply P X Y, hmap P XS YS.
+hmap P (hcons X XS) (hcons Y YS) :- forall.call P X Y, hmap P XS YS.
 ```
 
 \noindent
-As I mentioned before, the rank-2 polymorphism support in Makam is quite limited, so you have to use `apply` explicitly to instantiate the polymorphic `P` predicate accordingly and apply it.
+As I mentioned before, the rank-2 polymorphism support in Makam is quite limited, so you have to use `forall.call` explicitly to instantiate the polymorphic `P` predicate accordingly and call it.
 
 STUDENT. Let me try out an example of that:
 ```makam-stdlib
