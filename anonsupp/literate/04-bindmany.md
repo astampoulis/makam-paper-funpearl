@@ -131,7 +131,7 @@ typeof (lammany F) (arrowmany TS T) :-
 ```
 -->
 
-ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons \citep{assumemany-issue}. Makam is allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time.
+ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons. Makam allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time\footnote{The logical reason why this is not allowed in \lamprolog is that it violates the property of existence of uniform proofs; see \citet{assumemany-issue} for more information. An example of a goal that will fail at runtime is anything that includes a logical-or (denoted as ``\texttt{;}'') as an assumption, like ``\texttt{(typeof X T1; typeof X T2) -> ...}''.}.
 
 STUDENT. I see. But in that case we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
 
@@ -235,9 +235,9 @@ parametrically.  This works by performing unification of the parameter with the 
 
 ```makam
 typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (pfun xs (Defs, Body) =>
-    assumemany typeof xs TS (map typeof Defs TS),
-    assumemany typeof xs TS (typeof Body T')).
+  openmany XS_DefsBody (pfun XS (Defs, Body) =>
+    assumemany typeof XS TS (map typeof Defs TS),
+    assumemany typeof XS TS (typeof Body T')).
 ```
 <!--
 ```makam

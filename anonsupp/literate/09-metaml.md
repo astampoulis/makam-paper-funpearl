@@ -465,6 +465,8 @@ AUDIENCE. We cannot possibly believe that you are claiming this was easy!
 AUTHOR. Still, try implementing something like this without a metalanguage...  It takes a long time!
 As a result, it limits our ability to experiment with and iterate on new language-design
 ideas. That's why we started working on Makam. That took a few years, but now we can at least show
-a type system like this in 27 pages of a single-column PDF!
+a type system like this in 28 pages of a single-column PDF!
 
 ADVISOR. I wonder where all these voices are coming from?
+
+STUDENT. They somehow sound like the ghosts of people who left academia for industry?

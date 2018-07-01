@@ -61,3 +61,32 @@ wfprogram (lettype (product [onat, onat]) (fun bintuple => main
   )))) ?
 >> Impossible.
 
+wfprogram (lettype (product [onat, arrow onat onat]) (fun a => main (
+  app (lam a (fun x => x)) ozero))) ?
+>> Impossible.
+
+wfprogram (lettype onat (fun a => main (
+  app (lam a (fun x => x)) ozero))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a => main (
+  app (lam (product [a, onat]) (fun x => x)) (tuple [ozero, ozero])))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a => main (
+  lam a (fun x =>
+  app (lam (product [a, onat]) (fun x => x)) (tuple [ozero, x]))))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a =>
+          (lettype (product [a, onat]) (fun b => main (
+  lam a (fun x =>
+  app (lam b (fun x => x)) (tuple [ozero, x]))))))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a =>
+          (lettype (product [a, onat]) (fun b => main (
+  lam a (fun x =>
+  app (lam b (fun x => x)) ozero)))))) ?
+>> Impossible.
+

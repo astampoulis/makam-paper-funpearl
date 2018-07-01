@@ -57,7 +57,7 @@ hnil : hlist typenil. hcons : T -> hlist TS -> hlist (typecons T TS).
 
 hmap : [TS] (P: forall A (A -> A -> prop)) (XS: hlist TS) (YS: hlist TS) -> prop.
 hmap P hnil hnil.
-hmap P (hcons X XS) (hcons Y YS) :- apply P X Y, hmap P XS YS.
+hmap P (hcons X XS) (hcons Y YS) :- forall.call P X Y, hmap P XS YS.
 
 hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
 >> Yes:
@@ -73,13 +73,10 @@ dyn_headargs : (Term: A) (Head: B) (Arguments: list dyn) -> prop.
 dyn_headargs Term Head Arguments :- headargs Term Head Arguments.
 
 headargs : (Term: A) (Head: B) (Arguments: hlist T) -> prop.
-headargs Term Head Arguments when refl.isunif Head :-
+headargs Term Head Arguments when refl.isbaseterm Term :-
   dyn_headargs Term Head DynList,
   dyn_to_hlist DynList HList,
   eq Arguments HList.
-headargs Term Head Arguments when not(refl.isunif Head) :-
-  dyn_to_hlist DynList Arguments,
-  dyn_headargs Term Head DynList.
 %end.
 
 structural_recursion Rec X Y :-
@@ -87,10 +84,19 @@ structural_recursion Rec X Y :-
   refl.headargs Y Constructor Arguments',
   hmap Rec Arguments Arguments'.
 
+happly : [Constr Args Terms] Constr -> hlist Args -> Term -> prop.
+happly Constr hnil Constr.
+happly Constr (hcons A AS) Term :- happly (Constr A) AS Term.
+
 structural_recursion Rec X Y :-
   refl.headargs X Constructor Arguments,
   hmap Rec Arguments Arguments',
-  refl.headargs Y Constructor Arguments'.
+  happly Constructor Arguments' Y.
+
+structural_recursion Rec X Y :-
+  refl.headargs Y Constructor Arguments',
+  hmap Rec Arguments Arguments',
+  happly Constructor Arguments X.
 
 structural_recursion Rec (X : A -> B) (Y : A -> B) :-
   (x:A -> structural_recursion Rec x x ->

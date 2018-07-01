@@ -25,9 +25,9 @@ eval (appmany E ES) V :-
 letrec : bindmany term (list term * term) -> term.
 
 typeof (letrec XS_DefsBody) T' :-
-  openmany XS_DefsBody (pfun xs (Defs, Body) =>
-    assumemany typeof xs TS (map typeof Defs TS),
-    assumemany typeof xs TS (typeof Body T')).
+  openmany XS_DefsBody (pfun XS (Defs, Body) =>
+    assumemany typeof XS TS (map typeof Defs TS),
+    assumemany typeof XS TS (typeof Body T')).
 
 typeof (letrec (bind (fun f => body ([lam T (fun x => app f (app f x))], f)))) T' ?
 >> Yes:
