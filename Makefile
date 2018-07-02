@@ -41,6 +41,11 @@ watch-build:
 test:
 	@ ./shared/run_tests.sh
 
+test-artifact: artifact
+	@ rm -rf tmp/artifact88/
+	@ tar xvzf artifact88 -C tmp/
+	@ tmp/run-makam.sh --run-tests 10-typgen
+
 artifact:
 	@ ./shared/convert-anonsupp.sh
 	@ ./shared/build-artifact.sh

@@ -1,9 +1,9 @@
 FROM ocaml/opam:alpine_ocaml-4.06.0 as makam
 RUN sudo apk update && sudo apk add git m4
-RUN git clone https://github.com/astampoulis/makam.git makam-code
+RUN git clone https://github.com/astampoulis/makam.git makam-code # need d9c42221539597706fe9b28396a6c9223391ea42
 WORKDIR makam-code
-# switch to makam version 0.7.9:
-RUN git checkout 6fda1ca006e0c98a6b15dd4542548174964eee7a
+# switch to makam version 0.7.12:
+RUN git checkout d9c42221539597706fe9b28396a6c9223391ea42
 RUN opam pin add makam . --no-action && opam install makam --deps-only && opam config exec make
 
 # Compile rlwrap for alpine, no package exists in the repositories

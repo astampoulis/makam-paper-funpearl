@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
-docker load --input docker-image.tar
+MAINDIR="$(realpath "$(dirname "$0")")"
 
-docker run --rm -it -v "$(pwd)"/code:/code -w /code makam-icfp2018-artifact bash
+docker load --input "$MAINDIR"/docker-image.tar
+
+docker run --rm -it -v "$MAINDIR"/code:/code -w /code makam-icfp2018-artifact bash
