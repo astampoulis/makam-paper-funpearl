@@ -163,13 +163,13 @@ Last, we'll need an auxiliary predicate that tells us whether a unification vari
 term. This is easy; it's similar to the above.
 
 ```makam-stdlib
-hasunif : [VarType Any] VarType -> bool -> Any -> bool -> prop.
-hasunif _ true _ true.
-hasunif X false Y true :- refl.sameunif X Y.
-hasunif X In Y Out :- generic_fold @(hasunif X) In Y Out.
+hasunif_aux : [VarType Any] VarType -> bool -> Any -> bool -> prop.
+hasunif_aux _ true _ true.
+hasunif_aux X false Y true :- refl.sameunif X Y.
+hasunif_aux X In Y Out :- generic_fold @(hasunif_aux X) In Y Out.
 
 hasunif : [VarType Any] VarType -> Any -> prop.
-hasunif Var Term :- hasunif Var false Term true.
+hasunif Var Term :- hasunif_aux Var false Term true.
 ```
 
 We are now mostly ready to implement `generalize`. We'll do this recursively. The base case is when there are no unification variables within a type left:
