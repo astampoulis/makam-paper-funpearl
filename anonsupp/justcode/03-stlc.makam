@@ -13,7 +13,8 @@ typeof : term -> typ -> prop.
 
 typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
 
-typeof (lam T1 E) (arrow T1 T2) :- (x:term -> typeof x T1 -> typeof (E x) T2).
+typeof (lam T1 E) (arrow T1 T2) :-
+  (x:term -> typeof x T1 -> typeof (E x) T2).
 
 typeof (lam _ (fun x => x)) T ?
 >> Yes:

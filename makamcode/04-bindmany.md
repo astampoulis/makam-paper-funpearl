@@ -66,22 +66,26 @@ bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
 ```
 
 ADVISOR. This looks great! That is exactly what's in the Makam standard library, actually. And
-we can now define `lammany` using it -- and our example term from before.
+we can now define `lammany` using it:
 
-```
+\importantCodeblock{}
+```makam
 lammany : bindmany term term -> term.
-lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))
+```
+\importantCodeblockEnd{}
+
+STUDENT. I see. So our example term from before would be:
+```
+lammany (bind (fun x => bind (fun y => body (tuple [y,x])))).
 ```
 
 <!--
 ```makam
-lammany : bindmany term term -> term.
 refl.typstring (lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))) "term" ?
 >> Yes.
 ```
 -->
-
-STUDENT. I see. That is an interesting datatype. Is there some reference about it?
+This `bindmany` datatype is quite interesting. Is there some reference about it?
 
 ADVISOR. Not that I know of, at least where it is called out as a reusable datatype -- though the
 construction is definitely part of PL folklore. After I started using this in Makam, I noticed
@@ -92,11 +96,13 @@ STUDENT. Interesting. So how do we work with `bindmany`? What's the typing rule 
 
 ADVISOR. The rule is written like this, and I'll explain what goes into it:
 
+\importantCodeblock{}
 ```
 arrowmany : list typ -> typ -> typ.
 typeof (lammany F) (arrowmany TS T) :-
   openmany F (fun xs body => assumemany typeof xs TS (typeof body T)).
 ```
+\importantCodeblockEnd{}
 
 STUDENT. Let me see if I can read this... `openmany` somehow gives you fresh variables `xs` for the
 binders, plus the `body` of the `lammany`; and then the `assumemany typeof` part is what corresponds
@@ -172,11 +178,13 @@ applymany : bindmany A B -> list A -> B -> prop.
 applymany (body B) [] B.
 applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
 ```
+\importantCodeblock{}
 ```makam
 eval (appmany E ES) V :-
   eval E (lammany XS_E'), map eval ES VS,
   applymany XS_E' VS E'', eval E'' V.
 ```
+\importantCodeblockEnd{}
 
 STUDENT. I see, that makes sense. Can I ask you something that worries me, though -- all these fancy higher-order abstract
 binders, how do we... make them concrete? Say, how do we print them?
@@ -233,12 +241,14 @@ doesn't work for normal functions in the general case, since they need to treat 
 parametrically.  This works by performing unification of the parameter with the given term -- so
 `defs` and `body` need to be capitalized so that they are understood to be unification variables.
 
+\importantCodeblock{}
 ```makam
 typeof (letrec XS_DefsBody) T' :-
   openmany XS_DefsBody (pfun XS (Defs, Body) =>
     assumemany typeof XS TS (map typeof Defs TS),
     assumemany typeof XS TS (typeof Body T')).
 ```
+\importantCodeblockEnd{}
 <!--
 ```makam
 typeof (letrec (bind (fun f => body ([lam T (fun x => app f (app f x))], f)))) T' ?

@@ -104,11 +104,15 @@ Coupling this with the binding constructs that I talked to you earlier
 about, we can build new magical beings, like the \emph{Bind that Knows
 Its Length}:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 vbindmany : (Var: type) (N: type) (Body: type) \ensuremath{\to} type.
 vbody : Body \ensuremath{\to} vbindmany Var zero Body.
 vbind : (Var \ensuremath{\to} vbindmany Var N Body) \ensuremath{\to} vbindmany Var (succ N) Body.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 (Whereby I am using notation of the Makam dialect in my definition of
 \texttt{vbindmany} that allows me to name parameters, purely for the
@@ -126,9 +130,13 @@ vopenmany (vbind F) Q \ensuremath{:\!-}
 
 We can also showcase the \emph{Accurate Encoding of the Letrec}:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 vletrec : vbindmany term N (vector term N * term) \ensuremath{\to} term.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 And that is the way that the land of \lamprolog supports GADTs, without
 needing the addition of any feature, all thanks to the existing support

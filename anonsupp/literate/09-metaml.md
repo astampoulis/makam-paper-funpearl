@@ -113,9 +113,10 @@ classof_index : index -> class -> prop.
 subst_obj : (I_E: index -> term) (O: object) (E_OforI: term) -> prop.
 
 liftobj : object -> term. liftclass : class -> typ.
-typeof (liftobj O) (liftclass C) :- classof O C.
-
 letobj : term -> (index -> term) -> term.
+```
+```makam
+typeof (liftobj O) (liftclass C) :- classof O C.
 typeof (letobj E EF') T :-
   typeof E (liftclass C), (i:index -> classof_index i C -> typeof (EF' i) T).
 
@@ -252,9 +253,10 @@ ADVISOR. That's great! The only thing missing to try out an evaluation example t
 ```makam
 subst_obj_aux, subst_obj_cases : [Any]
   (Var: index) (Replacement: object) (Where: Any) (Result: Any) -> prop.
+```
+```makam
 subst_obj I_Term O Term_OforI :-
   (i:index -> subst_obj_aux i O (I_Term i) Term_OforI).
-
 subst_obj_aux Var Replacement Where Result :-
   if (subst_obj_cases Var Replacement Where Result)
   then success

@@ -126,9 +126,11 @@ classof_index : index \ensuremath{\to} class \ensuremath{\to} prop.
 subst_obj : (I_E: index \ensuremath{\to} term) (O: object) (E_OforI: term) \ensuremath{\to} prop.
 
 liftobj : object \ensuremath{\to} term. liftclass : class \ensuremath{\to} typ.
-typeof (liftobj O) (liftclass C) \ensuremath{:\!-} classof O C.
-
 letobj : term \ensuremath{\to} (index \ensuremath{\to} term) \ensuremath{\to} term.
+\end{verbatim}
+
+\begin{verbatim}
+typeof (liftobj O) (liftclass C) \ensuremath{:\!-} classof O C.
 typeof (letobj E EF') T \ensuremath{:\!-}
   typeof E (liftclass C), (i:index \ensuremath{\to} classof_index i C \ensuremath{\to} typeof (EF' i) T).
 
@@ -179,9 +181,11 @@ example too is implementing \texttt{subst\_obj}. Thanks to
 \begin{verbatim}
 subst_obj_aux, subst_obj_cases : [Any]
   (Var: index) (Replacement: object) (Where: Any) (Result: Any) \ensuremath{\to} prop.
+\end{verbatim}
+
+\begin{verbatim}
 subst_obj I_Term O Term_OforI \ensuremath{:\!-}
   (i:index \ensuremath{\to} subst_obj_aux i O (I_Term i) Term_OforI).
-
 subst_obj_aux Var Replacement Where Result \ensuremath{:\!-}
   if (subst_obj_cases Var Replacement Where Result)
   then success

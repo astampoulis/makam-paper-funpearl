@@ -4,6 +4,7 @@ tests: testsuite. %testsuite tests.
 tforall : (typ -> typ) -> typ.
 lamt : (typ -> term) -> term.
 appt : term -> typ -> term.
+
 typeof (lamt E) (tforall T) :- (a:typ -> typeof (E a) (T a)).
 typeof (appt E T) T' :- typeof E (tforall TF), eq T' (TF T).
 

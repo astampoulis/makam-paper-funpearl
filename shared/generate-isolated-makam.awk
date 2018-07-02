@@ -8,7 +8,8 @@ BEGIN { inmakam = 0;
 /^```$/ { if (inmakam == 1) { inmakam = 0; print "" >> outputfile; } else if (inmakam == 2) { inmakam = 0; print "" >> stdlibfile; }; }
 
 !(/^```$/ || /^```makam$/ || /^```makam-stdlib$/ || \
-  /^<\!--/ || /^-->/ || /^\.\.\./ \
+  /^<\!--/ || /^-->/ || /^\.\.\./ || \
+  /^\\importantCodeBlock/ \
  ) { if (inmakam == 1) { print $0 >> outputfile } else if (inmakam == 2) { print $0 >> stdlibfile; } }
 
 END { }

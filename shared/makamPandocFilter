@@ -1,0 +1,18 @@
+#!/usr/bin/env python
+
+"""
+Pandoc filter to convert all level 2+ headers to paragraphs with
+emphasized text.
+"""
+
+from pandocfilters import toJSONFilter, Para, CodeBlock, RawInline
+import sys
+
+def process(key, value, format, meta):
+  if key == 'CodeBlock':
+    [[identification, classes, keyvals], code] = value
+    if "important" in classes:
+      return Para([RawInline("latex", "\\importantCodeblock{}\\begin{verbatim}" + code), RawInline("latex", "\\end{verbatim}\\importantCodeblockEnd{}")])
+
+if __name__ == "__main__":
+  toJSONFilter(process)

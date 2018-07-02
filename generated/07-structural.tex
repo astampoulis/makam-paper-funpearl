@@ -50,16 +50,21 @@ rules:
 
 \begin{verbatim}
 typedef : (NewType: typ) (Definition: typ) \ensuremath{\to} prop.
-
 program : type. 
 main : term \ensuremath{\to} program. 
 lettype : (Definition: typ) (A_Program: typ \ensuremath{\to} program) \ensuremath{\to} program.
+\end{verbatim}
 
+\importantCodeblock{}
+
+\begin{verbatim}
 wfprogram : program \ensuremath{\to} prop.
 wfprogram (main E) \ensuremath{:\!-} typeof E T.
 wfprogram (lettype T A_Program) \ensuremath{:\!-}
   (a:typ \ensuremath{\to} typedef a T \ensuremath{\to} wfprogram (A_Program a)).
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \noindent
 Well, I can do the conversion rule and the type-equality judgment
@@ -137,9 +142,13 @@ once at the end, if typing using the other rules fails. But for now,
 let's do a trick to side-step this issue -- let's check that \texttt{T}
 and \texttt{T\textquotesingle{}} are not identical:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 typeof E T \ensuremath{:\!-} not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 By the way, \texttt{eq} is a standard-library predicate that simply
 attempts unification of the two arguments:
@@ -194,11 +203,15 @@ rule for it\ldots{}.
 and adds a few lines:)
 \end{scenecomment}
 
+\importantCodeblock{}
+
 \begin{verbatim}
 typeq A T' \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
 typeq T T' \ensuremath{:\!-} structural_recursion @typeq T T'.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} \ldots{} What just happened. Is \texttt{structural\_recursion}
 some special Makam trick I don't know about yet?
@@ -306,11 +319,15 @@ can roll our own reusable \texttt{structural\_recursion} implementation
 -- that way we will dispel all magic from its use that I showed you
 earlier! I'll give you the type; you fill in the first case:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 structural_recursion : [Any] 
   (RecursivePred: forall A (A \ensuremath{\to} A \ensuremath{\to} prop))
   (X: Any) (Y: Any) \ensuremath{\to} prop.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} Let me see. Oh, so, the first argument is a predicate -- are we
 doing this in open-recursion style? I see. Well, I can adapt the case I
@@ -339,6 +356,8 @@ happly Constr (hcons A AS) Term \ensuremath{:\!-} happly (Constr A) AS Term.
 \texttt{X}, perform the transformation on the \texttt{Arguments}, and
 then reapply the \texttt{Constructor} to get the result for \texttt{Y}.
 
+\importantCodeblock{}
+
 \begin{verbatim}
 structural_recursion Rec X Y \ensuremath{:\!-}
   refl.headargs X Constructor Arguments,
@@ -346,17 +365,23 @@ structural_recursion Rec X Y \ensuremath{:\!-}
   happly Constructor Arguments' Y.
 \end{verbatim}
 
+\importantCodeblockEnd{}
+
 \heroADVISOR{} That is exactly right. You need the symmetric case too but
 that's entirely similar. Also, there is another type of concrete terms
 in Makam: meta-level functions! It does not make sense to destructure
 functions using \texttt{refl.headargs}, so it fails in that case, and we
 have to treat them specially:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) \ensuremath{:\!-}
   (x:A \ensuremath{\to} structural_recursion Rec x x \ensuremath{\to}
     structural_recursion Rec (X x) (Y x)).
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} Ah, I see! Here you \emph{are} actually relying on the
 \texttt{typecase} aspect of ad-hoc polymorphism, right? To check if

@@ -44,9 +44,14 @@ generalizing the type, for now:
 ```makam
 generalize : (Type: typ) (GeneralizedType: typ) -> prop.
 let : term -> (term -> term) -> term.
-typeof (let E F) T' :-
-  typeof E T, generalize T Tgen, (x:term -> typeof x Tgen -> typeof (F x) T').
 ```
+\importantCodeblock{}
+```makam
+typeof (let E F) T' :-
+  typeof E T, generalize T Tgen,
+  (x:term -> typeof x Tgen -> typeof (F x) T').
+```
+\importantCodeblockEnd{}
 
 Now, for generalization itself, we need the following ingredients based on the typing rule:
 
@@ -169,9 +174,11 @@ hasunif Var Term :- hasunif Var false Term true.
 
 We are now mostly ready to implement `generalize`. We'll do this recursively. The base case is when there are no unification variables within a type left:
 
+\importantCodeblock{}
 ```makam
 generalize T T :- not(findunif T (X: typ)).
 ```
+\importantCodeblockEnd{}
 
 For the recursive case, we will pick out the first unification variable that we come upon using
 `findunif`. We will generalize over it using `replaceunif` and then proceed to the rest.  Still,
@@ -179,6 +186,7 @@ there is a last hurdle: we have to skip over the unification variables that are 
 environment. For the time being, let's assume a predicate that gives us all the types in the
 environment, so we can write the recursive case down:
 
+\importantCodeblock{}
 ```makam
 get_types_in_environment : [A] A -> prop.
 generalize T Res :-
@@ -187,6 +195,7 @@ generalize T Res :-
   if (hasunif Var GammaTypes) then (eq Res (T'' Var))
   else (eq Res (tforall T'')).
 ```
+\importantCodeblockEnd{}
 
 \identDialog
 
@@ -201,10 +210,12 @@ reflexive predicate `refl.assume_get`. It turns out that all the rules and conne
 have been using are normal \lamprolog terms like any other, so there's not really
 much magic to it. And those assumptions will include all the types in $\Gamma$....
 
+\importantCodeblock{}
 ```makam
 get_types_in_environment Assumptions :-
   refl.assume_get typeof Assumptions.
 ```
+\importantCodeblockEnd{}
 
 STUDENT. Wait. It can't be.
 ```makam

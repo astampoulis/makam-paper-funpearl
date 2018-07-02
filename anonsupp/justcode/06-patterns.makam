@@ -11,7 +11,6 @@ patt_ozero : patt N N.
 patt_osucc : patt N N' -> patt N N'.
 patt_wild : patt N N.
 patt_tuple : pattlist N N' -> patt N N'.
-
 pnil : pattlist N N.
 pcons : patt N N' -> pattlist N' N'' -> pattlist N N''.
 

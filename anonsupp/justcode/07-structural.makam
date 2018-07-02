@@ -2,7 +2,6 @@
 tests: testsuite. %testsuite tests.
 
 typedef : (NewType: typ) (Definition: typ) -> prop.
-
 program : type. 
 main : term -> program. 
 lettype : (Definition: typ) (A_Program: typ -> program) -> program.

@@ -129,6 +129,7 @@ notion of type-level functions like plus....
 
 However... maybe I can work around that, if I change `patt` to include an "accumulator" argument, say `NBefore`. Each constructor for patterns will now define how many pattern variables it adds to that accumulator, yielding `NAfter`, rather than defining how many pattern variables it includes... like this:
 
+\importantCodeblock{}
 ```makam
 patt, pattlist : (NBefore: type) (NAfter: type) -> type.
 patt_var : patt N (succ N).
@@ -136,10 +137,10 @@ patt_ozero : patt N N.
 patt_osucc : patt N N' -> patt N N'.
 patt_wild : patt N N.
 patt_tuple : pattlist N N' -> patt N N'.
-
 pnil : pattlist N N.
 pcons : patt N N' -> pattlist N' N'' -> pattlist N N''.
 ```
+\importantCodeblockEnd{}
 
 Yes, I think that should work. I have a little editing to do in my existing predicates to use this
 representation instead. For top-level patterns, we should always start with the accumulator being `zero`...
@@ -164,20 +165,25 @@ own:
 ```makam
 typeof_patt : [NBefore NAfter] patt NBefore NAfter -> typ ->
   vector typ NBefore -> vector typ NAfter -> prop.
-
+```
+\importantCodeblock{}
+```makam
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
   typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
   vopenmany Vars_Body (pfun Vars Body =>
     vassumemany typeof Vars VarTypes (typeof Body BodyT)),
   typeof Else BodyT.
 ```
+\importantCodeblockEnd{}
 
 All right, let's proceed to the typing rules for patterns themselves:
 
+\importantCodeblock{}
 ```makam
 typeof_patt patt_var T VarTypes VarTypes' :-
   vsnoc VarTypes T VarTypes'.
 ```
+\importantCodeblockEnd{}
 
 OK, here I need `vsnoc` to add an element to the end of a vector.
 That should yield the correct order for the types of pattern variables;

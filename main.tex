@@ -69,8 +69,21 @@
 \newcommand\TODO[0]{\textbf{TODO}}
 \newcommand\lamprolog[0]{\foreignlanguage{greek}{λ}Prolog\xspace}
 \newcommand\fomega[0]{F$\omega$\xspace}
-\renewenvironment{verbatim}{\begin{quote}\begin{alltt}}{\end{alltt}\end{quote}}
-\newenvironment{codequote}{\begin{quote}\begin{alltt}}{\end{alltt}\end{quote}}
+
+\newsavebox{\selvestebox}
+\newtoggle{important}
+\togglefalse{important}
+\definecolor{highlightcolor}{rgb}{0.81,0.83,0.95}
+\newcommand\importantCodeblock[0]{\toggletrue{important}}
+\newcommand\importantCodeblockEnd[0]{\togglefalse{important}}
+\renewenvironment{verbatim}{\iftoggle{important}{\newenvironment{colbox}{\begin{lrbox}{\selvestebox}%
+   \begin{minipage}{\dimexpr\columnwidth-2\fboxsep\relax}}{\end{minipage}\end{lrbox}%
+   \begin{center}\hspace{-6pt}%
+   \colorbox{highlightcolor}{\usebox{\selvestebox}}%
+   \end{center}}}{\newenvironment{colbox}{}{}}%
+\begin{colbox}\begin{quote}\begin{alltt}}{\end{alltt}\end{quote}\end{colbox}}
+\newcommand\highlightedtext[1]{{\setlength{\fboxsep}{2pt}\colorbox{highlightcolor}{#1}}}
+
 \newcommand\hide[1]{}
 \newcommand\tightlist[0]{\itemsep1pt\parskip0pt\parsep0pt}
 \renewcommand\thesection{\textbf{CHAPTER \arabic{section}}}

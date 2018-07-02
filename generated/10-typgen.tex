@@ -45,9 +45,17 @@ predicate for generalizing the type, for now:
 \begin{verbatim}
 generalize : (Type: typ) (GeneralizedType: typ) \ensuremath{\to} prop.
 let : term \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
-typeof (let E F) T' \ensuremath{:\!-}
-  typeof E T, generalize T Tgen, (x:term \ensuremath{\to} typeof x Tgen \ensuremath{\to} typeof (F x) T').
 \end{verbatim}
+
+\importantCodeblock{}
+
+\begin{verbatim}
+typeof (let E F) T' \ensuremath{:\!-}
+  typeof E T, generalize T Tgen,
+  (x:term \ensuremath{\to} typeof x Tgen \ensuremath{\to} typeof (F x) T').
+\end{verbatim}
+
+\importantCodeblockEnd{}
 
 Now, for generalization itself, we need the following ingredients based
 on the typing rule:
@@ -171,9 +179,13 @@ We are now mostly ready to implement \texttt{generalize}. We'll do this
 recursively. The base case is when there are no unification variables
 within a type left:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 generalize T T \ensuremath{:\!-} not(findunif T (X: typ)).
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 For the recursive case, we will pick out the first unification variable
 that we come upon using \texttt{findunif}. We will generalize over it
@@ -183,6 +195,8 @@ in the \(\Gamma\) environment. For the time being, let's assume a
 predicate that gives us all the types in the environment, so we can
 write the recursive case down:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 get_types_in_environment : [A] A \ensuremath{\to} prop.
 generalize T Res \ensuremath{:\!-}
@@ -191,6 +205,8 @@ generalize T Res \ensuremath{:\!-}
   if (hasunif Var GammaTypes) then (eq Res (T'' Var))
   else (eq Res (tforall T'')).
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \identDialog
 
@@ -209,10 +225,14 @@ rules and connectives we have been using are normal \lamprolog terms
 like any other, so there's not really much magic to it. And those
 assumptions will include all the types in \(\Gamma\)\ldots{}.
 
+\importantCodeblock{}
+
 \begin{verbatim}
 get_types_in_environment Assumptions \ensuremath{:\!-}
   refl.assume_get typeof Assumptions.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} Wait. It can't be.
 

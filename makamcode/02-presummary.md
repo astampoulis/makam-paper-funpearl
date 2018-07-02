@@ -1,4 +1,4 @@
-# In which we get a premonition of things to come
+# In which our readers we get a premonition of things to come
 
 \identNormal
 
@@ -13,5 +13,10 @@ cases, motivating them through the example of encoding a simple conversion rule.
 chapters make use of the presented features to implement polymorphism and algebraic datatypes
 (*Chapter 8*), heterogeneous staging constructs with contextual typing (*Chapter 9*) and
 Hindley-Milner type generalization (*Chapter 10*). We then summarize and compare to related work.
+
+We encourage readers to skim through the paper as a first pass, focusing on the
+\highlightedtext{highlighted code}. These highlights provide a rough picture
+of the Makam code needed to implement a typechecker for a small ML-like
+language, along with a few key definitions from the standard library.
 
 \identDialog

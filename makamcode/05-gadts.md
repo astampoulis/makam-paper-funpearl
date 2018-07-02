@@ -89,11 +89,13 @@ whether each rule applies, rather than relying on the `typecase` aspects we spok
 Coupling this with the binding constructs that I talked to you earlier about, we can build
 new magical beings, like the *Bind that Knows Its Length*:
 
+\importantCodeblock{}
 ```makam-stdlib
 vbindmany : (Var: type) (N: type) (Body: type) -> type.
 vbody : Body -> vbindmany Var zero Body.
 vbind : (Var -> vbindmany Var N Body) -> vbindmany Var (succ N) Body.
 ```
+\importantCodeblockEnd{}
 
 (Whereby I am using notation of the Makam dialect in my definition of `vbindmany` that allows me to name
 parameters, purely for the purposes of increased clarity.)
@@ -110,9 +112,11 @@ vopenmany (vbind F) Q :-
 
 We can also showcase the *Accurate Encoding of the Letrec*:
 
+\importantCodeblock{}
 ```makam
 vletrec : vbindmany term N (vector term N * term) -> term.
 ```
+\importantCodeblockEnd{}
 
 And that is the way that the land of \lamprolog supports GADTs, without needing the addition
 of any feature, all thanks to the existing support for Ad-Hoc Polymorphism.

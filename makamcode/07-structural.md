@@ -42,16 +42,18 @@ STUDENT. Yes, I got this. I'll add a new `typedef` predicate; I will only use it
 
 ```makam
 typedef : (NewType: typ) (Definition: typ) -> prop.
-
 program : type. 
 main : term -> program. 
 lettype : (Definition: typ) (A_Program: typ -> program) -> program.
-
+```
+\importantCodeblock{}
+```makam
 wfprogram : program -> prop.
 wfprogram (main E) :- typeof E T.
 wfprogram (lettype T A_Program) :-
   (a:typ -> typedef a T -> wfprogram (A_Program a)).
 ```
+\importantCodeblockEnd{}
 
 \noindent
 Well, I can do the conversion rule and the type-equality judgment too.... I will name that `typeq`. I'll just write the one rule for now, which should be sufficient for a small example:
@@ -110,9 +112,11 @@ rule will be discovered, which will lead to another proof for it, etc. One fix i
 this rule is only used once at the end, if typing using the other rules fails. But for now, let's do
 a trick to side-step this issue -- let's check that `T` and `T'` are not identical:
 
+\importantCodeblock{}
 ```makam
 typeof E T :- not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
 ```
+\importantCodeblockEnd{}
 
 By the way, `eq` is a standard-library predicate that simply attempts unification of the two arguments:
 
@@ -174,11 +178,13 @@ structural_recursion : [B] forall A (A -> A -> prop) -> B -> B -> prop.
 ```
 -->
 
+\importantCodeblock{}
 ```makam
 typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T T' :- structural_recursion @typeq T T'.
 ```
+\importantCodeblockEnd{}
 
 STUDENT. ... What just happened. Is `structural_recursion` some special Makam trick I don't know about yet?
 
@@ -276,11 +282,13 @@ typeq T T' :-
 
 ADVISOR. That looks great! Simple, isn't it? You'll see that there are a few more generic cases that are needed, though. Should we do that? We can roll our own reusable `structural_recursion` implementation -- that way we will dispel all magic from its use that I showed you earlier! I'll give you the type; you fill in the first case:
 
+\importantCodeblock{}
 ```
 structural_recursion : [Any] 
   (RecursivePred: forall A (A -> A -> prop))
   (X: Any) (Y: Any) -> prop.
 ```
+\importantCodeblockEnd{}
 
 STUDENT. Let me see. Oh, so, the first argument is a predicate -- are we doing this in open-recursion style? I see. Well, I can adapt the case I just wrote above.
 
@@ -301,12 +309,14 @@ happly Constr (hcons A AS) Term :- happly (Constr A) AS Term.
 
 STUDENT. How about this? This way, we will decocompose the concrete `X`, perform the transformation on the `Arguments`, and then reapply the `Constructor` to get the result for `Y`.
 
+\importantCodeblock{}
 ```makam-stdlib
 structural_recursion Rec X Y :-
   refl.headargs X Constructor Arguments,
   hmap Rec Arguments Arguments',
   happly Constructor Arguments' Y.
 ```
+\importantCodeblockEnd{}
 
 <!--
 ```makam-stdlib
@@ -319,11 +329,13 @@ structural_recursion Rec X Y :-
 
 ADVISOR. That is exactly right. You need the symmetric case too but that's entirely similar. Also, there is another type of concrete terms in Makam: meta-level functions! It does not make sense to destructure functions using `refl.headargs`, so it fails in that case, and we have to treat them specially:
 
+\importantCodeblock{}
 ```makam-stdlib
 structural_recursion Rec (X : A -> B) (Y : A -> B) :-
   (x:A -> structural_recursion Rec x x ->
     structural_recursion Rec (X x) (Y x)).
 ```
+\importantCodeblockEnd{}
 
 STUDENT. Ah, I see! Here you *are* actually relying on the `typecase` aspect of ad-hoc polymorphism, right? To check if `X` and `Y` are of the meta-level function type.
 

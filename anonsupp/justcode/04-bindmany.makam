@@ -2,6 +2,7 @@
 tests : testsuite. %testsuite tests.
 
 lammany : bindmany term term -> term.
+
 refl.typstring (lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))) "term" ?
 >> Yes.
 

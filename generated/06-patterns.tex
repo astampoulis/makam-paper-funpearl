@@ -146,6 +146,8 @@ constructor for patterns will now define how many pattern variables it
 adds to that accumulator, yielding \texttt{NAfter}, rather than defining
 how many pattern variables it includes\ldots{} like this:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 patt, pattlist : (NBefore: type) (NAfter: type) \ensuremath{\to} type.
 patt_var : patt N (succ N).
@@ -153,10 +155,11 @@ patt_ozero : patt N N.
 patt_osucc : patt N N' \ensuremath{\to} patt N N'.
 patt_wild : patt N N.
 patt_tuple : pattlist N N' \ensuremath{\to} patt N N'.
-
 pnil : pattlist N N.
 pcons : patt N N' \ensuremath{\to} pattlist N' N'' \ensuremath{\to} pattlist N N''.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 Yes, I think that should work. I have a little editing to do in my
 existing predicates to use this representation instead. For top-level
@@ -175,7 +178,11 @@ accumulator argument of its own:
 \begin{verbatim}
 typeof_patt : [NBefore NAfter] patt NBefore NAfter \ensuremath{\to} typ \ensuremath{\to}
   vector typ NBefore \ensuremath{\to} vector typ NAfter \ensuremath{\to} prop.
+\end{verbatim}
 
+\importantCodeblock{}
+
+\begin{verbatim}
 typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT \ensuremath{:\!-}
   typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
   vopenmany Vars_Body (pfun Vars Body \ensuremath{\Rightarrow}
@@ -183,12 +190,18 @@ typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT \ensuremath{:\!-}
   typeof Else BodyT.
 \end{verbatim}
 
+\importantCodeblockEnd{}
+
 All right, let's proceed to the typing rules for patterns themselves:
+
+\importantCodeblock{}
 
 \begin{verbatim}
 typeof_patt patt_var T VarTypes VarTypes' \ensuremath{:\!-}
   vsnoc VarTypes T VarTypes'.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 OK, here I need \texttt{vsnoc} to add an element to the end of a vector.
 That should yield the correct order for the types of pattern variables;

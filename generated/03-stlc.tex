@@ -8,20 +8,28 @@ abstraction, and the arrow type.
 \heroADVISOR{} Right. We will first need to define the two meta-types for
 these two sorts:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 term : type.
 typ : type.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} Oh, so \texttt{type} is the reserved keyword for the meta-level
 kind of types, and we'll use \texttt{typ} for our object-level types?
 
 \heroADVISOR{} Exactly. And let's do the easy constructors first:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 app : term \ensuremath{\to} term \ensuremath{\to} term.
 arrow : typ \ensuremath{\to} typ \ensuremath{\to} typ.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} So we add constructors to a type at any point; we do not list
 them out when we define it like in Haskell. But how about lambdas? I
@@ -35,9 +43,13 @@ computation such as pattern matching on their argument and thus we do
 not have to worry about exotic terms. So this works fine for
 Church-style lambdas:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 lam : typ \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} I see. And how about the typing judgment,
 \(\Gamma \vdash e : \tau\) ?
@@ -45,17 +57,25 @@ lam : typ \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
 \heroADVISOR{} Let's add a predicate for that. Only, no \(\Gamma\), there is
 an implicit context of assumptions that will serve the same purpose.
 
+\importantCodeblock{}
+
 \begin{verbatim}
 typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} Let me see if I can get the typing rule for application. I know
 that in Prolog we write the conclusion of a rule first, and the premises
 follow the \texttt{\ensuremath{:\!-}} sign. Does something like this work?
 
+\importantCodeblock{}
+
 \begin{verbatim}
 typeof (app E1 E2) T' \ensuremath{:\!-} typeof E1 (arrow T T'), typeof E2 T.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroADVISOR{} Yes! That's exactly right. Makam uses capital letters for
 unification variables.
@@ -66,9 +86,14 @@ the equivalent of extending the context as in \(\Gamma, \; x : \tau\) ?
 \heroADVISOR{} Simple: we introduce a fresh constructor for terms and a new
 typing rule for it:
 
+\importantCodeblock{}
+
 \begin{verbatim}
-typeof (lam T1 E) (arrow T1 T2) \ensuremath{:\!-} (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
+typeof (lam T1 E) (arrow T1 T2) \ensuremath{:\!-}
+  (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} Hmm, so `\texttt{x:term\ \ensuremath{\to}}' introduces the fresh
 constructor standing for the new variable, and
@@ -84,11 +109,15 @@ are only in effect for the recursive call `\texttt{typeof\ (E\ x)\ T2}'.
 \heroADVISOR{} We do! Queries of the \texttt{typeof} predicate can be used to
 type check terms. Observe:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T ?
 >> Yes:
 >> T := arrow T1 T1.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroSTUDENT{} Cool! So \texttt{fun} for metalevel functions, underscores for
 unification variables we don't care about, and \texttt{?} for queries.
@@ -131,11 +160,15 @@ all of our metatheoretic proofs. Or maybe we could use Abella
 
 \heroSTUDENT{} Sounds good. So, for tuples, this should work:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 tuple : list term \ensuremath{\to} term.
 product : list typ \ensuremath{\to} typ.
 typeof (tuple ES) (product TS) \ensuremath{:\!-} map typeof ES TS.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroADVISOR{} Yes, and there is syntactic sugar for \texttt{cons} and
 \texttt{nil} too:
@@ -151,18 +184,26 @@ too?
 
 \heroADVISOR{} Why not? Let's add a predicate and do the two easy rules:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 eval : term \ensuremath{\to} term \ensuremath{\to} prop.
 eval (lam T F) (lam T F).
 eval (tuple ES) (tuple VS) \ensuremath{:\!-} map eval ES VS.
 \end{verbatim}
 
+\importantCodeblockEnd{}
+
 \heroSTUDENT{} OK, let me try my hand at the beta-redex case. I'll just do
 call-by-value. I know that when using HOAS, function application is
 exactly capture-avoiding substitution, so this should be fine:
 
+\importantCodeblock{}
+
 \begin{verbatim}
 eval (app E E') V'' \ensuremath{:\!-} eval E (lam _ F), eval E' V', eval (F V') V''.
 \end{verbatim}
+
+\importantCodeblockEnd{}
 
 \heroADVISOR{} Exactly! See, I told you this would be easy!

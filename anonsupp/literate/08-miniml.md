@@ -26,9 +26,13 @@ you can take a break too / like Lambros from next door.''
 tforall : (typ -> typ) -> typ.
 lamt : (typ -> term) -> term.
 appt : term -> typ -> term.
+```
+\importantCodeblock{}
+```makam
 typeof (lamt E) (tforall T) :- (a:typ -> typeof (E a) (T a)).
 typeof (appt E T) T' :- typeof E (tforall TF), eq T' (TF T).
 ```
+\importantCodeblockEnd{}
 
 <!--
 ```makam
@@ -100,6 +104,7 @@ constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) -> prop.
 \texttt{DT} stands for datatype / -- the page is just too cropped.''
 \end{versy}
 
+\importantCodeblock{}
 ```makam
 wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
                     (bind_datatype DT_Constrs_Rest)) :-
@@ -107,6 +112,7 @@ wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
     assumemany (constructor_typ dt) Constrs (DT_ConstrArgTypes dt)
     (wfprogram Rest))).
 ```
+\importantCodeblockEnd{}
 
 \begin{versy}
 ``That's it, we're almost over / there's our wf-programs. \\
