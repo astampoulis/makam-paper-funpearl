@@ -118,8 +118,7 @@ vletrec : vbindmany term N (vector term N * term) -> term.
 ```
 \importantCodeblockEnd{}
 
-And that is the way that the land of \lamprolog supports GADTs, without needing the addition
-of any feature, all thanks to the existing support for Ad-Hoc Polymorphism.
+And that is the way that it turns out that our land of \lamprolog supports GADTs, without needing the addition of any feature, all thanks to the existing support for Ad-Hoc Polymorphism, which has been a staple since the days of yore \citep{lambdaprolog-early-reference}. Who knew!
 
 \identDialog
 

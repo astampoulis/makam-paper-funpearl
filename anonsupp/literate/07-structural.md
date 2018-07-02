@@ -99,32 +99,15 @@ STUDENT. Is that even possible? Is there a way in λProlog to tell whether somet
 
 ADVISOR. There is! Most Prolog dialects have a predicate that does that -- it's usually
 called `var`. In Makam it is called `refl.isunif`, the `refl` namespace prefix standing for
-*reflective* predicates. So, here's a second attempt, where I'm also using logical negation\footnote{Makam follows \citet{kiselyov05backtracking} closely in terms of the semantics for logical if-then-else and logical negation.}:
-
-```
-typeof E T :- not(refl.isunif T), typeof E T', typeq T T'.
-```
-
-STUDENT. Interesting. But wouldn't this lead to an infinite loop, too? After all, `typeq` is going to be reflexive when we add all rules -- so we could end up in the same situation as before.
-
-ADVISOR. Correct: for every proof of `typeof E T'` through the other rules, a new proof using this
-rule will be discovered, which will lead to another proof for it, etc. One fix is to make sure that
-this rule is only used once at the end, if typing using the other rules fails. But for now, let's do
-a trick to side-step this issue -- let's check that `T` and `T'` are not identical:
+*reflective* predicates. So, here's how we can write it instead, where I'll also use logical negation\footnote{Makam follows \citet{kiselyov05backtracking} closely in terms of the semantics for logical if-then-else and logical negation.}:
 
 \importantCodeblock{}
 ```makam
-typeof E T :- not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
+typeof E T :- not(refl.isunif T), typeof E T', typeq T T'.
 ```
 \importantCodeblockEnd{}
 
-By the way, `eq` is a standard-library predicate that simply attempts unification of the two arguments:
-
-```
-eq : A -> A -> prop. eq X X.
-```
-
-STUDENT. If we ever made a paper submission out of this, some reviewers would not be happy
+STUDENT. Interesting. If we ever made a paper submission out of this, some reviewers might not be happy
 about this `typeof` rule. But sure. Oh, and we should add the
 conversion rule for `typeof_patt`, but that's almost the same as for terms. (...) I'll do `typeq` next.
 
@@ -230,9 +213,10 @@ As I mentioned before, the rank-2 polymorphism support in Makam is quite limited
 
 STUDENT. Let me try out an example of that:
 ```makam-stdlib
-hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
+change : [A]A -> A -> prop. change 1 2. change "foo" "bar".
+hmap @change (hcons 1 (hcons "foo" hnil)) YS ?
 >> Yes:
->> YS := hcons 1 (hcons "foo" hnil).
+>> YS := hcons 2 (hcons "bar" hnil).
 ```
 
 \noindent
@@ -269,6 +253,12 @@ arrowmany : (TS: list typ) (T: typ) -> typ.
 refl.headargs Term Constructor Args :-
   not(refl.isunif Term), eq Term (arrowmany TS T),
   eq Constructor arrowmany, eq Args (hcons TS (hcons T hnil)).
+```
+
+By the way, `eq` is a standard-library predicate that simply attempts unification of its two arguments:
+
+```
+eq : A -> A -> prop. eq X X.
 ```
 
 STUDENT. I see. I think I can write the generic rule for `typeq` now then!

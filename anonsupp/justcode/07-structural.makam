@@ -13,7 +13,7 @@ wfprogram (lettype T A_Program) :-
 
 typeq : [Any] (T1: Any) (T2: Any) -> prop.
 
-typeof E T :- not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
+typeof E T :- not(refl.isunif T), typeof E T', typeq T T'.
 
 typeof_patt (P : patt A B) T S S' :-
   not(refl.isunif T),

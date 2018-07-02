@@ -122,45 +122,23 @@ whether something is a unification variable?
 \heroADVISOR{} There is! Most Prolog dialects have a predicate that does that
 -- it's usually called \texttt{var}. In Makam it is called
 \texttt{refl.isunif}, the \texttt{refl} namespace prefix standing for
-\emph{reflective} predicates. So, here's a second attempt, where I'm
-also using logical
+\emph{reflective} predicates. So, here's how we can write it instead,
+where I'll also use logical
 negation\footnote{Makam follows \citet{kiselyov05backtracking} closely in terms of the semantics for logical if-then-else and logical negation.}:
+
+\importantCodeblock{}
 
 \begin{verbatim}
 typeof E T \ensuremath{:\!-} not(refl.isunif T), typeof E T', typeq T T'.
 \end{verbatim}
 
-\heroSTUDENT{} Interesting. But wouldn't this lead to an infinite loop, too?
-After all, \texttt{typeq} is going to be reflexive when we add all rules
--- so we could end up in the same situation as before.
-
-\heroADVISOR{} Correct: for every proof of
-\texttt{typeof\ E\ T\textquotesingle{}} through the other rules, a new
-proof using this rule will be discovered, which will lead to another
-proof for it, etc. One fix is to make sure that this rule is only used
-once at the end, if typing using the other rules fails. But for now,
-let's do a trick to side-step this issue -- let's check that \texttt{T}
-and \texttt{T\textquotesingle{}} are not identical:
-
-\importantCodeblock{}
-
-\begin{verbatim}
-typeof E T \ensuremath{:\!-} not(refl.isunif T), typeof E T', typeq T T', not(eq T T').
-\end{verbatim}
-
 \importantCodeblockEnd{}
 
-By the way, \texttt{eq} is a standard-library predicate that simply
-attempts unification of the two arguments:
-
-\begin{verbatim}
-eq : A \ensuremath{\to} A \ensuremath{\to} prop. eq X X.
-\end{verbatim}
-
-\heroSTUDENT{} If we ever made a paper submission out of this, some reviewers
-would not be happy about this \texttt{typeof} rule. But sure. Oh, and we
-should add the conversion rule for \texttt{typeof\_patt}, but that's
-almost the same as for terms. (\ldots{}) I'll do \texttt{typeq} next.
+\heroSTUDENT{} Interesting. If we ever made a paper submission out of this,
+some reviewers would not be happy about this \texttt{typeof} rule. But
+sure. Oh, and we should add the conversion rule for
+\texttt{typeof\_patt}, but that's almost the same as for terms.
+(\ldots{}) I'll do \texttt{typeq} next.
 
 \begin{verbatim}
 typeq A T' \ensuremath{:\!-} typedef A T, typeq T T'.
@@ -275,9 +253,10 @@ it.
 \heroSTUDENT{} Let me try out an example of that:
 
 \begin{verbatim}
-hmap @eq (hcons 1 (hcons "foo" hnil)) YS ?
+change : [A]A \ensuremath{\to} A \ensuremath{\to} prop. change 1 2. change "foo" "bar".
+hmap @change (hcons 1 (hcons "foo" hnil)) YS ?
 >> Yes:
->> YS := hcons 1 (hcons "foo" hnil).
+>> YS := hcons 2 (hcons "bar" hnil).
 \end{verbatim}
 
 \noindent
@@ -301,6 +280,13 @@ arrowmany : (TS: list typ) (T: typ) \ensuremath{\to} typ.
 refl.headargs Term Constructor Args \ensuremath{:\!-}
   not(refl.isunif Term), eq Term (arrowmany TS T),
   eq Constructor arrowmany, eq Args (hcons TS (hcons T hnil)).
+\end{verbatim}
+
+By the way, \texttt{eq} is a standard-library predicate that simply
+attempts unification of its two arguments:
+
+\begin{verbatim}
+eq : A \ensuremath{\to} A \ensuremath{\to} prop. eq X X.
 \end{verbatim}
 
 \heroSTUDENT{} I see. I think I can write the generic rule for \texttt{typeq}

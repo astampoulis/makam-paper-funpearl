@@ -166,13 +166,13 @@ unification variable exists within a term. This is easy; it's similar to
 the above.
 
 \begin{verbatim}
-hasunif : [VarType Any] VarType \ensuremath{\to} bool \ensuremath{\to} Any \ensuremath{\to} bool \ensuremath{\to} prop.
-hasunif _ true _ true.
-hasunif X false Y true \ensuremath{:\!-} refl.sameunif X Y.
-hasunif X In Y Out \ensuremath{:\!-} generic_fold @(hasunif X) In Y Out.
+hasunif_aux : [VarType Any] VarType \ensuremath{\to} bool \ensuremath{\to} Any \ensuremath{\to} bool \ensuremath{\to} prop.
+hasunif_aux _ true _ true.
+hasunif_aux X false Y true \ensuremath{:\!-} refl.sameunif X Y.
+hasunif_aux X In Y Out \ensuremath{:\!-} generic_fold @(hasunif_aux X) In Y Out.
 
 hasunif : [VarType Any] VarType \ensuremath{\to} Any \ensuremath{\to} prop.
-hasunif Var Term \ensuremath{:\!-} hasunif Var false Term true.
+hasunif Var Term \ensuremath{:\!-} hasunif_aux Var false Term true.
 \end{verbatim}
 
 We are now mostly ready to implement \texttt{generalize}. We'll do this
