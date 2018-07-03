@@ -15,8 +15,8 @@ chapters make use of the presented features to implement polymorphism and algebr
 Hindley-Milner type generalization (*Chapter 10*). We then summarize and compare to related work.
 
 We encourage readers to skim through the paper as a first pass, focusing on the
-\highlightedtext{highlighted code}. These highlights provide a rough picture
-of the Makam code needed to implement a typechecker for a small ML-like
-language, along with a few key definitions from the standard library.
+\highlightedtext{highlighted code}. These highlights provide a rough picture of the Makam code
+needed to implement a typechecker for a small ML-like language, along with a few key definitions
+from the standard library.
 
 \identDialog

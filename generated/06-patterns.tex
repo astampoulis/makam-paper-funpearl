@@ -146,8 +146,6 @@ constructor for patterns will now define how many pattern variables it
 adds to that accumulator, yielding \texttt{NAfter}, rather than defining
 how many pattern variables it includes\ldots{} like this:
 
-\importantCodeblock{}
-
 \begin{verbatim}
 patt, pattlist : (NBefore: type) (NAfter: type) \ensuremath{\to} type.
 patt_var : patt N (succ N).
@@ -158,8 +156,6 @@ patt_tuple : pattlist N N' \ensuremath{\to} patt N N'.
 pnil : pattlist N N.
 pcons : patt N N' \ensuremath{\to} pattlist N' N'' \ensuremath{\to} pattlist N N''.
 \end{verbatim}
-
-\importantCodeblockEnd{}
 
 Yes, I think that should work. I have a little editing to do in my
 existing predicates to use this representation instead. For top-level
@@ -174,6 +170,8 @@ case_or_else : (Scrutinee: term)
 
 I also have to change \texttt{typeof\_patt}, so that it includes an
 accumulator argument of its own:
+
+\importantCodeblock{}
 
 \begin{verbatim}
 typeof_patt : [NBefore NAfter] patt NBefore NAfter \ensuremath{\to} typ \ensuremath{\to}

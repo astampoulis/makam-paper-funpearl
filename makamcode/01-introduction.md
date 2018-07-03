@@ -25,12 +25,13 @@ STUDENT. Oh, so you mean λProlog \citep{lambdaprolog-main-reference} or LF \cit
 
 ADVISOR. Yes. Actually, a few years back a friend of mine worked on this new implementation of λProlog
 just for this purpose -- rapid prototyping of languages. It's called Makam. It should be
-able to handle what we have in mind nicely, and we should not need to spend more than a few hours on it!
+able to handle our MetaML-like language nicely, and we should not need to spend more than a few hours on it!
 
 STUDENT. Sounds great! Anything I can read up on Makam then?
 
 ADVISOR. Not much, unfortunately... But I know the language and its standard library quite well, so
-let's work on this together; it'll be fun. I'll show you how things work along the way!
+let's work on this together; it'll be fun. I'll tell you all the details along the way too -- I know how
+you always want to understand things in depth!
 
 \begin{scenecomment}
 (Our heroes install Makam from
