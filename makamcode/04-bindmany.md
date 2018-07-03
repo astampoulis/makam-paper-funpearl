@@ -59,11 +59,13 @@ binders. Maybe we should name them accordingly.
 STUDENT. Right, and could we generalize their types? Maybe that will help me get a better
 grasp of it. How is this?
 
+\importantCodeblock{}
 ```makam-stdlib
 bindmany : type -> type -> type.
 body : Body -> bindmany Variable Body.
 bind : (Variable -> bindmany Variable Body) -> bindmany Variable Body.
 ```
+\importantCodeblockEnd{}
 
 ADVISOR. This looks great! That is exactly what's in the Makam standard library, actually. And
 we can now define `lammany` using it:
@@ -114,11 +116,13 @@ iterate through the nested binders, introducing one fresh variable at a time. We
 each bound variable for the current fresh variable, so that when we get to the body, it only uses
 the fresh variables we introduced.
 
+\importantCodeblock{}
 ```makam-stdlib
 openmany : bindmany A B -> (list A -> B -> prop) -> prop.
 openmany (body Body) Q :- Q [] Body.
 openmany (bind F) Q :- (x:A -> openmany (F x) (fun xs => Q (x :: xs))).
 ```
+\importantCodeblockEnd{}
 
 STUDENT. I see. I guess `assumemany` is similar, introducing one assumption at a time?
 
@@ -173,11 +177,14 @@ How can I do simultaneous substitution of all of the `XS` for `VS`?
 ADVISOR. You'll need another standard-library predicate for `bindmany`,
 which iteratively uses HOAS function application to perform a number of substitutions:
 
+\importantCodeblock{}
 ```makam-stdlib
 applymany : bindmany A B -> list A -> B -> prop.
 applymany (body B) [] B.
 applymany (bind F) (X :: XS) B :- applymany (F X) XS B.
 ```
+\importantCodeblockEnd{}
+
 \importantCodeblock{}
 ```makam
 eval (appmany E ES) V :-

@@ -129,7 +129,6 @@ notion of type-level functions like plus....
 
 However... maybe I can work around that, if I change `patt` to include an "accumulator" argument, say `NBefore`. Each constructor for patterns will now define how many pattern variables it adds to that accumulator, yielding `NAfter`, rather than defining how many pattern variables it includes... like this:
 
-\importantCodeblock{}
 ```makam
 patt, pattlist : (NBefore: type) (NAfter: type) -> type.
 patt_var : patt N (succ N).
@@ -140,7 +139,6 @@ patt_tuple : pattlist N N' -> patt N N'.
 pnil : pattlist N N.
 pcons : patt N N' -> pattlist N' N'' -> pattlist N N''.
 ```
-\importantCodeblockEnd{}
 
 Yes, I think that should work. I have a little editing to do in my existing predicates to use this
 representation instead. For top-level patterns, we should always start with the accumulator being `zero`...
@@ -162,6 +160,7 @@ case_or_else : (Scrutinee: term)
 I also have to change `typeof_patt`, so that it includes an accumulator argument of its
 own:
 
+\importantCodeblock{}
 ```makam
 typeof_patt : [NBefore NAfter] patt NBefore NAfter -> typ ->
   vector typ NBefore -> vector typ NAfter -> prop.
