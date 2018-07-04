@@ -78,7 +78,7 @@ lammany : bindmany term term -> term.
 
 STUDENT. I see. So our example term from before would be:
 ```
-lammany (bind (fun x => bind (fun y => body (tuple [y,x])))).
+lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))
 ```
 
 <!--
@@ -141,7 +141,7 @@ typeof (lammany F) (arrowmany TS T) :-
 ```
 -->
 
-ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons. Makam allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time\footnote{The logical reason why this is not allowed in \lamprolog is that it violates the property of existence of uniform proofs; see \citet{assumemany-issue} for more information. An example of a goal that will fail at runtime is anything that includes a logical-or (denoted as ``\texttt{;}'') as an assumption, like ``\texttt{(typeof X T1; typeof X T2) -> ...}''.}.
+ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons. Makam allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time\footnote{The logical reason why this is not allowed in \lamprolog is that it violates the property of existence of uniform proofs; see \citet{assumemany-issue} for more information. An example of a goal that will fail at runtime is one that starts with a logical-or (denoted as ``\texttt{;}'') as an assumption, like ``\texttt{(typeof X T1; typeof X T2) -> ...}''.}.
 
 STUDENT. I see. But in that case we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
 

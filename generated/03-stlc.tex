@@ -54,8 +54,10 @@ lam : typ \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
 \heroSTUDENT{} I see. And how about the typing judgment,
 \(\Gamma \vdash e : \tau\) ?
 
-\heroADVISOR{} Let's add a predicate for that. Only, no \(\Gamma\), there is
-an implicit context of assumptions that will serve the same purpose.
+\heroADVISOR{} Let's add a \emph{predicate} for that: a new constructor for
+the type of \texttt{prop}ositions. It will relate a \texttt{term} \(e\)
+to its \texttt{typ}, \(\tau\). Only, no \(\Gamma\), there is an implicit
+context of assumptions that will serve the same purpose.
 
 \importantCodeblock{}
 
@@ -65,9 +67,11 @@ typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
 
 \importantCodeblockEnd{}
 
-\heroSTUDENT{} Let me see if I can get the typing rule for application. I know
-that in Prolog we write the conclusion of a rule first, and the premises
-follow the \texttt{\ensuremath{:\!-}} sign. Does something like this work?
+\heroSTUDENT{} I see. We now need to give the rules that make up the
+predicate, right? Let me see if I can get the typing rule for
+application. I know that in Prolog we write the conclusion of a rule
+first, and the premises follow the \texttt{\ensuremath{:\!-}} sign. Does something like
+this work?
 
 \importantCodeblock{}
 
@@ -106,8 +110,8 @@ are only in effect for the recursive call `\texttt{typeof\ (E\ x)\ T2}'.
 
 \heroSTUDENT{} Makes sense. So do we have a type checker already?
 
-\heroADVISOR{} We do! Queries of the \texttt{typeof} predicate can be used to
-type check terms. Observe:
+\heroADVISOR{} We do! We can issue \emph{queries} of the \texttt{typeof}
+predicate to type check terms. Observe:
 
 \importantCodeblock{}
 

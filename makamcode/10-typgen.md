@@ -118,7 +118,7 @@ dyn.eq X X.
 ```
 
 Though this predicate succeeds for the same case as the standard `eq` does (when its two arguments
-are unifiable), the different is that `dyn.eq` only forces the types `A` and `B` to be unified at
+are unifiable), the difference is that `dyn.eq` only forces the types `A` and `B` to be unified at
 runtime, rather than statically too. Otherwise, our rule would only apply when the type
 `CurrentType` of the current unification variable we are visiting already matches the type that we
 are searching for, `VarType`.

@@ -48,8 +48,9 @@ lam : typ -> (term -> term) -> term.
 
 STUDENT. I see. And how about the typing judgment, $\Gamma \vdash e : \tau$ ?
 
-ADVISOR. Let's add a predicate for that. Only, no $\Gamma$, there is an implicit context
-of assumptions that will serve the same purpose.
+ADVISOR. Let's add a *predicate* for that: a new constructor for the type of `prop`ositions. It will
+relate a `term` $e$ to its `typ`, $\tau$. Only, no $\Gamma$, there is an implicit context of
+assumptions that will serve the same purpose.
 
 \importantCodeblock{}
 ```makam
@@ -57,9 +58,8 @@ typeof : term -> typ -> prop.
 ```
 \importantCodeblockEnd{}
 
-STUDENT. Let me see if I can get the typing rule for application. I know that in Prolog we
-write the conclusion of a rule first, and the premises follow the `:-` sign. Does
-something like this work?
+STUDENT. I see. We now need to give the rules that make up the predicate, right? Let me see if I can get the typing rule for application. I know that in Prolog we write the
+conclusion of a rule first, and the premises follow the `:-` sign. Does something like this work?
 
 \importantCodeblock{}
 ```makam
@@ -90,7 +90,7 @@ for the recursive call '`typeof (E x) T2`'.
 
 STUDENT. Makes sense. So do we have a type checker already?
 
-ADVISOR. We do! Queries of the `typeof` predicate can be used to type check terms. Observe:
+ADVISOR. We do! We can issue *queries* of the `typeof` predicate to type check terms. Observe:
 
 \importantCodeblock{}
 ```makam
