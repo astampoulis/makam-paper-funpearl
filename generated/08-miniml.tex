@@ -8,25 +8,26 @@ features}\label{in-which-our-heroes-break-into-song-and-add-more-ml-features}
 \begin{versy}
 ``You can skim this chapter / or skip it all the same. \\
 It's mostly for completeness / since ML as a name \\
-suggests some datatypes / and polymorphism too. \\
+requires some poly-lambdas / as well as ADTs \\
+so here we are dotting our i's / and crossing all our t's. \\
 \hspace{1em} \vspace{-0.5em} \\
-System F is easy, / later we might do \\
-type generalizing / like Hindley-Milner too \\
+System F is easy / but later we might do \\
+some type generalizing / like Hindley-Milner too \\
 but if you're feeling tired / I told you just before \\
-you can take a break too / like Lambros from next door.''
+you can take a mini-break / like Lambros from next door.''
 \end{versy}
 
 \begin{verbatim}
 tforall : (typ \ensuremath{\to} typ) \ensuremath{\to} typ.
-lamt : (typ \ensuremath{\to} term) \ensuremath{\to} term.
-appt : term \ensuremath{\to} typ \ensuremath{\to} term.
+polylam : (typ \ensuremath{\to} term) \ensuremath{\to} term.
+polyapp : term \ensuremath{\to} typ \ensuremath{\to} term.
 \end{verbatim}
 
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof (lamt E) (tforall T) \ensuremath{:\!-} (a:typ \ensuremath{\to} typeof (E a) (T a)).
-typeof (appt E T) T' \ensuremath{:\!-} typeof E (tforall TF), eq T' (TF T).
+typeof (polylam E) (tforall T) \ensuremath{:\!-} (a:typ \ensuremath{\to} typeof (E a) (T a)).
+typeof (polyapp E T) T' \ensuremath{:\!-} typeof E (tforall TF), eq T' (TF T).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -51,12 +52,12 @@ and arguments to constructors? / They'll all take just a single.''
 \end{versy}
 
 \begin{verbatim}
-   data nattree = Leaf of nat | Node of (nattree * nattree) ; rest
-\ensuremath{\rightsquigarrow} data nattree = [ ("Leaf", nat), ("Node", nattree * nattree) ] ; rest
-\ensuremath{\rightsquigarrow} data nattree = [ nat, nattree * nattree ] ; \foreignlanguage{greek}{λ}Leaf. \foreignlanguage{greek}{λ}Node. rest
-\ensuremath{\rightsquigarrow} data (\foreignlanguage{greek}{λ}nattree. [nat, nattree * nattree]) ; \foreignlanguage{greek}{λ}nattree. \foreignlanguage{greek}{λ}Leaf. \foreignlanguage{greek}{λ}Node. rest
-\ensuremath{\rightsquigarrow} data (\foreignlanguage{greek}{λ}nattree. [nat, nattree * nattree]) ;
-     \foreignlanguage{greek}{λ}nattree. bind (\foreignlanguage{greek}{λ}Leaf. bind (\foreignlanguage{greek}{λ}Node. body rest))
+\textcolor{white}{\ensuremath{\rightsquigarrow}} \textsf{data nattree = Leaf of nat | Node of (nattree * nattree) ; rest}
+\ensuremath{\rightsquigarrow} \textsf{data nattree = [ ("Leaf", nat), ("Node", nattree * nattree) ] ; rest}
+\ensuremath{\rightsquigarrow} \textsf{data nattree = [ nat, nattree * nattree ] ; \foreignlanguage{greek}{λ}Leaf. \foreignlanguage{greek}{λ}Node. rest}
+\ensuremath{\rightsquigarrow} \textsf{data (\foreignlanguage{greek}{λ}nattree. [nat, nattree * nattree]) ; \foreignlanguage{greek}{λ}nattree. \foreignlanguage{greek}{λ}Leaf. \foreignlanguage{greek}{λ}Node. rest}
+\ensuremath{\rightsquigarrow} \textsf{data (\foreignlanguage{greek}{λ}nattree. [nat, nattree * nattree]) ;}
+     \textsf{\foreignlanguage{greek}{λ}nattree. bind (\foreignlanguage{greek}{λ}Leaf. bind (\foreignlanguage{greek}{λ}Node. body rest))}
 \ensuremath{\rightsquigarrow} datatype (mkdatadef (fun nattree \ensuremath{\Rightarrow} [nat, nattree * nattree]))
      (bind_datatype (fun nattree \ensuremath{\Rightarrow}
        bind (fun leaf \ensuremath{\Rightarrow} bind (fun node \ensuremath{\Rightarrow} body rest))))

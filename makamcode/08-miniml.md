@@ -14,33 +14,34 @@ tests: testsuite. %testsuite tests.
 \begin{versy}
 ``You can skim this chapter / or skip it all the same. \\
 It's mostly for completeness / since ML as a name \\
-suggests some datatypes / and polymorphism too. \\
+requires some poly-lambdas / as well as ADTs \\
+so here we are dotting our i's / and crossing all our t's. \\
 \hspace{1em} \vspace{-0.5em} \\
-System F is easy, / later we might do \\
-type generalizing / like Hindley-Milner too \\
+System F is easy / but later we might do \\
+some type generalizing / like Hindley-Milner too \\
 but if you're feeling tired / I told you just before \\
-you can take a break too / like Lambros from next door.''
+you can take a mini-break / like Lambros from next door.''
 \end{versy}
 
 ```makam
 tforall : (typ -> typ) -> typ.
-lamt : (typ -> term) -> term.
-appt : term -> typ -> term.
+polylam : (typ -> term) -> term.
+polyapp : term -> typ -> term.
 ```
 \importantCodeblock{}
 ```makam
-typeof (lamt E) (tforall T) :- (a:typ -> typeof (E a) (T a)).
-typeof (appt E T) T' :- typeof E (tforall TF), eq T' (TF T).
+typeof (polylam E) (tforall T) :- (a:typ -> typeof (E a) (T a)).
+typeof (polyapp E T) T' :- typeof E (tforall TF), eq T' (TF T).
 ```
 \importantCodeblockEnd{}
 
 <!--
 ```makam
-typeof (lamt (fun a => lam a (fun x => x))) T ?
+typeof (polylam (fun a => lam a (fun x => x))) T ?
 >> Yes:
 >> T := tforall (fun a => arrow a a).
 
-typeof (appt (lamt (fun a => lam a (fun x => x))) onat) T ?
+typeof (polyapp (polylam (fun a => lam a (fun x => x))) onat) T ?
 >> Yes:
 >> T := arrow onat onat.
 ```
@@ -66,12 +67,12 @@ and arguments to constructors? / They'll all take just a single.''
 \end{versy}
 
 ```
-   data nattree = Leaf of nat | Node of (nattree * nattree) ; rest
-~> data nattree = [ ("Leaf", nat), ("Node", nattree * nattree) ] ; rest
-~> data nattree = [ nat, nattree * nattree ] ; λLeaf. λNode. rest
-~> data (λnattree. [nat, nattree * nattree]) ; λnattree. λLeaf. λNode. rest
-~> data (λnattree. [nat, nattree * nattree]) ;
-     λnattree. bind (λLeaf. bind (λNode. body rest))
+\textcolor{white}{~>} \textsf{data nattree = Leaf of nat | Node of (nattree * nattree) ; rest}
+~> \textsf{data nattree = [ ("Leaf", nat), ("Node", nattree * nattree) ] ; rest}
+~> \textsf{data nattree = [ nat, nattree * nattree ] ; λLeaf. λNode. rest}
+~> \textsf{data (λnattree. [nat, nattree * nattree]) ; λnattree. λLeaf. λNode. rest}
+~> \textsf{data (λnattree. [nat, nattree * nattree]) ;}
+     \textsf{λnattree. bind (λLeaf. bind (λNode. body rest))}
 ~> datatype (mkdatadef (fun nattree => [nat, nattree * nattree]))
      (bind_datatype (fun nattree =>
        bind (fun leaf => bind (fun node => body rest))))
