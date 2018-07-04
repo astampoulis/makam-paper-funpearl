@@ -68,18 +68,14 @@ unification procedure has made this approach significantly more
 effective, allowing the definition of ML type inference; however, the
 fact that \lamprolog supports higher-order unification as well renders
 it applicable in further situations such as dependently typed systems.
-As future work, we are exploring the design of a core calculus to aid in
-the bootstrapping of a language such as Makam, and we believe that a
-connection with the rewriting-logic core of the K framework will prove
-beneficial in this endeavor.
 
 \textbf{Future work}. We are exploring the addition of a staging
 construct to Makam, which allows us to implement extensions to the
 language within the language itself, by implementing predicates that
-produce new Makam definitions, rules, etc. One example of this approach
-is a Makam library for defining surface syntax for object languages;
-another one is a language for describing the binding structure of an
-object language, alleviating the non-intuitive aspects of some of our
-encodings. This approach could also reduce the reliance on reflective
-predicates in some of the examples we show (e.g.~structural recursion),
-by restricting the use of reflection within staged code.
+produce new Makam definitions, rules, etc. Examples of this approach are
+a library for defining surface syntax for object languages; also, a
+language for describing the binding structure of an object language,
+alleviating the non-intuitive aspects of some of our encodings. This
+approach can also help reduce the reliance on reflective predicates in
+some of the examples we show (e.g.~structural recursion), by restricting
+the use of reflection within staged code.

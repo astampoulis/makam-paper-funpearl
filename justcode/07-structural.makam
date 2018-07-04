@@ -18,7 +18,7 @@ typeof E T :- not(refl.isunif T), typeof E T', typeq T T'.
 typeof_patt (P : patt A B) T S S' :-
   not(refl.isunif T),
   typeof_patt P T' S S',
-  typeq T T', not(eq T T').
+  typeq T T'.
 
 typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
 typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
