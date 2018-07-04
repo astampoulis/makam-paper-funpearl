@@ -122,10 +122,10 @@ pnil : patt zero.
 pcons : patt N -> pattlist N' -> pattlist (N + N').
 ```
 
-Uh-oh...  don't think I can do that `N + N'` really\footnote{Since GADTs in λProlog have not been considered in the past, we only present what is already supported by the existing language design and by many λProlog implementation in the present work. We are exploring extensions to λProlog to support type-level computation as part of future work.}. In this `pcons` case, my pattern basically
+Uh-oh...  don't think I can do that `N + N'` really. In this `pcons` case, my pattern basically
 looks like `(P, ...PS)`; and I want the overall pattern to have as many variables as `P` and `PS`
 combined. But the GADTs support in \lamprolog seems to be quite basic. I do not think there's any
-notion of type-level functions like plus....
+notion of type-level functions like plus\footnote{Since GADTs in λProlog have not been considered in the past, we only present what is already supported by the existing language design and by many λProlog implementations in the present work. We are exploring extensions to λProlog to support type-level computation as part of future work.}....
 
 However... maybe I can work around that, if I change `patt` to include an "accumulator" argument, say `NBefore`. Each constructor for patterns will now define how many pattern variables it adds to that accumulator, yielding `NAfter`, rather than defining how many pattern variables it includes... like this:
 
