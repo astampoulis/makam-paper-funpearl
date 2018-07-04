@@ -1,3 +1,0 @@
-#!/bin/bash
-
-OCAMLRUNPARAM="l=100M,s=16M,i=2M,o=200" ./bin/makam-bin-darwin64 --no-cache $*
