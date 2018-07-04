@@ -14,23 +14,23 @@ STUDENT. Type synonyms? You mean, introducing type definitions like `type natpai
 does not seem particularly tricky.
 
 ADVISOR. I think we will face a couple of interesting issues with it, the main one being how to do
-*structural recursion* in a nice way. But first, let me write out the necessary pen-and-paper rules, so that we are on the same page. We'll do top-level type definitions, so let's add a top-level notion of programs $c$ and a well-formedness judgment '$\vdash c \; \text{wf}$' for them. (We could do modules instead of just programs, but I feel that would derail us a little.) We also need an additional environment $\Delta$ to store type definitions:
+*structural recursion* in a nice way. But first, let me write out the necessary pen-and-paper rules, so that we are on the same page. We'll do top-level type definitions, so let's add a top-level notion of programs $c$ and a well-formedness judgment '$\vdash c \; \text{wf}$' for them. (We could do modules instead of just programs, but I feel that would derail us a little.) We also need an additional environment $\Sigma$ to store type definitions:
 
 \vspace{-1.2em}
 \begin{mathpar}
-\inferrule[WfProgram-Main]{\emptyset; \; \Delta \vdash e : \tau}
-          {\Delta \vdash (\text{main} \; e) \; \text{wf}}
+\inferrule[WfProgram-Main]{\emptyset; \; \Sigma \vdash e : \tau}
+          {\Sigma \vdash (\text{main} \; e) \; \text{wf}}
 
-\inferrule[WfProgram-Type]{\Delta, \; \alpha = \tau \vdash c \; \text{wf}}
-          {\Delta \vdash (\texttt{type} \; \alpha = \tau \; ; \; c) \; \text{wf}}
+\inferrule[WfProgram-Type]{\Sigma, \; \alpha = \tau \vdash c \; \text{wf}}
+          {\Sigma \vdash (\texttt{type} \; \alpha = \tau \; ; \; c) \; \text{wf}}
 
 \inferrule[Typeof-Conv]
-          {\Gamma; \Delta \vdash e : \tau \\\\ \Delta \vdash \tau =_\delta \tau'}
-          {\Gamma; \Delta \vdash e : \tau'}
+          {\Gamma; \Sigma \vdash e : \tau \\\\ \Sigma \vdash \tau =_\delta \tau'}
+          {\Gamma; \Sigma \vdash e : \tau'}
 
 \inferrule[TypEq-Def]
-          {\alpha = \tau \in \Delta}
-          {\Delta \vdash \alpha =_\delta \tau}
+          {\alpha = \tau \in \Sigma}
+          {\Sigma \vdash \alpha =_\delta \tau}
 \cdots
 \end{mathpar}
 
@@ -38,7 +38,7 @@ STUDENT. Right, we will need the conversion rule, so that we identify types up t
 
 ADVISOR. Still, there are quite a few of those rules. Want to give transcribing this to Makam a try?
 
-STUDENT. Yes, I got this. I'll add a new `typedef` predicate; I will only use it for local assumptions, to correspond to the $\Delta$ context of type definitions. I will also do the well-formed program rules:
+STUDENT. Yes, I got this. I'll add a new `typedef` predicate; I will only use it for local assumptions, to correspond to the $\Sigma$ context of type definitions. I will also do the well-formed program rules:
 
 ```makam
 typedef : (NewType: typ) (Definition: typ) -> prop.
