@@ -1,4 +1,4 @@
-# In which our readers we get a premonition of things to come
+# In which our readers get a premonition of things to come
 
 \identNormal
 
