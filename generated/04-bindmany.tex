@@ -8,7 +8,8 @@ work nicely, but how about any other form of binding? Say, binding
 multiple variables at the same time? We are definitely going to need
 that for the language we have in mind. I was under the impression that
 HOAS encodings do not work for that -- for example, I was reading
-\citet{keuchel2016needle} recently and I remember something to that end.
+\citet{keuchel2016needle} recently, and I remember an observation to
+that end.
 
 \heroADVISOR{} That's not really true; having first-class support for
 single-variable binders should be enough. But let's try it out, maybe
@@ -100,7 +101,7 @@ reference about it?
 reusable datatype -- though the construction is definitely part of PL
 folklore. After I started using this in Makam, I noticed similar
 constructions in the wild, for example in MTac \citep{ziliani2013mtac},
-for parametric HOAS implementation of telescopes in Coq.
+for parametric-HOAS implementation of telescopes in Coq.
 
 \heroSTUDENT{} Interesting. So how do we work with \texttt{bindmany}? What's
 the typing rule like?
@@ -154,7 +155,7 @@ assumemany P (X :: XS) (T :: TS) Q \ensuremath{:\!-} (P X T \ensuremath{\to} ass
 \heroADVISOR{} Yes, exactly! Just a note, though -- \lamprolog typically does
 not allow the definition of \texttt{assumemany}, where a non-concrete
 predicate like \texttt{P\ X\ Y} is used as an assumption, because of
-logical reasons. Makam allows this form statically and so does ELPI
+logical reasons. Makam allows this form statically, and so does ELPI
 \citep{elpi-main-reference}, another \lamprolog implementation, though
 there are instantiations of \texttt{P} that will fail at
 run-time\footnote{The logical reason why this is not allowed in \lamprolog is that it violates the property of existence of uniform proofs; see \citet{assumemany-issue} for more information. An example of a goal that will fail at runtime is one that starts with a logical-or (denoted as ``\texttt{;}'') as an assumption, like ``\texttt{(typeof X T1; typeof X T2) \ensuremath{\to} ...}''.}.
@@ -215,7 +216,7 @@ me, though -- all these fancy higher-order abstract binders, how do
 we\ldots{} make them concrete? Say, how do we print them?
 
 \heroADVISOR{} That's actually quite easy. We just add a concrete name to
-them. A plain old \texttt{string}. Our typing rules etc. do not care
+them, a plain old \texttt{string}. Our typing rules etc. do not care
 about it, but we could use it for parsing concrete syntax into our
 abstract binding syntax, or for pretty-printing\ldots{}. All those are
 stories for another time, though; let's just say that we could have
@@ -290,7 +291,7 @@ typeof (letrec XS_DefsBody) T' \ensuremath{:\!-}
 see\footnote{There is a subtlety here, having to do with the free variables that a unification variable
 can capture. In \lamprolog, a unification variable is allowed to capture all the free variables in scope at the
 point where it is introduced, as well as any variables it is explicitly applied to. \texttt{Defs} and \texttt{Body} are introduced as unification variables when we get to execute the \texttt{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \texttt{Defs} and \texttt{Body} can capture the \texttt{xs} variables that \texttt{openmany} introduces, whereas \texttt{T'} cannot. In \lamprolog terms, the \texttt{pfun} notation of Makam desugars to existential quantification of any (capitalized) unification variables that are mentioned while destructuring an argument, like the variables \texttt{Defs} and \texttt{Body}.}.
-Let me ask you something though: one thing I noticed with our
+Let me ask you something, though: one thing I noticed with our
 representation of \texttt{letrec} is that we have to be careful so that
 the number of binders matches the number of definitions we give. Our
 typing rules disallow that, but I wonder if there's a way to have a more

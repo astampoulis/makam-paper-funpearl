@@ -10,7 +10,7 @@ tests: testsuite. %testsuite tests.
 STUDENT. I'm fairly confident by now that Makam should be able to handle the research idea
 we want to try out. Shall we get to it?
 
-ADVISOR. Yes, it is time. So, what we are aiming to do is add a facility for type-safe, heterogeneous meta-programming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a *separate* object language in a type-safe manner.
+ADVISOR. Yes, it is time. So, what we are aiming to do is add a facility for type-safe, heterogeneous metaprogramming to our object language, similar to MetaHaskell \citep{mainland2012explicitly}. This way we can manipulate the terms of a *separate* object language in a type-safe manner.
 
 STUDENT. Exactly. For the research language we have in mind, we aim for our object language to be a
 formal logic, so our language will be similar to Beluga \citep{beluga-main-reference} or VeriML
@@ -248,7 +248,7 @@ typeof (letrec
 ```
 -->
 
-ADVISOR. That's great! The only thing missing to try out an evaluation example too is implementing `subst_obj`. Thanks to `structural_recursion` though, that is very easy:
+ADVISOR. That's great! The only thing missing to try out an evaluation example too is implementing `subst_obj`. Thanks to `structural_recursion`, though, that is very easy:
 
 ```makam
 subst_obj_aux, subst_obj_cases : [Any]

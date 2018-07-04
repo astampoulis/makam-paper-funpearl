@@ -18,7 +18,7 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   made use of GADTs to encode some of these binding structures precisely, which we show are
   supported in \lamprolog through ad-hoc polymorphism.  Definining GADTs is a novel usage for this
   \lamprolog feature. Our binding constructions should be replicable in other λProlog implementations
-  like Teyjus \citep{teyjus-main-reference,teyjus-2-implementation} and in ELPI \citep{elpi-main-reference}.
+  like Teyjus \citep{teyjus-main-reference,teyjus-2-implementation} and ELPI \citep{elpi-main-reference}.
 
 - We defined a generic predicate to perform structural recursion using a very concise
   definition. It allows us to define structurally recursive predicates that only explicitly
@@ -43,7 +43,7 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
 
 - We have also shown that higher-order logic programming allows not just meta-level
   functions to be reused for encoding object-level binding; there are also cases where
-  meta-level unification can also be reused to encode certain object-level features:
+  meta-level unification can be reused to encode certain object-level features:
   for example, doing type generalization as in Algorithm W.
 
 STUDENT. Well, that was very interesting; thank you for working with me on this!

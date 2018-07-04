@@ -39,7 +39,7 @@ add, too, right?
 
 \heroADVISOR{} Yes, functions at the meta level are parametric, so they
 correspond exactly to single-variable binding -- they cannot perform any
-computation such as pattern matching on their argument and thus we do
+computation such as pattern matching on their arguments and thus we do
 not have to worry about exotic terms. So this works fine for
 Church-style lambdas:
 
@@ -85,7 +85,7 @@ typeof (app E1 E2) T' \ensuremath{:\!-} typeof E1 (arrow T T'), typeof E2 T.
 unification variables.
 
 \heroSTUDENT{} I will need help with the lambda typing rule, though. What's
-the equivalent of extending the context as in \(\Gamma, \; x : \tau\) ?
+the equivalent of extending the context as in \(\Gamma, \; x : \tau\)?
 
 \heroADVISOR{} Simple: we introduce a fresh constructor for terms and a new
 typing rule for it:
@@ -111,7 +111,7 @@ are only in effect for the recursive call `\texttt{typeof\ (E\ x)\ T2}'.
 \heroSTUDENT{} Makes sense. So do we have a type checker already?
 
 \heroADVISOR{} We do! We can issue \emph{queries} of the \texttt{typeof}
-predicate to type check terms. Observe:
+predicate to type-check terms. Observe:
 
 \importantCodeblock{}
 

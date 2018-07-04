@@ -11,7 +11,7 @@ STUDENT. Still, I feel like we've been playing to the strengths of λProlog.... 
 binding, substitutions, and so on work nicely, but how about any other form of binding? Say, binding
 multiple variables at the same time? We are definitely going to need that for the language we have
 in mind. I was under the impression that HOAS encodings do not work for that -- for example, I was
-reading \citet{keuchel2016needle} recently and I remember something to that end.
+reading \citet{keuchel2016needle} recently, and I remember an observation to that end.
 
 ADVISOR. That's not really true; having first-class support for single-variable binders should be
 enough. But let's try it out, maybe adding multiple-argument functions for example -- I mean
@@ -93,7 +93,7 @@ This `bindmany` datatype is quite interesting. Is there some reference about it?
 
 ADVISOR. Not that I know of, at least where it is called out as a reusable datatype -- though the
 construction is definitely part of PL folklore. After I started using this in Makam, I noticed
-similar constructions in the wild, for example in MTac \citep{ziliani2013mtac}, for parametric HOAS
+similar constructions in the wild, for example in MTac \citep{ziliani2013mtac}, for parametric-HOAS
 implementation of telescopes in Coq.
 
 STUDENT. Interesting. So how do we work with `bindmany`? What's the typing rule like?
@@ -143,7 +143,7 @@ typeof (lammany F) (arrowmany TS T) :-
 ```
 -->
 
-ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons. Makam allows this form statically and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time\footnote{The logical reason why this is not allowed in \lamprolog is that it violates the property of existence of uniform proofs; see \citet{assumemany-issue} for more information. An example of a goal that will fail at runtime is one that starts with a logical-or (denoted as ``\texttt{;}'') as an assumption, like ``\texttt{(typeof X T1; typeof X T2) -> ...}''.}.
+ADVISOR. Yes, exactly! Just a note, though -- \lamprolog typically does not allow the definition of `assumemany`, where a non-concrete predicate like `P X Y` is used as an assumption, because of logical reasons. Makam allows this form statically, and so does ELPI \citep{elpi-main-reference}, another \lamprolog implementation, though there are instantiations of `P` that will fail at run-time\footnote{The logical reason why this is not allowed in \lamprolog is that it violates the property of existence of uniform proofs; see \citet{assumemany-issue} for more information. An example of a goal that will fail at runtime is one that starts with a logical-or (denoted as ``\texttt{;}'') as an assumption, like ``\texttt{(typeof X T1; typeof X T2) -> ...}''.}.
 
 STUDENT. I see. But in that case we could just manually inline `assumemany typeof` instead, so that's not a big problem, just more verbose. But can I try our typing rule out?
 
@@ -198,7 +198,7 @@ eval (appmany E ES) V :-
 STUDENT. I see, that makes sense. Can I ask you something that worries me, though -- all these fancy higher-order abstract
 binders, how do we... make them concrete? Say, how do we print them?
 
-ADVISOR. That's actually quite easy. We just add a concrete name to them. A plain old `string`. Our
+ADVISOR. That's actually quite easy. We just add a concrete name to them, a plain old `string`. Our
 typing rules etc. do not care about it, but we could use it for parsing concrete syntax into our
 abstract binding syntax, or for pretty-printing.... All those are stories for another time, though;
 let's just say that we could have defined `bind` with an extra `string` argument, representing the
@@ -276,7 +276,7 @@ eval (letrec (bind (fun x => body ([Def x], Body x)))) V :-
 
 STUDENT. Ah, I see\footnote{There is a subtlety here, having to do with the free variables that a unification variable
 can capture. In \lamprolog, a unification variable is allowed to capture all the free variables in scope at the
-point where it is introduced, as well as any variables it is explicitly applied to. \texttt{Defs} and \texttt{Body} are introduced as unification variables when we get to execute the \texttt{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \texttt{Defs} and \texttt{Body} can capture the \texttt{xs} variables that \texttt{openmany} introduces, whereas \texttt{T'} cannot. In \lamprolog terms, the \texttt{pfun} notation of Makam desugars to existential quantification of any (capitalized) unification variables that are mentioned while destructuring an argument, like the variables \texttt{Defs} and \texttt{Body}.}. Let me ask you something though: one thing I noticed with our representation of `letrec` is that we have to be careful so
+point where it is introduced, as well as any variables it is explicitly applied to. \texttt{Defs} and \texttt{Body} are introduced as unification variables when we get to execute the \texttt{pfun}; otherwise, all unification variables used in a rule get introduced when we check whether the rule fires. As a result, \texttt{Defs} and \texttt{Body} can capture the \texttt{xs} variables that \texttt{openmany} introduces, whereas \texttt{T'} cannot. In \lamprolog terms, the \texttt{pfun} notation of Makam desugars to existential quantification of any (capitalized) unification variables that are mentioned while destructuring an argument, like the variables \texttt{Defs} and \texttt{Body}.}. Let me ask you something, though: one thing I noticed with our representation of `letrec` is that we have to be careful so
 that the number of binders matches the number of definitions we give. Our typing rules disallow
 that, but I wonder if there's a way to have a more accurate representation for `letrec` which
 includes that requirement?

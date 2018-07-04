@@ -8,7 +8,7 @@ tests: testsuite. %testsuite tests.
 -->
 
 \begin{scenecomment}
-(Roza had a meeting with another student, so Hagop took a small break, and is now back at his
+(Roza had a meeting with another student, so Hagop took a small break and is now back at his
 office. He is trying to work out on his own how to encode patterns. He is fairly
 confident at this point that having explicit support for single-variable
 binding is enough to model most complicated forms of binding, especially when making use of
@@ -47,7 +47,7 @@ branch : (Pattern: patt N) (Vars_Body: vbindmany term N term) -> ...
 
 Wait, before I get into the weeds let me just set up some things. First, let's add a simple base
 type, say `nat`s, to have something to work with as an example. I'll prefix their names with `o` for
-"object language," so as to avoid ambiguity. And I will also add a `case_or_else` construct,
+"object language," so as to avoid ambiguity. And I will also add `case_or_else`,
 standing for a single-branch pattern-match construct. It should be easy to extend to a
 multiple-branch construct, but I want to keep things as simple as possible. I'll inline what I had written for `branch` above into the definition of `case_or_else`.
 
@@ -122,7 +122,7 @@ pnil : patt zero.
 pcons : patt N -> pattlist N' -> pattlist (N + N').
 ```
 
-Uh-oh...  don't think I can do that `N + N'` really. In this `pcons` case, my pattern basically
+Uh-oh...  don't think I can do that `N + N'`, really. In this `pcons` case, my pattern basically
 looks like `(P, ...PS)`; and I want the overall pattern to have as many variables as `P` and `PS`
 combined. But the GADTs support in \lamprolog seems to be quite basic. I do not think there's any
 notion of type-level functions like plus\footnote{Since GADTs in λProlog have not been considered in the past, we only present what is already supported by the existing language design and by many λProlog implementations in the present work. We are exploring extensions to λProlog to support type-level computation as part of future work.}....

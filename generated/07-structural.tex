@@ -1,7 +1,7 @@
 \section{In which our heroes reflect on structural
 recursion}\label{in-which-our-heroes-reflect-on-structural-recursion}
 
-\heroADVISOR{} Your pattern matching encoding looks good! You seem to be
+\heroADVISOR{} Your pattern-matching encoding looks good! You seem to be
 getting the hang of this. How about we do something challenging then?
 Say, type synonyms?
 
@@ -199,7 +199,7 @@ you will see that there is much less of it than you would expect, upon
 close reflection. \texttt{structural\_recursion} is just a normal
 standard-library predicate like any other; it essentially applies a
 polymorphic predicate ``structurally'' to a term. Its implementation
-will be a little special of course. But let's just think about how you
+will be a little special, of course. But let's just think about how you
 would write the rest of the rules of \texttt{typeq} generically, to
 perform structural recursion.
 
@@ -235,7 +235,7 @@ hnil : hlist typenil. hcons : T \ensuremath{\to} hlist TS \ensuremath{\to} hlist
 \end{verbatim}
 
 \heroADVISOR{} Great! We will need a heterogeneous \texttt{map} for these
-lists too. We'll need a polymorphic predicate as an argument, since
+lists, too. We'll need a polymorphic predicate as an argument, since
 we'll have to use it for \texttt{Arguments} of different types:
 
 \begin{verbatim}
@@ -290,7 +290,7 @@ eq : A \ensuremath{\to} A \ensuremath{\to} prop. eq X X.
 \end{verbatim}
 
 \heroSTUDENT{} I see. I think I can write the generic rule for \texttt{typeq}
-now then!
+now, then!
 
 \begin{verbatim}
 typeq T T' \ensuremath{:\!-}
@@ -329,16 +329,16 @@ structural_recursion Rec X Y \ensuremath{:\!-}
 \heroADVISOR{} Nice. Now, here you assume that \texttt{X} and \texttt{Y} are
 both concrete terms. What happens when \texttt{X} is concrete and
 \texttt{Y} isn't, or the other way around? Hint: you can use this
-\texttt{happly} predicate, to apply a list of arguments to a
-constructor, and thus reconstruct a term:
+\texttt{happly} predicate, to apply a list of arguments to a constructor
+and thus reconstruct a term:
 
 \begin{verbatim}
-happly : [Constr Args Terms] Constr \ensuremath{\to} hlist Args \ensuremath{\to} Term \ensuremath{\to} prop.
+happly : [Constr Args Term] Constr \ensuremath{\to} hlist Args \ensuremath{\to} Term \ensuremath{\to} prop.
 happly Constr hnil Constr.
 happly Constr (hcons A AS) Term \ensuremath{:\!-} happly (Constr A) AS Term.
 \end{verbatim}
 
-\heroSTUDENT{} How about this? This way, we will decocompose the concrete
+\heroSTUDENT{} How about this? This way, we will decompose the concrete
 \texttt{X}, perform the transformation on the \texttt{Arguments}, and
 then reapply the \texttt{Constructor} to get the result for \texttt{Y}.
 
@@ -353,7 +353,7 @@ structural_recursion Rec X Y \ensuremath{:\!-}
 
 \importantCodeblockEnd{}
 
-\heroADVISOR{} That is exactly right. You need the symmetric case too but
+\heroADVISOR{} That is exactly right. You need the symmetric case, too, but
 that's entirely similar. Also, there is another type of concrete terms
 in Makam: meta-level functions! It does not make sense to destructure
 functions using \texttt{refl.headargs}, so it fails in that case, and we
@@ -384,7 +384,7 @@ for a small amount of code! But, wait, isn't
 \texttt{structural\_recursion} missing a case: what happens if both
 \texttt{X} and \texttt{Y} are uninstantiated unification variables?
 
-\heroADVISOR{} You are correct, it would fail in that case. But in my
+\heroADVISOR{} You are correct; it would fail in that case. But in my
 experience, it's better to define how to handle unification variables as
 needed, in each new structurally recursive predicate. In this case, we
 should never get into that situation based on how we have defined

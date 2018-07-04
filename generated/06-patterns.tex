@@ -2,7 +2,7 @@
 own}\label{in-which-our-hero-hagop-adds-pattern-matching-on-his-own}
 
 \begin{scenecomment}
-(Roza had a meeting with another student, so Hagop took a small break, and is now back at his
+(Roza had a meeting with another student, so Hagop took a small break and is now back at his
 office. He is trying to work out on his own how to encode patterns. He is fairly
 confident at this point that having explicit support for single-variable
 binding is enough to model most complicated forms of binding, especially when making use of
@@ -49,12 +49,12 @@ branch : (Pattern: patt N) (Vars_Body: vbindmany term N term) \ensuremath{\to} .
 Wait, before I get into the weeds let me just set up some things. First,
 let's add a simple base type, say \texttt{nat}s, to have something to
 work with as an example. I'll prefix their names with \texttt{o} for
-``object language,'' so as to avoid ambiguity. And I will also add a
-\texttt{case\_or\_else} construct, standing for a single-branch
-pattern-match construct. It should be easy to extend to a
-multiple-branch construct, but I want to keep things as simple as
-possible. I'll inline what I had written for \texttt{branch} above into
-the definition of \texttt{case\_or\_else}.
+``object language,'' so as to avoid ambiguity. And I will also add
+\texttt{case\_or\_else}, standing for a single-branch pattern-match
+construct. It should be easy to extend to a multiple-branch construct,
+but I want to keep things as simple as possible. I'll inline what I had
+written for \texttt{branch} above into the definition of
+\texttt{case\_or\_else}.
 
 \begin{verbatim}
 onat : typ. ozero : term. osucc : term \ensuremath{\to} term.
@@ -133,7 +133,7 @@ pcons : patt N \ensuremath{\to} pattlist N' \ensuremath{\to} pattlist (N + N').
 \end{verbatim}
 
 Uh-oh\ldots{} don't think I can do that
-\texttt{N\ +\ N\textquotesingle{}} really. In this \texttt{pcons} case,
+\texttt{N\ +\ N\textquotesingle{}}, really. In this \texttt{pcons} case,
 my pattern basically looks like \texttt{(P,\ ...PS)}; and I want the
 overall pattern to have as many variables as \texttt{P} and \texttt{PS}
 combined. But the GADTs support in \lamprolog seems to be quite basic. I

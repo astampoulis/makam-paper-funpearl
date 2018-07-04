@@ -127,7 +127,7 @@ dyn.eq X X.
 Though this predicate succeeds for the same case as the standard
 \texttt{eq} does (when its two arguments are unifiable), the difference
 is that \texttt{dyn.eq} only forces the types \texttt{A} and \texttt{B}
-to be unified at runtime, rather than statically too. Otherwise, our
+to be unified at runtime, rather than statically, too. Otherwise, our
 rule would only apply when the type \texttt{CurrentType} of the current
 unification variable we are visiting already matches the type that we
 are searching for, \texttt{VarType}.
@@ -212,8 +212,8 @@ generalize T Res \ensuremath{:\!-}
 
 \heroSTUDENT{} Oh, clever. But what should
 \texttt{get\_types\_in\_environment} be? Don't we have to go back and
-thread a list of types through our \texttt{typeof} predicate, that we
-add a type \texttt{T} to every time we introduce a new
+thread a list of types through our \texttt{typeof} predicate, to which
+we add a type \texttt{T} every time we introduce a new
 \texttt{typeof\ x\ T} assumption?
 
 \heroADVISOR{} Well, we came this far without significantly rewriting our

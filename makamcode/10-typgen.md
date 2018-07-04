@@ -118,7 +118,7 @@ dyn.eq X X.
 
 Though this predicate succeeds for the same case as the standard `eq` does (when its two arguments
 are unifiable), the difference is that `dyn.eq` only forces the types `A` and `B` to be unified at
-runtime, rather than statically too. Otherwise, our rule would only apply when the type
+runtime, rather than statically, too. Otherwise, our rule would only apply when the type
 `CurrentType` of the current unification variable we are visiting already matches the type that we
 are searching for, `VarType`.
 
@@ -199,7 +199,7 @@ generalize T Res :-
 \identDialog
 
 STUDENT. Oh, clever. But what should `get_types_in_environment` be? Don't we have to go
-back and thread a list of types through our `typeof` predicate, that we add a type `T` to
+back and thread a list of types through our `typeof` predicate, to which we add a type `T` 
 every time we introduce a new `typeof x T` assumption?
 
 ADVISOR. Well, we came this far without significantly rewriting our rules, so it's a shame to do

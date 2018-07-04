@@ -39,15 +39,13 @@ transcribe our examples that do not make use of meta-logical reflective predicat
 -->
 
 The **Racket programming language** was designed to support creation of new programming languages
-\citep{racket-manifesto} and has been used to implement a very wide variety of DSLs serving specific
-purposes, including typed languages such as Typed Racket by \citet{typed-racket-main-reference}. We
+\citep{racket-manifesto} and has been used to implement a very wide variety of DSLs, including typed languages such as Typed Racket by \citet{typed-racket-main-reference}. We
 believe that one of the key characteristics of the Racket approach to language implementation is the
 ability to create towers of abstraction through programmatic manipulation of code.  Makam is
-inspired by this approach to a large extent and our plan for future work follows similar lines.
+inspired by this approach to a large extent, and our plan for future work follows similar lines.
 This is not demonstrated in the present work, save for the use of
 `refl.assume_get`, which allows us to treat code (the local assumptions for a predicate) as reified
-data (a list of the assumptions that can be inspected). Still, there are a lot of potential mutual
-learnings since the presence of first-class binding support in the form of higher-order abstract
+data (a list of the assumptions that can be inspected). Still, there is a lot of potential for cross-fertilization since the presence of first-class binding support in the form of higher-order abstract
 syntax, together with the built-in support for higher-order unification, makes the \lamprolog
 setting significantly different.
 

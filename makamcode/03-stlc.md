@@ -37,7 +37,7 @@ higher-order abstract syntax \citep{hoas-standard-reference}, which should make 
 
 ADVISOR. Yes, functions at the meta level are parametric, so they correspond exactly to
 single-variable binding -- they cannot perform any computation such as pattern matching
-on their argument and thus we do not have to worry about exotic terms. So this works fine for
+on their arguments and thus we do not have to worry about exotic terms. So this works fine for
 Church-style lambdas:
 
 \importantCodeblock{}
@@ -70,7 +70,7 @@ typeof (app E1 E2) T' :- typeof E1 (arrow T T'), typeof E2 T.
 ADVISOR. Yes! That's exactly right. Makam uses capital letters for unification variables.
 
 STUDENT. I will need help with the lambda typing rule, though. What's the equivalent of
-extending the context as in $\Gamma, \; x : \tau$ ?
+extending the context as in $\Gamma, \; x : \tau$?
 
 ADVISOR. Simple: we introduce a fresh constructor for terms and a new typing rule for it:
 
@@ -90,7 +90,7 @@ for the recursive call '`typeof (E x) T2`'.
 
 STUDENT. Makes sense. So do we have a type checker already?
 
-ADVISOR. We do! We can issue *queries* of the `typeof` predicate to type check terms. Observe:
+ADVISOR. We do! We can issue *queries* of the `typeof` predicate to type-check terms. Observe:
 
 \importantCodeblock{}
 ```makam

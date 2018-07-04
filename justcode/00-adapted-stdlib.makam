@@ -85,7 +85,7 @@ structural_recursion Rec X Y :-
   refl.headargs Y Constructor Arguments',
   hmap Rec Arguments Arguments'.
 
-happly : [Constr Args Terms] Constr -> hlist Args -> Term -> prop.
+happly : [Constr Args Term] Constr -> hlist Args -> Term -> prop.
 happly Constr hnil Constr.
 happly Constr (hcons A AS) Term :- happly (Constr A) AS Term.
 

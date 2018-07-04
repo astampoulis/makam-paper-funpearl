@@ -7,7 +7,7 @@ tests: testsuite. %testsuite tests.
 ```
 -->
 
-ADVISOR. Your pattern matching encoding looks good! You seem to be getting the hang of this. How
+ADVISOR. Your pattern-matching encoding looks good! You seem to be getting the hang of this. How
 about we do something challenging then? Say, type synonyms?
 
 STUDENT. Type synonyms? You mean, introducing type definitions like `type natpair = nat * nat`? That
@@ -174,7 +174,7 @@ STUDENT. ... What just happened. Is `structural_recursion` some special Makam tr
 ADVISOR. Indeed. There is a little bit of trickery involved here, but you will see that
 there is much less of it than you would expect, upon close reflection. `structural_recursion` is
 just a normal standard-library predicate like any other; it essentially applies a polymorphic predicate "structurally"
-to a term. Its implementation will be a little special of course. But let's just think about how you would
+to a term. Its implementation will be a little special, of course. But let's just think about how you would
 write the rest of the rules of `typeq` generically, to perform structural recursion.
 
 STUDENT. OK. Well, when looking at two `typ`s together, we have to make sure that their constructors are the same and also that any `typ`s they contain as arguments are recursively `typeq`ual. So something like this:
@@ -199,7 +199,7 @@ hlist : (TypeList: type) -> type.
 hnil : hlist typenil. hcons : T -> hlist TS -> hlist (typecons T TS).
 ```
 
-ADVISOR. Great! We will need a heterogeneous `map` for these lists too. We'll need a polymorphic predicate as
+ADVISOR. Great! We will need a heterogeneous `map` for these lists, too. We'll need a polymorphic predicate as
 an argument, since we'll have to use it for `Arguments` of different types:
 
 ```makam-stdlib
@@ -261,7 +261,7 @@ By the way, `eq` is a standard-library predicate that simply attempts unificatio
 eq : A -> A -> prop. eq X X.
 ```
 
-STUDENT. I see. I think I can write the generic rule for `typeq` now then!
+STUDENT. I see. I think I can write the generic rule for `typeq` now, then!
 
 ```
 typeq T T' :-
@@ -289,15 +289,15 @@ structural_recursion Rec X Y :-
   hmap Rec Arguments Arguments'.
 ```
 
-ADVISOR. Nice. Now, here you assume that `X` and `Y` are both concrete terms. What happens when `X` is concrete and `Y` isn't, or the other way around? Hint: you can use this `happly` predicate, to apply a list of arguments to a constructor, and thus reconstruct a term:
+ADVISOR. Nice. Now, here you assume that `X` and `Y` are both concrete terms. What happens when `X` is concrete and `Y` isn't, or the other way around? Hint: you can use this `happly` predicate, to apply a list of arguments to a constructor and thus reconstruct a term:
 
 ```makam-stdlib
-happly : [Constr Args Terms] Constr -> hlist Args -> Term -> prop.
+happly : [Constr Args Term] Constr -> hlist Args -> Term -> prop.
 happly Constr hnil Constr.
 happly Constr (hcons A AS) Term :- happly (Constr A) AS Term.
 ```
 
-STUDENT. How about this? This way, we will decocompose the concrete `X`, perform the transformation on the `Arguments`, and then reapply the `Constructor` to get the result for `Y`.
+STUDENT. How about this? This way, we will decompose the concrete `X`, perform the transformation on the `Arguments`, and then reapply the `Constructor` to get the result for `Y`.
 
 \importantCodeblock{}
 ```makam-stdlib
@@ -317,7 +317,7 @@ structural_recursion Rec X Y :-
 ```
 -->
 
-ADVISOR. That is exactly right. You need the symmetric case too but that's entirely similar. Also, there is another type of concrete terms in Makam: meta-level functions! It does not make sense to destructure functions using `refl.headargs`, so it fails in that case, and we have to treat them specially:
+ADVISOR. That is exactly right. You need the symmetric case, too, but that's entirely similar. Also, there is another type of concrete terms in Makam: meta-level functions! It does not make sense to destructure functions using `refl.headargs`, so it fails in that case, and we have to treat them specially:
 
 \importantCodeblock{}
 ```makam-stdlib
@@ -334,7 +334,7 @@ adaptation when we add a new constructor -- even if we make use of all sorts of 
 
 STUDENT. That's right: we do not need to do anything special for the binding forms we defined, like `bindmany`.... quite a payoff for a small amount of code! But, wait, isn't `structural_recursion` missing a case: what happens if both `X` and `Y` are uninstantiated unification variables?
 
-ADVISOR. You are correct, it would fail in that case. But in my experience, it's better to define how to handle unification variables as needed, in each new structurally recursive predicate. In this case, we should never get into that situation based on how we have defined `typeq`.
+ADVISOR. You are correct; it would fail in that case. But in my experience, it's better to define how to handle unification variables as needed, in each new structurally recursive predicate. In this case, we should never get into that situation based on how we have defined `typeq`.
 
 \begin{scenecomment}
 (Roza and Hagop try out a few examples and convince themselves that this works OK and no endless loops happen when things don't typecheck correctly.)

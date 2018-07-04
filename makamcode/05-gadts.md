@@ -12,7 +12,7 @@ tests: testsuite. %testsuite tests.
 Once upon a time, our republic lacked one of the natural wonders that it is now well-known for, and
 which is now regularly enjoyed by tourists and inhabitants alike. I am talking of course about the
 Great Arboretum of Dangling Trees, known as GADTs for short. Then settlers from the far-away land of
-the Dependency started coming to the republic, and started speaking of Lists that Knew Their Length,
+the Dependency started coming to the republic and started speaking of Lists that Knew Their Lengths,
 of Terms that Knew Their Types, of Collections of Elements that were Heterogeneous, and about the
 other magical beings of their home.  And they set out to build a natural environment for these
 beings on the republic, namely the GADTs that we know and love, to remind them of home a little. And

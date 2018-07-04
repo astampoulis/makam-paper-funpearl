@@ -5,7 +5,7 @@ substitutions}\label{in-which-our-heroes-tackle-a-new-level-of-meta-contexts-and
 the research idea we want to try out. Shall we get to it?
 
 \heroADVISOR{} Yes, it is time. So, what we are aiming to do is add a facility
-for type-safe, heterogeneous meta-programming to our object language,
+for type-safe, heterogeneous metaprogramming to our object language,
 similar to MetaHaskell \citep{mainland2012explicitly}. This way we can
 manipulate the terms of a \emph{separate} object language in a type-safe
 manner.
@@ -176,7 +176,7 @@ typeof (letrec (bind (fun power \ensuremath{\Rightarrow} body ([ ..long term.. ]
 
 \heroADVISOR{} That's great! The only thing missing to try out an evaluation
 example too is implementing \texttt{subst\_obj}. Thanks to
-\texttt{structural\_recursion} though, that is very easy:
+\texttt{structural\_recursion}, though, that is very easy:
 
 \begin{verbatim}
 subst_obj_aux, subst_obj_cases : [Any]

@@ -61,7 +61,7 @@ datatype : (Def: datadef) (Rest: datatype_bind program) -> program.
 
 \begin{versy}
 ``The types seem fairly easy / the constructors might be hard. \\
-So let's go step by step for now / or we'll be here next March. \\
+So let's go step-by-step for now / or we'll be here next March. \\
 We won't support the poly-types / to keep the system simple, \\
 and arguments to constructors? / They'll all take just a single.''
 \end{versy}
@@ -116,7 +116,7 @@ wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
 \importantCodeblockEnd{}
 
 \begin{versy}
-``That's it, we're almost over / there's our wf-programs. \\
+``That's it, it's almost over / there's our wf-programs. \\
 We can't use the constructors, though / remember \texttt{term}s and \texttt{patt}s ?''
 \end{versy}
 
