@@ -102,8 +102,8 @@ typeof (lam _ (fun x => x)) T ?
 
 STUDENT. Cool! So `fun` for metalevel functions, underscores for unification variables we don't care
 about, and `?` for queries. But wait, last time I implemented unification in my toy STLC
-implementation it was easy to make it go into an infinite loop with $\lambda x. x x$. How does that
-work here?
+implementation it was easy to make it go into an infinite loop with $\lambda x. x x$. Does that
+work?
 
 ADVISOR. Well, you were missing the occurs-check. λProlog unification includes it:
 

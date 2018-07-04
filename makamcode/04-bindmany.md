@@ -87,6 +87,8 @@ refl.typstring (lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))) "t
 >> Yes.
 ```
 -->
+
+\noindent
 This `bindmany` datatype is quite interesting. Is there some reference about it?
 
 ADVISOR. Not that I know of, at least where it is called out as a reusable datatype -- though the
