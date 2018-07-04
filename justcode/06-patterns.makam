@@ -53,30 +53,6 @@ typeof_pattlist (pcons P PS) (T :: TS) VarTypes VarTypes'' :-
 typeof_patt (patt_tuple PS) (product TS) VarTypes VarTypes' :-
   typeof_pattlist PS TS VarTypes VarTypes'.
 
-(* Bonus: or patterns *)
-patt_or : patt N N' -> patt N N' -> patt N N'.
-
-typeof_patt (patt_or P1 P2) T VarTypes VarTypes' :-
-  typeof_patt P1 T VarTypes VarTypes',
-  typeof_patt P2 T VarTypes VarTypes'.
-
-(* Bonus: exact patterns. We need a predicate to define the types that are allowed in
-   them: base types and algebraic datatypes. This needs reflective features to avoid
-   prematurely specializing the type of a term.
-
-   Note: `map` is overloaded to work with unary predicates too. In general, Makam allows
-   type-based overloading. We do not make use of it in the paper because it leads to
-   presentation issues.
-*)
-permissible, permissible_aux : typ -> prop.
-permissible T :- not(refl.isunif T), permissible_aux T.
-permissible (product TS) :- map permissible TS.
-permissible onat.
-
-patt_exact : term -> patt N N.
-typeof_patt (patt_exact E) T VarTypes VarTypes :-
-  typeof E T, permissible T.
-
 typeof (lam _ (fun n => case_or_else n
   (patt_osucc patt_var) (vbind (fun pred => vbody pred))
   ozero)) T ?
