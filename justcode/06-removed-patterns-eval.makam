@@ -1,0 +1,94 @@
+match : [NBefore NAfter]
+  (Pattern: patt NBefore NAfter) (Scrutinee: term)
+  (SubstBefore: vector term NBefore) (SubstAfter: vector term NAfter) ->
+  prop.
+eval (case_or_else Scrutinee Pattern Body Else) V' :-
+  eval Scrutinee V,
+  if (match Pattern V vnil Subst)
+  then (vapplymany Body Subst Body', eval Body' V')
+  else (eval Else V').
+
+match patt_var X Subst Subst' :- vsnoc Subst X Subst'.
+match patt_wild X Subst Subst.
+match patt_ozero ozero Subst Subst.
+match (patt_osucc P) (osucc V) Subst Subst' :-
+  match P V Subst Subst'.
+
+matchlist : [NBefore NAfter]
+  (Pattern: pattlist NBefore NAfter) (Scrutinee: list term)
+  (SubstBefore: vector term NBefore) (SubstAfter: vector term NAfter) ->
+  prop.
+match (patt_tuple PS) (tuple VS) Subst Subst' :-
+  matchlist PS VS Subst Subst'.
+
+matchlist pnil [] Subst Subst.
+matchlist (pcons P PS) (V :: VS) Subst Subst'' :-
+  match P V Subst Subst', matchlist PS VS Subst' Subst''.
+
+(eq _PRED (lam _ (fun n => case_or_else n
+  (patt_osucc patt_var) (vbind (fun pred => vbody pred))
+  ozero)),
+ typeof _PRED T,
+ eval (app _PRED ozero) PRED0, eval (app _PRED (osucc (osucc ozero))) PRED2) ?
+>> Yes:
+>> T := arrow onat onat, PRED0 := ozero, PRED2 := osucc ozero.
+
+typeof (case_or_else (tuple [tuple [], ozero]) (patt_tuple (pcons patt_var (pcons patt_var pnil)))
+                     (vbind (fun t => vbind (fun n => vbody (osucc n))))
+                     ozero) T ?
+>> Yes:
+>> T := onat.
+
+eval (case_or_else (osucc (osucc ozero))
+     (patt_osucc patt_var) (vbind (fun pred => vbody pred))
+     ozero)
+  V ?
+>> Yes:
+>> V := osucc ozero.
+
+(* Bonus, continuing from last section: *)
+match (patt_or P1 P2) V Subst Subst' :-
+  if (match P1 V Subst Subst')
+  then success
+  else (match P2 V Subst Subst').
+
+match (patt_exact E) V Subst Subst :-
+  eval E V.
+
+
+add : term -> term -> term.
+typeof (add N1 N2) onat :- typeof N1 onat, typeof N2 onat.
+do_oadd : term -> term -> term -> prop.
+do_oadd ozero N N.
+do_oadd (osucc N) N' (osucc N'') :- do_oadd N N' N''.
+eval (add E1 E2) V' :- eval E1 V1, eval E2 V2, do_oadd V1 V2 V'.
+
+>> eval (case_or_else (tuple [osucc ozero, osucc (osucc ozero)])
+        (patt_or (patt_tuple (pcons (patt_osucc (patt_osucc patt_var)) (pcons patt_var pnil)))
+                 (patt_tuple (pcons patt_var (pcons (patt_osucc patt_var) pnil))))
+        (vbind (fun a => vbind (fun b => vbody (add a b))))
+        (ozero))
+  V ?
+>> Yes:
+>> V := osucc (osucc ozero).
+
+eval (app
+       (lam _ (fun x => case_or_else x
+        (patt_exact (osucc (osucc ozero)))
+        (vbody (osucc ozero))
+        (ozero)))
+      (osucc (osucc ozero)))
+  V ?
+>> Yes:
+>> V := osucc ozero.
+
+eval (app
+       (lam _ (fun x => case_or_else x
+        (patt_exact (osucc (osucc ozero)))
+        (vbody (osucc ozero))
+        (ozero)))
+      (osucc ozero))
+  V ?
+>> Yes:
+>> V := ozero.
+

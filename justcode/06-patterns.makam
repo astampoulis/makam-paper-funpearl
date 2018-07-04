@@ -1,0 +1,87 @@
+%use "05-gadts".
+tests: testsuite. %testsuite tests.
+
+onat : typ. ozero : term. osucc : term -> term.
+typeof ozero onat. typeof (osucc N) onat :- typeof N onat.
+eval ozero ozero. eval (osucc E) (osucc V) :- eval E V.
+
+patt, pattlist : (NBefore: type) (NAfter: type) -> type.
+patt_var : patt N (succ N).
+patt_ozero : patt N N.
+patt_osucc : patt N N' -> patt N N'.
+patt_wild : patt N N.
+patt_tuple : pattlist N N' -> patt N N'.
+pnil : pattlist N N.
+pcons : patt N N' -> pattlist N' N'' -> pattlist N N''.
+
+case_or_else : (Scrutinee: term)
+  (Patt: patt zero N) (Vars_Body: vbindmany term N term)
+  (Else: term) -> term.
+
+typeof_patt : [NBefore NAfter] patt NBefore NAfter -> typ ->
+  vector typ NBefore -> vector typ NAfter -> prop.
+
+typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
+  typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
+  vopenmany Vars_Body (pfun Vars Body =>
+    vassumemany typeof Vars VarTypes (typeof Body BodyT)),
+  typeof Else BodyT.
+
+typeof_patt patt_var T VarTypes VarTypes' :-
+  vsnoc VarTypes T VarTypes'.
+
+vsnoc : [N] vector A N -> A -> vector A (succ N) -> prop.
+vsnoc vnil Y (vcons Y vnil).
+vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
+
+typeof_patt patt_ozero onat VarTypes VarTypes.
+
+typeof_patt (patt_osucc P) onat VarTypes VarTypes' :-
+  typeof_patt P onat VarTypes VarTypes'.
+
+typeof_patt patt_wild T VarTypes VarTypes.
+
+typeof_pattlist : [NBefore NAfter]
+  pattlist NBefore NAfter -> list typ ->
+  vector typ NBefore -> vector typ NAfter -> prop.
+
+typeof_pattlist pnil [] VarTypes VarTypes.
+typeof_pattlist (pcons P PS) (T :: TS) VarTypes VarTypes'' :-
+  typeof_patt P T VarTypes VarTypes',
+  typeof_pattlist PS TS VarTypes' VarTypes''.
+
+typeof_patt (patt_tuple PS) (product TS) VarTypes VarTypes' :-
+  typeof_pattlist PS TS VarTypes VarTypes'.
+
+(* Bonus: or patterns *)
+patt_or : patt N N' -> patt N N' -> patt N N'.
+
+typeof_patt (patt_or P1 P2) T VarTypes VarTypes' :-
+  typeof_patt P1 T VarTypes VarTypes',
+  typeof_patt P2 T VarTypes VarTypes'.
+
+(* Bonus: exact patterns. We need a predicate to define the types that are allowed in
+   them: base types and algebraic datatypes. This needs reflective features to avoid
+   prematurely specializing the type of a term.
+
+   Note: `map` is overloaded to work with unary predicates too. In general, Makam allows
+   type-based overloading. We do not make use of it in the paper because it leads to
+   presentation issues.
+*)
+permissible, permissible_aux : typ -> prop.
+permissible T :- not(refl.isunif T), permissible_aux T.
+permissible (product TS) :- map permissible TS.
+permissible onat.
+
+patt_exact : term -> patt N N.
+typeof_patt (patt_exact E) T VarTypes VarTypes :-
+  typeof E T, permissible T.
+
+typeof (lam _ (fun n => case_or_else n
+  (patt_osucc patt_var) (vbind (fun pred => vbody pred))
+  ozero)) T ?
+>> Yes:
+>> T := arrow onat onat.
+
+%use "06-removed-patterns-eval".
+

@@ -116,7 +116,7 @@ conversion rule for `typeof_patt`, but that's almost the same as for terms. (...
 typeof_patt (P : patt A B) T S S' :-
   not(refl.isunif T),
   typeof_patt P T' S S',
-  typeq T T', not(eq T T').
+  typeq T T'.
 ```
 -->
 

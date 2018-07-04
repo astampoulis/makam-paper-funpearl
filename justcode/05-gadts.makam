@@ -1,0 +1,15 @@
+%use "04-bindmany".
+tests: testsuite. %testsuite tests.
+
+vletrec : vbindmany term N (vector term N * term) -> term.
+
+typeof (vletrec XS_DefsBody) T' :-
+  vopenmany XS_DefsBody (pfun XS (Defs, Body) =>
+    vassumemany typeof XS TS (vmap typeof Defs TS),
+    vassumemany typeof XS TS (typeof Body T')).
+
+typeof (vletrec (vbind (fun f => vbody (vcons (lam T (fun x => app f (app f x))) vnil, f)))) T' ?
+>> Yes:
+>> T' := arrow T T,
+>> T := T.
+

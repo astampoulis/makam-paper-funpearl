@@ -5,7 +5,8 @@ all: build
 
 build-to-tmp:
 	@ mkdir -p tmp/
-	@ ./shared/convert_literate_files.sh makamcode generated
+	@ ./shared/convert-literate-files.sh makamcode generated
+	@ ./shared/convert-justcode.sh
 	# @ shuf -n1 /usr/share/dict/words > generated/randomword.tex
 	@ $(PDFLATEX) main.tex
 	@ $(BIBTEX) tmp/main.aux
@@ -20,7 +21,7 @@ docker-build:
 	@ cp tmp/main.pdf .
 
 fix-permissions:
-	@ chown $$_UID:$$_GID generated/* tmp/* generated tmp
+	@ chown $$_UID:$$_GID generated/* justcode/* tmp/* generated justcode tmp
 
 clean:
 	@ rm -rf tmp/
@@ -41,13 +42,12 @@ watch-build:
 test:
 	@ ./shared/run_tests.sh
 
-test-artifact: artifact
-	@ rm -rf tmp/artifact88/
-	@ tar xvzf artifact88 -C tmp/
-	@ tmp/run-makam.sh --run-tests 10-typgen
+test-artifact:
+	@ rm -rf tmp/makam-funpearl-artifact/
+	@ tar xvzf makam-funpearl-artifact.tgz -C tmp/
+	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests 10-typgen
 
 artifact:
-	@ ./shared/convert-anonsupp.sh
 	@ ./shared/build-artifact.sh
 
 .PHONY: all build build-to-tmp clean tmpclean watch test docker-build watch-test watch-build artifact

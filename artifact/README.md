@@ -17,8 +17,8 @@ follow instructions for your system from:
 The artifact is a gzipped tar file, extract it and switch to its main
 directory using:
 
-    tar xvzf artifact88.tgz
-    cd artifact88
+    tar xvzf makam-funpearl-artifact.tgz
+    cd makam-funpearl-artifact
 
 You can use the `run-makam.sh` script to load the Docker image and
 start a Docker container running the Makam REPL:

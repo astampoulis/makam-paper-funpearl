@@ -1,0 +1,40 @@
+%use "03-stlc".
+tests : testsuite. %testsuite tests.
+
+lammany : bindmany term term -> term.
+
+refl.typstring (lammany (bind (fun x => bind (fun y => body (tuple [y,x]))))) "term" ?
+>> Yes.
+
+arrowmany : list typ -> typ -> typ.
+typeof (lammany F) (arrowmany TS T) :-
+  openmany F (fun xs body =>
+    assumemany typeof xs TS (typeof body T)).
+
+typeof (lammany (bind (fun x => bind (fun y => body (tuple [y, x]))))) T ?
+>> Yes:
+>> T := arrowmany [T1, T2] (product [T2, T1]).
+
+appmany : term -> list term -> term.
+typeof (appmany E ES) T :-
+  typeof E (arrowmany TS T), map typeof ES TS.
+
+eval (appmany E ES) V :-
+  eval E (lammany XS_E'), map eval ES VS,
+  applymany XS_E' VS E'', eval E'' V.
+
+letrec : bindmany term (list term * term) -> term.
+
+typeof (letrec XS_DefsBody) T' :-
+  openmany XS_DefsBody (pfun XS (Defs, Body) =>
+    assumemany typeof XS TS (map typeof Defs TS),
+    assumemany typeof XS TS (typeof Body T')).
+
+typeof (letrec (bind (fun f => body ([lam T (fun x => app f (app f x))], f)))) T' ?
+>> Yes:
+>> T' := arrow T T,
+>> T := T.
+
+eval (letrec (bind (fun x => body ([Def x], Body x)))) V :-
+  eval (Body (Def (letrec (bind (fun x => body ([Def x], x)))))) V.
+

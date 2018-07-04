@@ -6,4 +6,5 @@ services:
     volumes:
       - ./:/code:ro
       - ./generated:/code/generated
+      - ./justcode:/code/justcode
       - ./tmp:/code/tmp

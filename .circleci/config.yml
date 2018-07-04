@@ -5,7 +5,7 @@ jobs:
       - image: node:9.4.0
     steps:
       - checkout
-      - run: npm install -g makam
+      - run: npm install -g makam@0.7.12
       - run: make test
   build:
     docker: &base-image

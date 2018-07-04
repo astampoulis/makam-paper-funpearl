@@ -10,8 +10,13 @@ rm -rf code/justcode;
 rm -rf code/literate;
 rm -rf code/scripts;
 
-cp -R ../anonsupp/justcode code;
-cp -R ../anonsupp/literate code;
+cp -R ../makamcode/ ./code/literate/;
+
+rm code/literate/*introduction.md;
+rm code/literate/*summary.md;
+rm code/literate/*related.md;
+
+$TOPDIR/shared/extract-code.sh code/literate code/justcode;
 
 mkdir code/scripts/;
 cp ../shared/extract-code.sh code/scripts/;
@@ -28,6 +33,6 @@ docker save --output docker-image.tar makam-icfp2018-artifact ;
 docker rmi makam-icfp2018-artifact ;
 
 cd ../ ;
-rm -f artifact88.tgz ;
-tar --transform='s/^artifact/artifact88/' -cvzf artifact88.tgz artifact
+rm -f makam-funpearl-artifact.tgz ;
+tar --transform='s/^artifact/makam-funpearl-artifact/' -cvzf makam-funpearl-artifact.tgz artifact
 )

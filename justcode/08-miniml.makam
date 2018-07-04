@@ -1,0 +1,99 @@
+%use "07-structural".
+tests: testsuite. %testsuite tests.
+
+tforall : (typ -> typ) -> typ.
+polylam : (typ -> term) -> term.
+polyapp : term -> typ -> term.
+
+typeof (polylam E) (tforall T) :- (a:typ -> typeof (E a) (T a)).
+typeof (polyapp E T) T' :- typeof E (tforall TF), eq T' (TF T).
+
+typeof (polylam (fun a => lam a (fun x => x))) T ?
+>> Yes:
+>> T := tforall (fun a => arrow a a).
+
+typeof (polyapp (polylam (fun a => lam a (fun x => x))) onat) T ?
+>> Yes:
+>> T := arrow onat onat.
+
+datadef : type. datatype_bind : (Into: type) -> type.
+datatype : (Def: datadef) (Rest: datatype_bind program) -> program.
+
+mkdatadef : (typ -> list typ) -> datadef.
+constructor : type.
+bind_datatype : (typ -> bindmany constructor A) -> datatype_bind A.
+
+constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) -> prop.
+
+wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
+                    (bind_datatype DT_Constrs_Rest)) :-
+  (dt:typ -> openmany (DT_Constrs_Rest dt) (pfun Constrs Rest =>
+    assumemany (constructor_typ dt) Constrs (DT_ConstrArgTypes dt)
+    (wfprogram Rest))).
+
+constr : (C: constructor) (Arg: term) -> term.
+patt_constr : (C: constructor) (Arg: patt N N') -> patt N N'.
+typeof (constr C Arg) Datatype :-
+  constructor_typ Datatype C ArgType, typeof Arg ArgType.
+typeof_patt (patt_constr C Arg) Datatype S S' :-
+  constructor_typ Datatype C ArgType, typeof_patt Arg ArgType S S'.
+
+wfprogram
+  (datatype
+    (mkdatadef (fun llist =>
+    [ product [] (* nil *) ,
+      product [onat, llist] ]))
+  (bind_datatype (fun llist => bind (fun cnil => bind (fun ccons => body
+  (main
+    (letrec
+      (bind (fun append => body (
+      [ lam llist (fun l1 => lam (T llist) (fun l2 =>
+        case_or_else l1
+          (patt_constr ccons (patt_tuple (pcons patt_var (pcons patt_var pnil))))
+            (vbind (fun hd => vbind (fun tl => vbody (
+            constr ccons (tuple [hd, app (app append tl) l2])))))
+          l2)) ],
+      (app (app append
+        (constr ccons (tuple [ozero, constr cnil (tuple [])])))
+        (constr ccons (tuple [ozero, constr cnil (tuple [])]))))))))))))) ?
+>> Yes:
+>> T := fun llist => llist.
+
+evalprogram : program -> program -> prop.
+evalprogram (main E) (main V) :- eval E V.
+evalprogram (lettype T E) V :- evalprogram (E T) V.
+evalprogram (datatype (mkdatadef DT_ConstrArgTypes)
+                      (bind_datatype DT_Constrs_Rest))
+            (datatype (mkdatadef DT_ConstrArgTypes)
+                      (bind_datatype DT_Constrs_Rest'))
+:-
+  (dt:typ -> openmany (DT_Constrs_Rest dt) (pfun Constrs Rest => [Rest']
+    applymany (DT_Constrs_Rest' dt) Constrs Rest',
+    assumemany (constructor_typ dt) Constrs (DT_ConstrArgTypes dt)
+    (evalprogram Rest Rest'))).
+
+eval (constr C Arg) (constr C Arg') :- eval Arg Arg'.
+match (patt_constr C P) (constr C V) Subst Subst' :-
+  match P V Subst Subst'.
+
+evalprogram
+  (datatype
+    (mkdatadef (fun llist =>
+    [ product [] (* nil *) ,
+      product [onat, llist] ]))
+  (bind_datatype (fun llist => bind (fun cnil => bind (fun ccons => body
+  (main
+    (letrec
+      (bind (fun append => body (
+      [ lam llist (fun l1 => lam _ (fun l2 =>
+        case_or_else l1
+          (patt_constr ccons (patt_tuple (pcons patt_var (pcons patt_var pnil))))
+            (vbind (fun hd => vbind (fun tl => vbody (
+            constr ccons (tuple [hd, app (app append tl) l2])))))
+          l2)) ],
+      (app (app append
+        (constr ccons (tuple [ozero, constr cnil (tuple [])])))
+        (constr ccons (tuple [ozero, constr cnil (tuple [])]))))))))))))) V ?
+>> Yes:
+>> V := (datatype (mkdatadef (fun llist => [ product [] (* nil *), product [onat, llist] ])) (bind_datatype (fun llist => bind (fun cnil => bind (fun ccons => body (main (constr ccons (tuple [ozero, constr ccons (tuple [ozero, constr cnil (tuple [])])])))))))).
+

@@ -1,0 +1,91 @@
+%use "06-patterns".
+tests: testsuite. %testsuite tests.
+
+typedef : (NewType: typ) (Definition: typ) -> prop.
+program : type. 
+main : term -> program. 
+lettype : (Definition: typ) (A_Program: typ -> program) -> program.
+
+wfprogram : program -> prop.
+wfprogram (main E) :- typeof E T.
+wfprogram (lettype T A_Program) :-
+  (a:typ -> typedef a T -> wfprogram (A_Program a)).
+
+typeq : [Any] (T1: Any) (T2: Any) -> prop.
+
+typeof E T :- not(refl.isunif T), typeof E T', typeq T T'.
+
+typeof_patt (P : patt A B) T S S' :-
+  not(refl.isunif T),
+  typeof_patt P T' S S',
+  typeq T T', not(eq T T').
+
+typeq A T' :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq T' A :- not(refl.isunif A), typedef A T, typeq T T'.
+typeq T T' :- structural_recursion @typeq T T'.
+
+typeof (lam (product [onat, onat])
+            (fun x => 
+    case_or_else x
+    (patt_tuple (pcons patt_wild (pcons patt_wild pnil)))
+    (vbody (tuple [x, ozero]))
+    (tuple [tuple [ozero, ozero], ozero])
+  )) T ?
+>> Yes:
+>> T := arrow (product (cons onat (cons onat nil))) (product (cons (product (cons onat (cons onat nil))) (cons onat nil))).
+
+(a:typ -> typedef a (product [onat, onat]) -> typeq a (product [onat, onat])) ?
+>> Yes.
+
+(a:typ -> typedef a (product [onat, onat]) -> typeq (product [onat, onat]) a) ?
+>> Yes.
+
+wfprogram (lettype (product [onat, onat]) (fun bintuple => main
+       (lam bintuple
+            (fun x => 
+    case_or_else x
+    (patt_tuple (pcons patt_wild (pcons patt_wild pnil)))
+    (vbody (tuple [x, ozero]))
+    (tuple [tuple [ozero, ozero], ozero])
+  )))) ?
+>> Yes.
+
+wfprogram (lettype (product [onat, onat]) (fun bintuple => main
+       (lam bintuple
+            (fun x => 
+    case_or_else x
+    (patt_tuple (pcons patt_wild pnil))
+    (vbody (tuple [x, ozero]))
+    (tuple [tuple [ozero, ozero], ozero])
+  )))) ?
+>> Impossible.
+
+wfprogram (lettype (product [onat, arrow onat onat]) (fun a => main (
+  app (lam a (fun x => x)) ozero))) ?
+>> Impossible.
+
+wfprogram (lettype onat (fun a => main (
+  app (lam a (fun x => x)) ozero))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a => main (
+  app (lam (product [a, onat]) (fun x => x)) (tuple [ozero, ozero])))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a => main (
+  lam a (fun x =>
+  app (lam (product [a, onat]) (fun x => x)) (tuple [ozero, x]))))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a =>
+          (lettype (product [a, onat]) (fun b => main (
+  lam a (fun x =>
+  app (lam b (fun x => x)) (tuple [ozero, x]))))))) ?
+>> Yes.
+
+wfprogram (lettype onat (fun a =>
+          (lettype (product [a, onat]) (fun b => main (
+  lam a (fun x =>
+  app (lam b (fun x => x)) ozero)))))) ?
+>> Impossible.
+
