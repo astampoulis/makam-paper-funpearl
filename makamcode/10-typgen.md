@@ -83,8 +83,7 @@ generic_fold F Acc (X : A -> B) Acc' <-
 polyrec_foldl : forall A (B -> A -> B -> prop) -> B -> list dyn -> B -> prop.
 polyrec_foldl P S nil S.
 polyrec_foldl P S (cons (dyn HD) TL) S'' <-
-  instantiate P P', 
-  P' S HD S',
+  forall.apply P S HD S',
   polyrec_foldl P S' TL S''.
 
 generic_fold F Acc X Acc' when refl.isbaseterm X <-

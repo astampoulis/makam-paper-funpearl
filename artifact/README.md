@@ -251,9 +251,9 @@ repository:
 
 <https://github.com/astampoulis/makam>
 
-This artifact bundles Makam version 0.7.12, accessible through the URL:
+This artifact bundles Makam version 0.7.13, accessible through the URL:
 
-<https://github.com/astampoulis/makam/releases/tag/v0.7.12>
+<https://github.com/astampoulis/makam/releases/tag/v0.7.13>
 
 The source code of the paper, along with CircleCI integration which builds the
 paper and this artifact, are available at:

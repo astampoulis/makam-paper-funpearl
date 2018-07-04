@@ -57,7 +57,7 @@ hnil : hlist typenil. hcons : T -> hlist TS -> hlist (typecons T TS).
 
 hmap : [TS] (P: forall A (A -> A -> prop)) (XS: hlist TS) (YS: hlist TS) -> prop.
 hmap P hnil hnil.
-hmap P (hcons X XS) (hcons Y YS) :- forall.call P X Y, hmap P XS YS.
+hmap P (hcons X XS) (hcons Y YS) :- forall.apply P X Y, hmap P XS YS.
 
 change : [A]A -> A -> prop. change 1 2. change "foo" "bar".
 hmap @change (hcons 1 (hcons "foo" hnil)) YS ?
@@ -113,8 +113,7 @@ generic_fold F Acc (X : A -> B) Acc' <-
 polyrec_foldl : forall A (B -> A -> B -> prop) -> B -> list dyn -> B -> prop.
 polyrec_foldl P S nil S.
 polyrec_foldl P S (cons (dyn HD) TL) S'' <-
-  instantiate P P', 
-  P' S HD S',
+  forall.apply P S HD S',
   polyrec_foldl P S' TL S''.
 
 generic_fold F Acc X Acc' when refl.isbaseterm X <-
