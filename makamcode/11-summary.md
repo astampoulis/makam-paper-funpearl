@@ -16,7 +16,7 @@ did also use a couple of not-so-pleasant hacks. But let's make a list of what's 
   binding. These encodings seem to have been part of PL folklore, but we believe that a type like
   `bindmany` has never been shown as a reusable datatype that \lamprolog makes possible.  We have
   made use of GADTs to encode some of these binding structures precisely, which we show are
-  supported in \lamprolog through ad-hoc polymorphism.  This we believe is a novel usage for this
+  supported in \lamprolog through ad-hoc polymorphism.  Definining GADTs is a novel usage for this
   \lamprolog feature. Our binding constructions should be replicable in other λProlog implementations
   like Teyjus \citep{teyjus-main-reference,teyjus-2-implementation} and in ELPI \citep{elpi-main-reference}.
 
