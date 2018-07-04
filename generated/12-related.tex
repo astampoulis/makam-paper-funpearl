@@ -13,7 +13,7 @@ characteristics of the Racket approach to language implementation is the
 ability to create towers of abstraction through programmatic
 manipulation of code. Makam is inspired by this approach to a large
 extent and our plan for future work follows similar lines. This is not
-demonstrated in the present work to a large extent, save for the use of
+demonstrated in the present work, save for the use of
 \texttt{refl.assume\_get}, which allows us to treat code (the local
 assumptions for a predicate) as reified data (a list of the assumptions
 that can be inspected). Still, there are a lot of potential mutual
@@ -22,7 +22,7 @@ of higher-order abstract syntax, together with the built-in support for
 higher-order unification, makes the \lamprolog
 setting significantly different.
 
-The recent development of a method for developing \textbf{type systems
+The recent development of a method for implementing \textbf{type systems
 as macros} by \citet{racket-type-systems-as-macros} is a great
 validation of the Racket approach and is especially relevant to our use
 case, as it has been used to encode type systems similar to ML. The
@@ -32,12 +32,12 @@ ecosystem offers a number of advantages, as does the
 pen-and-paper versions. We do believe that the higher-order logic
 programming setting allows for more expressivity and genericity -- for
 example, we have used the same techniques to define not only typing
-rules but evaluation rules as well; also, it is not immediately clear to
-us whether examples such as our MetaML fragment or Hindley-Milner type
-inference would be as easy to implement in \rulename{Turnstile}, since
-the latter lacks support for unification. We are exploring an approach
-similar to \rulename{Turnstile} to implement a higher-level surface
-language for writing typing rules using Makam itself.
+rules but evaluation rules as well; also, examples such as our MetaML
+fragment or Hindley-Milner type inference would not be as easy to
+implement in \rulename{Turnstile}, since the latter presently lacks
+support for unification. We are exploring an approach similar to
+\rulename{Turnstile} to implement a higher-level surface language for
+writing typing rules using Makam itself.
 
 Evaluation rules can be implemented using another DSL of the Racket
 ecosystem, namely \textbf{PLT Redex} \citep{felleisen2009semantics}, so
