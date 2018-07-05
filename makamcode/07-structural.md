@@ -88,12 +88,13 @@ type `T` of an expression `E`, but the typing rules require that `E` has a type 
 form. That was the case above -- for `E = f`, we knew that `T = a`, but the typing rule for `app`
 required that `T' = arrow T1 T2` for some `T1`, `T2`.
 
-STUDENT. Oh. In that case we could try *not* propagating the concrete type information we have? We
-could then use the conversion rule to check that the type we end up with matches what we expect.
+STUDENT. Oh. In that case we could try running the typing rules *without* the existing typing information that we
+have, like `T = a`? We would get a type `T'` that way and we can then check whether `T'` matches
+the type `T` that we expect, up to $\delta$-equality.
 
 ADVISOR. Exactly. So we need to change the rule you wrote to apply only in the case where `T` starts
-with a concrete constructor, rather than when it is an uninstantiated unification variable. We will
-then check whether the resulting type `T'` is equal to `T`, using our `typeq` predicate.
+with a concrete constructor (so we already know something about it), rather than when it is an
+uninstantiated unification variable. We will then check whether the resulting type `T'` is equal to `T`, using our `typeq` predicate.
 
 STUDENT. Is that even possible? Is there a way in λProlog to tell whether something is a unification variable?
 

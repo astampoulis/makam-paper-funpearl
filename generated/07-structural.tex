@@ -106,15 +106,18 @@ the typing rule for \texttt{app} required that
 \texttt{T\textquotesingle{}\ =\ arrow\ T1\ T2} for some \texttt{T1},
 \texttt{T2}.
 
-\heroSTUDENT{} Oh. In that case we could try \emph{not} propagating the
-concrete type information we have? We could then use the conversion rule
-to check that the type we end up with matches what we expect.
+\heroSTUDENT{} Oh. In that case we could try running the typing rules
+\emph{without} the existing typing information that we have, like
+\texttt{T\ =\ a}? We would get a type \texttt{T\textquotesingle{}} that
+way and we can then check whether \texttt{T\textquotesingle{}} matches
+the type \texttt{T} that we expect, up to \(\delta\)-equality.
 
 \heroADVISOR{} Exactly. So we need to change the rule you wrote to apply only
-in the case where \texttt{T} starts with a concrete constructor, rather
-than when it is an uninstantiated unification variable. We will then
-check whether the resulting type \texttt{T\textquotesingle{}} is equal
-to \texttt{T}, using our \texttt{typeq} predicate.
+in the case where \texttt{T} starts with a concrete constructor (so we
+already know something about it), rather than when it is an
+uninstantiated unification variable. We will then check whether the
+resulting type \texttt{T\textquotesingle{}} is equal to \texttt{T},
+using our \texttt{typeq} predicate.
 
 \heroSTUDENT{} Is that even possible? Is there a way in \foreignlanguage{greek}{λ}Prolog to tell
 whether something is a unification variable?
