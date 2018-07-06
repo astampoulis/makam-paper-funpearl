@@ -42,10 +42,8 @@ The **Racket programming language** was designed to support creation of new prog
 \citep{racket-manifesto} and has been used to implement a very wide variety of DSLs, including typed languages such as Typed Racket by \citet{typed-racket-main-reference}. We
 believe that one of the key characteristics of the Racket approach to language implementation is the
 ability to create towers of abstraction through programmatic manipulation of code.  Makam is
-inspired by this approach to a large extent, and our plan for future work follows similar lines.
-This is not demonstrated in the present work, save for the use of
-`refl.assume_get`, which allows us to treat code (the local assumptions for a predicate) as reified
-data (a list of the assumptions that can be inspected). Still, there is a lot of potential for cross-fertilization since the presence of first-class binding support in the form of higher-order abstract
+inspired by this approach to a large extent, and our plan for future work follows similar lines
+with regards to manipulating Makam code within Makam. Still, there is a lot of potential for cross-fertilization since the presence of first-class binding support in the form of higher-order abstract
 syntax, together with the built-in support for higher-order unification, makes the \lamprolog
 setting significantly different.
 
@@ -56,9 +54,9 @@ that this methodology provides with the rest of the Racket ecosystem offers a nu
 as does the \rulename{Turnstile} DSL for writing typing rules close to the pen-and-paper
 versions. We do believe that the higher-order logic programming setting allows for more expressivity
 and genericity -- for example, we have used the same techniques to define not only typing rules but
-evaluation rules as well; also, examples such as our
-MetaML fragment or Hindley-Milner type inference would not be as easy to implement in
-\rulename{Turnstile}, since the latter presently lacks support for unification. We are exploring an approach
+evaluation rules as well; also, it is not immediately clear to us whether examples such as our MetaML
+fragment or Hindley-Milner type inference would be as easy to implement in
+\rulename{Turnstile}, especially since the latter presently lacks support for unification. We are exploring an approach
 similar to \rulename{Turnstile} to implement a higher-level surface language for writing typing
 rules using Makam itself.
 
