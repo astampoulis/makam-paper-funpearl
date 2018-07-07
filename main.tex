@@ -69,19 +69,24 @@
 \newcommand\lamprolog[0]{\foreignlanguage{greek}{λ}Prolog\xspace}
 \newcommand\fomega[0]{F$\omega$\xspace}
 
+\newcommand\colorone[1]{\textcolor[rgb]{0.00,0.29,0.09}{#1}} % green, 004b16
+\newcommand\colortwo[1]{\textcolor[rgb]{0.49,0.11,0.00}{#1}} % red, 7c1d00
+\newcommand\colorthree[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}} % blue, 05297d
+\newcommand\colorfour[1]{\textcolor[rgb]{0.4,0.0,0.55}{#1}} % purple, 65008d
+\definecolor{accentbgcolor}{rgb}{0.81,0.83,0.95} % light blue, cfd4f2
+
 \newsavebox{\selvestebox}
 \newtoggle{important}
 \togglefalse{important}
-\definecolor{highlightcolor}{rgb}{0.81,0.83,0.95}
 \newcommand\importantCodeblock[0]{\toggletrue{important}}
 \newcommand\importantCodeblockEnd[0]{\togglefalse{important}}
 \renewenvironment{verbatim}{\iftoggle{important}{\newenvironment{colbox}{\begin{lrbox}{\selvestebox}%
    \begin{minipage}{\dimexpr\columnwidth-2\fboxsep\relax}}{\end{minipage}\end{lrbox}%
    \begin{center}\hspace{-6pt}%
-   \colorbox{highlightcolor}{\usebox{\selvestebox}}%
+   \colorbox{accentbgcolor}{\usebox{\selvestebox}}%
    \end{center}}}{\newenvironment{colbox}{}{}}%
 \begin{colbox}\begin{quote}\begin{alltt}}{\end{alltt}\end{quote}\end{colbox}}
-\newcommand\highlightedtext[1]{{\setlength{\fboxsep}{2pt}\colorbox{highlightcolor}{#1}}}
+\newcommand\highlightedtext[1]{{\setlength{\fboxsep}{2pt}\colorbox{accentbgcolor}{#1}}}
 
 \newcommand\hide[1]{}
 \newcommand\tightlist[0]{\itemsep1pt\parskip0pt\parsep0pt}
@@ -127,10 +132,6 @@
 % ====
 % highlighting makam
 
-\newcommand\colorgreen[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
-\newcommand\colorred[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
-\newcommand\colorblue[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
-
 \newcommand\tokkeyword[1]{#1}
 \newcommand\toksymbol[1]{#1}
 \newcommand\tokarrowtype[1]{#1}
@@ -138,16 +139,17 @@
 \newcommand\toknumber[1]{#1}
 \newcommand\tokstring[1]{#1}
 
-\newcommand\tokmetavariable[1]{\colorblue{#1}}
+\newcommand\tokmetavariable[1]{\colorthree{#1}}
+\newcommand\toktypemetavariable[1]{#1}
 
 \newcommand\tokbuiltintype[1]{\textbf{#1}}
 \newcommand\tokstdtypeid[1]{#1}
-\newcommand\toktypeid[1]{\colorred{#1}}
+\newcommand\toktypeid[1]{\colorone{#1}}
 
 \newcommand\tokstdconst[1]{#1}
-\newcommand\tokpropconst[1]{\colorgreen{#1}}
-\newcommand\tokobjconst[1]{\colorred{\textbf{#1}}}
-\newcommand\tokconst[1]{\colorred{\textbf{#1}}}
+\newcommand\tokpropconst[1]{\colorfour{#1}}
+\newcommand\tokobjconst[1]{\colortwo{#1}}
+\newcommand\tokconst[1]{\colortwo{#1}}
 
 \newcommand\tokquery[1]{#1}
 
