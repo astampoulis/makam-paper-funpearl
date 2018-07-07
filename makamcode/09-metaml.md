@@ -47,8 +47,8 @@ simple: the STLC will suffice.
 STUDENT. Great. How about we try to do the standard example of a staged `power` function?
 Here's a rough sketch, where I'm using `~I` for antiquotation:
 
-```
-let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
+```nohighlight
+let rec power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
   match n with
     0 => < stlc.lam (fun x => 1) >
   | S n' => letobj I = power n' in
@@ -208,7 +208,7 @@ wishing that Makam supported some way to write terms of object languages in thei
 \end{scenecomment}
 
 ```
-typeof (letrec (bind (fun power => body ([ ..long term.. ], power)))) T ?
+typeof (letrec (bind (fun power => body ((* ..long term.. *), power)))) T ?
 >> Yes:
 >> T := arrow onat (liftclass (cls_typ (stlc.arrow stlc.onat stlc.onat))).
 ```
@@ -330,8 +330,8 @@ ADVISOR. See, even the Makam REPL is excited\footnote{We have taken the liberty 
 of administrative redices. We should be able to fix that with the next kind of object in our check-list, though: open STLC terms! That way, instead of having `power` return an object containing a lambda function, it can return an
 open term. Here's how I would write the same example from before:
 
-```
-let power_aux (n: onat): < [ stlc.onat ] stlc.onat > =
+```nohighlight
+let rec power_aux (n: onat): < [ stlc.onat ] stlc.onat > =
   match n with
     0 => < [x]. 1 >
   | S n' => letobj I = power_aux n' in < [x]. stlc.mult ~(I/[x]) x >

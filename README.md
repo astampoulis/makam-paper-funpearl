@@ -12,7 +12,11 @@ To build the paper:
 
 - `make docker-build`
 
-Alternatively, you will need a native PanDoc and a TeXLive installation.
+Alternatively, you will need:
+
+- a TexLive installation
+- Pandoc
+- Node.js
 
 To build the artifact:
 

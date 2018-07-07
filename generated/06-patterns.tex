@@ -57,25 +57,25 @@ written for \texttt{branch} above into the definition of
 \texttt{case\_or\_else}.
 
 \begin{verbatim}
-onat : typ. ozero : term. osucc : term \ensuremath{\to} term.
-typeof ozero onat. typeof (osucc N) onat \ensuremath{:\!-} typeof N onat.
-eval ozero ozero. eval (osucc E) (osucc V) \ensuremath{:\!-} eval E V.
+\tokobjconst{onat} : \toktypeid{typ}. \tokobjconst{ozero} : \toktypeid{term}. \tokobjconst{osucc} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
+\tokpropconst{typeof} \tokobjconst{ozero} \tokobjconst{onat}. \tokpropconst{typeof} (\tokobjconst{osucc} \tokmetavariable{N}) \tokobjconst{onat} \toksymbol{\ensuremath{:\!-}} \tokpropconst{typeof} \tokmetavariable{N} \tokobjconst{onat}.
+\tokpropconst{eval} \tokobjconst{ozero} \tokobjconst{ozero}. \tokpropconst{eval} (\tokobjconst{osucc} \tokmetavariable{E}) (\tokobjconst{osucc} \tokmetavariable{V}) \toksymbol{\ensuremath{:\!-}} \tokpropconst{eval} \tokmetavariable{E} \tokmetavariable{V}.
 \end{verbatim}
 
 \begin{verbatim}
-case_or_else : (Scrutinee: term)
-  (Patt: patt N) (Vars_Body: vbindmany term N term)
-  (Else: term) \ensuremath{\to} term.
+\tokobjconst{case_or_else} : (\tokmetavariable{Scrutinee}: \toktypeid{term})
+  (\tokmetavariable{Patt}: \toktypeid{patt} \tokmetavariable{N}) (\tokmetavariable{Vars_Body}: \tokstdtypeid{vbindmany} \toktypeid{term} \tokmetavariable{N} \toktypeid{term})
+  (\tokmetavariable{Else}: \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 Now for the typing rule -- it will be something like this:
 
 \begin{verbatim}
-typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT \ensuremath{:\!-}
-  typeof Scrutinee T, typeof_patt Pattern T VarTypes,
-  vopenmany Vars_Body (pfun Vars Body \ensuremath{\Rightarrow}
-    vassumemany typeof Vars VarTypes (typeof Body BodyT)),
-  typeof Else BodyT.
+\tokpropconst{typeof} (\tokobjconst{case_or_else} \tokmetavariable{Scrutinee} \tokmetavariable{Pattern} \tokmetavariable{Vars_Body} \tokmetavariable{Else}) \tokmetavariable{BodyT} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{typeof} \tokmetavariable{Scrutinee} \tokmetavariable{T}, \tokpropconst{typeof_patt} \tokmetavariable{Pattern} \tokmetavariable{T} \tokmetavariable{VarTypes},
+  \tokstdconst{vopenmany} \tokmetavariable{Vars_Body} (\tokkeyword{pfun} \tokmetavariable{Vars} \tokmetavariable{Body} \tokkeyword{\ensuremath{\Rightarrow}}
+    \tokstdconst{vassumemany} \tokpropconst{typeof} \tokmetavariable{Vars} \tokmetavariable{VarTypes} (\tokpropconst{typeof} \tokmetavariable{Body} \tokmetavariable{BodyT})),
+  \tokpropconst{typeof} \tokmetavariable{Else} \tokmetavariable{BodyT}.
 \end{verbatim}
 
 Right, so when checking a pattern, we'll have to determine both what
@@ -85,8 +85,8 @@ it contains. We will also need \texttt{vassumemany} that is just like
 arguments instead of \texttt{list}.
 
 \begin{verbatim}
-typeof_patt : [N] patt N \ensuremath{\to} typ \ensuremath{\to} vector typ N \ensuremath{\to} prop.
-vassumemany : [N] (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} vector A N \ensuremath{\to} vector B N \ensuremath{\to} prop \ensuremath{\to} prop.
+\tokpropconst{typeof_patt} : [\tokmetavariable{N}] \toktypeid{patt} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \toktypeid{typ} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{vassumemany} : [\tokmetavariable{N}] (\tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}) \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \tokmetavariable{A} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \tokmetavariable{B} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 (...)
 \end{verbatim}
 
@@ -96,8 +96,8 @@ typing relation, \texttt{typeof\_patt}.
 Let me just work one by one for each pattern.
 
 \begin{verbatim}
-patt_var : patt (succ zero).
-typeof_patt patt_var T (vcons T vnil).
+\tokobjconst{patt_var} : \toktypeid{patt} (\tokstdtypeid{succ} \tokstdtypeid{zero}).
+\tokpropconst{typeof_patt} \tokobjconst{patt_var} \tokmetavariable{T} (\tokstdconst{vcons} \tokmetavariable{T} \tokstdconst{vnil}).
 \end{verbatim}
 
 OK, that's how we'll write pattern variables, introducing a single
@@ -105,31 +105,31 @@ variable of a specific \texttt{typ} into the body of the branch. And the
 following should be good for the \texttt{onat}s I defined earlier.
 
 \begin{verbatim}
-patt_ozero : patt zero.
-typeof_patt patt_ozero onat vnil.
+\tokobjconst{patt_ozero} : \toktypeid{patt} \tokstdtypeid{zero}.
+\tokpropconst{typeof_patt} \tokobjconst{patt_ozero} \tokobjconst{onat} \tokstdconst{vnil}.
 
-patt_osucc : patt N \ensuremath{\to} patt N.
-typeof_patt (patt_osucc P) onat VarTypes \ensuremath{:\!-} typeof_patt P onat VarTypes.
+\tokobjconst{patt_osucc} : \toktypeid{patt} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \toktypeid{patt} \tokmetavariable{N}.
+\tokpropconst{typeof_patt} (\tokobjconst{patt_osucc} \tokmetavariable{P}) \tokobjconst{onat} \tokmetavariable{VarTypes} \toksymbol{\ensuremath{:\!-}} \tokpropconst{typeof_patt} \tokmetavariable{P} \tokobjconst{onat} \tokmetavariable{VarTypes}.
 \end{verbatim}
 
 A wildcard pattern will match any value and should not introduce a
 variable into the body of the branch.
 
 \begin{verbatim}
-patt_wild : patt zero.
-typeof_patt patt_wild T vnil.
+\tokobjconst{patt_wild} : \toktypeid{patt} \tokstdtypeid{zero}.
+\tokpropconst{typeof_patt} \tokobjconst{patt_wild} \tokmetavariable{T} \tokstdconst{vnil}.
 \end{verbatim}
 
 OK, and let's do patterns for our n-tuples\ldots{}. I guess I'll need a
 type for lists of patterns too.
 
 \begin{verbatim}
-patt_tuple : pattlist N \ensuremath{\to} patt N.
-typeof_patt (patt_tuple PS) (product TS) VarTypes \ensuremath{:\!-}
-  typeof_pattlist PS TS VarTypes.
-pattlist : (N: type) \ensuremath{\to} type.
-pnil : patt zero.
-pcons : patt N \ensuremath{\to} pattlist N' \ensuremath{\to} pattlist (N + N').
+\tokobjconst{patt_tuple} : \toktypeid{pattlist} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \toktypeid{patt} \tokmetavariable{N}.
+\tokpropconst{typeof_patt} (\tokobjconst{patt_tuple} \tokmetavariable{PS}) (\tokobjconst{product} \tokmetavariable{TS}) \tokmetavariable{VarTypes} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{typeof_pattlist} \tokmetavariable{PS} \tokmetavariable{TS} \tokmetavariable{VarTypes}.
+\tokconst{pattlist} : (\tokmetavariable{N}: \tokbuiltintype{type}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokobjconst{pnil} : \toktypeid{patt} \tokstdtypeid{zero}.
+\tokobjconst{pcons} : \toktypeid{patt} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \toktypeid{pattlist} \tokmetavariable{N'} \tokarrowtype{\ensuremath{\to}} \toktypeid{pattlist} (\tokmetavariable{N} + \tokmetavariable{N'}).
 \end{verbatim}
 
 Uh-oh\ldots{} don't think I can do that
@@ -147,14 +147,14 @@ adds to that accumulator, yielding \texttt{NAfter}, rather than defining
 how many pattern variables it includes\ldots{} like this:
 
 \begin{verbatim}
-patt, pattlist : (NBefore: type) (NAfter: type) \ensuremath{\to} type.
-patt_var : patt N (succ N).
-patt_ozero : patt N N.
-patt_osucc : patt N N' \ensuremath{\to} patt N N'.
-patt_wild : patt N N.
-patt_tuple : pattlist N N' \ensuremath{\to} patt N N'.
-pnil : pattlist N N.
-pcons : patt N N' \ensuremath{\to} pattlist N' N'' \ensuremath{\to} pattlist N N''.
+\tokconst{patt}, \tokconst{pattlist} : (\tokmetavariable{NBefore}: \tokbuiltintype{type}) (\tokmetavariable{NAfter}: \tokbuiltintype{type}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokobjconst{patt_var} : \toktypeid{patt} \tokmetavariable{N} (\tokstdtypeid{succ} \tokmetavariable{N}).
+\tokobjconst{patt_ozero} : \toktypeid{patt} \tokmetavariable{N} \tokmetavariable{N}.
+\tokobjconst{patt_osucc} : \toktypeid{patt} \tokmetavariable{N} \tokmetavariable{N'} \tokarrowtype{\ensuremath{\to}} \toktypeid{patt} \tokmetavariable{N} \tokmetavariable{N'}.
+\tokobjconst{patt_wild} : \toktypeid{patt} \tokmetavariable{N} \tokmetavariable{N}.
+\tokobjconst{patt_tuple} : \toktypeid{pattlist} \tokmetavariable{N} \tokmetavariable{N'} \tokarrowtype{\ensuremath{\to}} \toktypeid{patt} \tokmetavariable{N} \tokmetavariable{N'}.
+\tokobjconst{pnil} : \toktypeid{pattlist} \tokmetavariable{N} \tokmetavariable{N}.
+\tokobjconst{pcons} : \toktypeid{patt} \tokmetavariable{N} \tokmetavariable{N'} \tokarrowtype{\ensuremath{\to}} \toktypeid{pattlist} \tokmetavariable{N'} \tokmetavariable{N''} \tokarrowtype{\ensuremath{\to}} \toktypeid{pattlist} \tokmetavariable{N} \tokmetavariable{N''}.
 \end{verbatim}
 
 Yes, I think that should work. I have a little editing to do in my
@@ -163,9 +163,9 @@ patterns, we should always start with the accumulator being
 \texttt{zero}\ldots{}
 
 \begin{verbatim}
-case_or_else : (Scrutinee: term)
-  (Patt: patt zero N) (Vars_Body: vbindmany term N term)
-  (Else: term) \ensuremath{\to} term.
+\tokobjconst{case_or_else} : (\tokmetavariable{Scrutinee}: \toktypeid{term})
+  (\tokmetavariable{Patt}: \toktypeid{patt} \tokstdtypeid{zero} \tokmetavariable{N}) (\tokmetavariable{Vars_Body}: \tokstdtypeid{vbindmany} \toktypeid{term} \tokmetavariable{N} \toktypeid{term})
+  (\tokmetavariable{Else}: \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 I also have to change \texttt{typeof\_patt}, so that it includes an
@@ -174,18 +174,18 @@ accumulator argument of its own:
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof_patt : [NBefore NAfter] patt NBefore NAfter \ensuremath{\to} typ \ensuremath{\to}
-  vector typ NBefore \ensuremath{\to} vector typ NAfter \ensuremath{\to} prop.
+\tokpropconst{typeof_patt} : [\tokmetavariable{NBefore} \tokmetavariable{NAfter}] \toktypeid{patt} \tokmetavariable{NBefore} \tokmetavariable{NAfter} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}}
+  \tokstdtypeid{vector} \toktypeid{typ} \tokmetavariable{NBefore} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \toktypeid{typ} \tokmetavariable{NAfter} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 \end{verbatim}
 
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT \ensuremath{:\!-}
-  typeof Scrutinee T, typeof_patt Pattern T vnil VarTypes,
-  vopenmany Vars_Body (pfun Vars Body \ensuremath{\Rightarrow}
-    vassumemany typeof Vars VarTypes (typeof Body BodyT)),
-  typeof Else BodyT.
+\tokpropconst{typeof} (\tokobjconst{case_or_else} \tokmetavariable{Scrutinee} \tokmetavariable{Pattern} \tokmetavariable{Vars_Body} \tokmetavariable{Else}) \tokmetavariable{BodyT} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{typeof} \tokmetavariable{Scrutinee} \tokmetavariable{T}, \tokpropconst{typeof_patt} \tokmetavariable{Pattern} \tokmetavariable{T} \tokstdconst{vnil} \tokmetavariable{VarTypes},
+  \tokstdconst{vopenmany} \tokmetavariable{Vars_Body} (\tokkeyword{pfun} \tokmetavariable{Vars} \tokmetavariable{Body} \tokkeyword{\ensuremath{\Rightarrow}}
+    \tokstdconst{vassumemany} \tokpropconst{typeof} \tokmetavariable{Vars} \tokmetavariable{VarTypes} (\tokpropconst{typeof} \tokmetavariable{Body} \tokmetavariable{BodyT})),
+  \tokpropconst{typeof} \tokmetavariable{Else} \tokmetavariable{BodyT}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -195,8 +195,8 @@ All right, let's proceed to the typing rules for patterns themselves:
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof_patt patt_var T VarTypes VarTypes' \ensuremath{:\!-}
-  vsnoc VarTypes T VarTypes'.
+\tokpropconst{typeof_patt} \tokobjconst{patt_var} \tokmetavariable{T} \tokmetavariable{VarTypes} \tokmetavariable{VarTypes'} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{vsnoc} \tokmetavariable{VarTypes} \tokmetavariable{T} \tokmetavariable{VarTypes'}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -206,9 +206,9 @@ That should yield the correct order for the types of pattern variables;
 I am visiting the pattern left-to-right after all.
 
 \begin{verbatim}
-vsnoc : [N] vector A N \ensuremath{\to} A \ensuremath{\to} vector A (succ N) \ensuremath{\to} prop.
-vsnoc vnil Y (vcons Y vnil).
-vsnoc (vcons X XS) Y (vcons X XS_Y) \ensuremath{:\!-} vsnoc XS Y XS_Y.
+\tokstdconst{vsnoc} : [\tokmetavariable{N}] \tokstdtypeid{vector} \tokmetavariable{A} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \tokmetavariable{A} (\tokstdtypeid{succ} \tokmetavariable{N}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{vsnoc} \tokstdconst{vnil} \tokmetavariable{Y} (\tokstdconst{vcons} \tokmetavariable{Y} \tokstdconst{vnil}).
+\tokstdconst{vsnoc} (\tokstdconst{vcons} \tokmetavariable{X} \tokmetavariable{XS}) \tokmetavariable{Y} (\tokstdconst{vcons} \tokmetavariable{X} \tokmetavariable{XS_Y}) \toksymbol{\ensuremath{:\!-}} \tokstdconst{vsnoc} \tokmetavariable{XS} \tokmetavariable{Y} \tokmetavariable{XS_Y}.
 \end{verbatim}
 
 The rest is easy to adapt\ldots{}.
@@ -221,11 +221,11 @@ which are available in the unabridged version of this story.)
 Let me see if this works! I'll try out the predecessor function:
 
 \begin{verbatim}
-typeof (lam _ (fun n \ensuremath{\Rightarrow} case_or_else n
-  (patt_osucc patt_var) (vbind (fun pred \ensuremath{\Rightarrow} vbody pred))
-  ozero)) T ?
->> Yes:
->> T := arrow onat onat.
+\tokpropconst{typeof} (\tokobjconst{lam} \tokmetavariable{_} (\tokkeyword{fun} \tokconst{n} \tokkeyword{\ensuremath{\Rightarrow}} \tokobjconst{case_or_else} \tokconst{n}
+  (\tokobjconst{patt_osucc} \tokobjconst{patt_var}) (\tokstdconst{vbind} (\tokkeyword{fun} \tokconst{pred} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{vbody} \tokconst{pred}))
+  \tokobjconst{ozero})) \tokmetavariable{T} ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{T} \toksymbol{:=} \tokobjconst{arrow} \tokobjconst{onat} \tokobjconst{onat}.
 \end{verbatim}
 
 Great! Time to show this to Roza.

@@ -103,16 +103,16 @@ ADVISOR. The rule is written like this, and I'll explain what goes into it:
 \importantCodeblock{}
 ```
 arrowmany : list typ -> typ -> typ.
-typeof (lammany F) (arrowmany TS T) :-
-  openmany F (fun xs body => assumemany typeof xs TS (typeof body T)).
+typeof (lammany XS_E) (arrowmany TS T) :-
+  openmany XS_E (fun xs e => assumemany typeof xs TS (typeof e T)).
 ```
 \importantCodeblockEnd{}
 
 STUDENT. Let me see if I can read this... `openmany` somehow gives you fresh variables `xs` for the
-binders, plus the `body` of the `lammany`; and then the `assumemany typeof` part is what corresponds
+binders, plus the body `e` of the `lammany`; and then the `assumemany typeof` part is what corresponds
 to extending the $\Gamma$ context with multiple typing assumptions?
 
-ADVISOR. Yes, and then we typecheck the `body` in that local context that includes the fresh
+ADVISOR. Yes, and then we typecheck the body in that local context that includes the fresh
 variables and the typing assumptions. But let's do one step at a time. `openmany` is simple; we
 iterate through the nested binders, introducing one fresh variable at a time. We also substitute
 each bound variable for the current fresh variable, so that when we get to the body, it only uses
@@ -213,7 +213,7 @@ thought of another thing that could be challenging: mutually recursive `let rec`
 
 ADVISOR. Sure. Let's take this term for example:
 
-```
+```nohighlight
 let rec f = f_def and g = g_def in body
 ```
 
@@ -235,7 +235,7 @@ ADVISOR. Exactly! Want to try writing the typing rules?
 
 STUDENT. Maybe something like this?
 
-```
+```nohighlight
 typeof (letrec XS_DefsBody) T' :-
   openmany XS_DefsBody (fun xs (defs, body) =>
     assumemany typeof xs TS (map typeof defs TS),

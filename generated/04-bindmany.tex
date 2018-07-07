@@ -19,14 +19,14 @@ Want to give it a try?
 \heroSTUDENT{} Let me see. We want the terms to look roughly like this:
 
 \begin{verbatim}
-lammany (fun x \ensuremath{\Rightarrow} fun y \ensuremath{\Rightarrow} tuple [y, x])
+\tokobjconst{lammany} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokkeyword{fun} \tokconst{y} \tokkeyword{\ensuremath{\Rightarrow}} \tokobjconst{tuple} [\tokconst{y}, \tokconst{x}])
 \end{verbatim}
 
 For the type of \texttt{lammany}, I want to write something like this,
 but I know this is wrong.
 
 \begin{verbatim}
-lammany : (list term \ensuremath{\to} term) \ensuremath{\to} term.
+\tokobjconst{lammany} : (\tokstdtypeid{list} \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 \heroADVISOR{} Yes, that doesn't quite work. It would introduce a fresh
@@ -49,9 +49,9 @@ not need anything special for that\ldots{}.
 \heroADVISOR{} Exactly. What do you think about this definition?
 
 \begin{verbatim}
-bindmanyterms : type.
-bindnil : term \ensuremath{\to} bindmanyterms.
-bindcons : (term \ensuremath{\to} bindmanyterms) \ensuremath{\to} bindmanyterms.
+\tokstdtypeid{bindmanyterms} : \tokbuiltintype{type}.
+\tokstdconst{bindnil} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmanyterms}.
+\tokstdconst{bindcons} : (\toktypeid{term} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmanyterms}) \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmanyterms}.
 \end{verbatim}
 
 \heroSTUDENT{} Hmm. That looks quite similar to lists; the parentheses in
@@ -69,9 +69,9 @@ help me get a better grasp of it. How is this?
 \importantCodeblock{}
 
 \begin{verbatim}
-bindmany : type \ensuremath{\to} type \ensuremath{\to} type.
-body : Body \ensuremath{\to} bindmany Variable Body.
-bind : (Variable \ensuremath{\to} bindmany Variable Body) \ensuremath{\to} bindmany Variable Body.
+\tokstdtypeid{bindmany} : \tokbuiltintype{type} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokstdconst{body} : \tokmetavariable{Body} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmany} \tokmetavariable{Variable} \tokmetavariable{Body}.
+\tokstdconst{bind} : (\tokmetavariable{Variable} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmany} \tokmetavariable{Variable} \tokmetavariable{Body}) \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmany} \tokmetavariable{Variable} \tokmetavariable{Body}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -82,7 +82,7 @@ library, actually. And we can now define \texttt{lammany} using it:
 \importantCodeblock{}
 
 \begin{verbatim}
-lammany : bindmany term term \ensuremath{\to} term.
+\tokobjconst{lammany} : \tokstdtypeid{bindmany} \toktypeid{term} \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -90,7 +90,7 @@ lammany : bindmany term term \ensuremath{\to} term.
 \heroSTUDENT{} I see. So our example term from before would be:
 
 \begin{verbatim}
-lammany (bind (fun x \ensuremath{\Rightarrow} bind (fun y \ensuremath{\Rightarrow} body (tuple [y,x]))))
+\tokobjconst{lammany} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{bind} (\tokkeyword{fun} \tokconst{y} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} (\tokobjconst{tuple} [\tokconst{y},\tokconst{x}]))))
 \end{verbatim}
 
 \noindent
@@ -112,33 +112,32 @@ it:
 \importantCodeblock{}
 
 \begin{verbatim}
-arrowmany : list typ \ensuremath{\to} typ \ensuremath{\to} typ.
-typeof (lammany F) (arrowmany TS T) \ensuremath{:\!-}
-  openmany F (fun xs body \ensuremath{\Rightarrow} assumemany typeof xs TS (typeof body T)).
+\tokobjconst{arrowmany} : \tokstdtypeid{list} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ}.
+\tokpropconst{typeof} (\tokobjconst{lammany} \tokmetavariable{XS_E}) (\tokobjconst{arrowmany} \tokmetavariable{TS} \tokmetavariable{T}) \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{openmany} \tokmetavariable{XS_E} (\tokkeyword{fun} \tokconst{xs} \tokconst{e} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{assumemany} \tokpropconst{typeof} \tokconst{xs} \tokmetavariable{TS} (\tokpropconst{typeof} \tokconst{e} \tokmetavariable{T})).
 \end{verbatim}
 
 \importantCodeblockEnd{}
 
 \heroSTUDENT{} Let me see if I can read this\ldots{} \texttt{openmany} somehow
-gives you fresh variables \texttt{xs} for the binders, plus the
-\texttt{body} of the \texttt{lammany}; and then the
+gives you fresh variables \texttt{xs} for the binders, plus the body
+\texttt{e} of the \texttt{lammany}; and then the
 \texttt{assumemany\ typeof} part is what corresponds to extending the
 \(\Gamma\) context with multiple typing assumptions?
 
-\heroADVISOR{} Yes, and then we typecheck the \texttt{body} in that local
-context that includes the fresh variables and the typing assumptions.
-But let's do one step at a time. \texttt{openmany} is simple; we iterate
-through the nested binders, introducing one fresh variable at a time. We
-also substitute each bound variable for the current fresh variable, so
-that when we get to the body, it only uses the fresh variables we
-introduced.
+\heroADVISOR{} Yes, and then we typecheck the body in that local context that
+includes the fresh variables and the typing assumptions. But let's do
+one step at a time. \texttt{openmany} is simple; we iterate through the
+nested binders, introducing one fresh variable at a time. We also
+substitute each bound variable for the current fresh variable, so that
+when we get to the body, it only uses the fresh variables we introduced.
 
 \importantCodeblock{}
 
 \begin{verbatim}
-openmany : bindmany A B \ensuremath{\to} (list A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} prop.
-openmany (body Body) Q \ensuremath{:\!-} Q [] Body.
-openmany (bind F) Q \ensuremath{:\!-} (x:A \ensuremath{\to} openmany (F x) (fun xs \ensuremath{\Rightarrow} Q (x :: xs))).
+\tokstdconst{openmany} : \tokstdtypeid{bindmany} \tokmetavariable{A} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} (\tokstdtypeid{list} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{openmany} (\tokstdconst{body} \tokmetavariable{Body}) \tokmetavariable{Q} \toksymbol{\ensuremath{:\!-}} \tokmetavariable{Q} [] \tokmetavariable{Body}.
+\tokstdconst{openmany} (\tokstdconst{bind} \tokmetavariable{F}) \tokmetavariable{Q} \toksymbol{\ensuremath{:\!-}} (\tokconst{x}:\tokmetavariable{A} \toksymbol{\ensuremath{\to}} \tokstdconst{openmany} (\tokmetavariable{F} \tokconst{x}) (\tokkeyword{fun} \tokconst{xs} \tokkeyword{\ensuremath{\Rightarrow}} \tokmetavariable{Q} (\tokconst{x} :: \tokconst{xs}))).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -147,9 +146,9 @@ openmany (bind F) Q \ensuremath{:\!-} (x:A \ensuremath{\to} openmany (F x) (fun 
 assumption at a time?
 
 \begin{verbatim}
-assumemany : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} list A \ensuremath{\to} list B \ensuremath{\to} prop \ensuremath{\to} prop.
-assumemany P [] [] Q \ensuremath{:\!-} Q.
-assumemany P (X :: XS) (T :: TS) Q \ensuremath{:\!-} (P X T \ensuremath{\to} assumemany P XS TS Q).
+\tokstdconst{assumemany} : (\tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}) \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{assumemany} \tokmetavariable{P} [] [] \tokmetavariable{Q} \toksymbol{\ensuremath{:\!-}} \tokmetavariable{Q}.
+\tokstdconst{assumemany} \tokmetavariable{P} (\tokmetavariable{X} :: \tokmetavariable{XS}) (\tokmetavariable{T} :: \tokmetavariable{TS}) \tokmetavariable{Q} \toksymbol{\ensuremath{:\!-}} (\tokmetavariable{P} \tokmetavariable{X} \tokmetavariable{T} \toksymbol{\ensuremath{\to}} \tokstdconst{assumemany} \tokmetavariable{P} \tokmetavariable{XS} \tokmetavariable{TS} \tokmetavariable{Q}).
 \end{verbatim}
 
 \heroADVISOR{} Yes, exactly! Just a note, though -- \lamprolog typically does
@@ -165,9 +164,9 @@ run-time\footnote{The logical reason why this is not allowed in \lamprolog is th
 more verbose. But can I try our typing rule out?
 
 \begin{verbatim}
-typeof (lammany (bind (fun x \ensuremath{\Rightarrow} bind (fun y \ensuremath{\Rightarrow} body (tuple [y, x]))))) T ?
->> Yes:
->> T := arrowmany [T1, T2] (product [T2, T1]).
+\tokpropconst{typeof} (\tokobjconst{lammany} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{bind} (\tokkeyword{fun} \tokconst{y} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} (\tokobjconst{tuple} [\tokconst{y}, \tokconst{x}]))))) \tokmetavariable{T} ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{T} \toksymbol{:=} \tokobjconst{arrowmany} [\tokmetavariable{T1}, \tokmetavariable{T2}] (\tokobjconst{product} [\tokmetavariable{T2}, \tokmetavariable{T1}]).
 \end{verbatim}
 
 \noindent
@@ -176,11 +175,11 @@ multiple-argument application construct \texttt{appmany} and its
 evaluation rules.
 
 \begin{verbatim}
-appmany : term \ensuremath{\to} list term \ensuremath{\to} term.
-typeof (appmany E ES) T \ensuremath{:\!-}
-  typeof E (arrowmany TS T), map typeof ES TS.
-eval (appmany E ES) V \ensuremath{:\!-}
-  eval E (lammany XS_E'), map eval ES VS, (...).
+\tokobjconst{appmany} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
+\tokpropconst{typeof} (\tokobjconst{appmany} \tokmetavariable{E} \tokmetavariable{ES}) \tokmetavariable{T} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{typeof} \tokmetavariable{E} (\tokobjconst{arrowmany} \tokmetavariable{TS} \tokmetavariable{T}), \tokstdconst{map} \tokpropconst{typeof} \tokmetavariable{ES} \tokmetavariable{TS}.
+\tokpropconst{eval} (\tokobjconst{appmany} \tokmetavariable{E} \tokmetavariable{ES}) \tokmetavariable{V} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{eval} \tokmetavariable{E} (\tokobjconst{lammany} \tokmetavariable{XS_E'}), \tokstdconst{map} \tokpropconst{eval} \tokmetavariable{ES} \tokmetavariable{VS}, (...).
 \end{verbatim}
 
 \noindent
@@ -194,9 +193,9 @@ perform a number of substitutions:
 \importantCodeblock{}
 
 \begin{verbatim}
-applymany : bindmany A B \ensuremath{\to} list A \ensuremath{\to} B \ensuremath{\to} prop.
-applymany (body B) [] B.
-applymany (bind F) (X :: XS) B \ensuremath{:\!-} applymany (F X) XS B.
+\tokstdconst{applymany} : \tokstdtypeid{bindmany} \tokmetavariable{A} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{applymany} (\tokstdconst{body} \tokmetavariable{B}) [] \tokmetavariable{B}.
+\tokstdconst{applymany} (\tokstdconst{bind} \tokmetavariable{F}) (\tokmetavariable{X} :: \tokmetavariable{XS}) \tokmetavariable{B} \toksymbol{\ensuremath{:\!-}} \tokstdconst{applymany} (\tokmetavariable{F} \tokmetavariable{X}) \tokmetavariable{XS} \tokmetavariable{B}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -204,9 +203,9 @@ applymany (bind F) (X :: XS) B \ensuremath{:\!-} applymany (F X) XS B.
 \importantCodeblock{}
 
 \begin{verbatim}
-eval (appmany E ES) V \ensuremath{:\!-}
-  eval E (lammany XS_E'), map eval ES VS,
-  applymany XS_E' VS E'', eval E'' V.
+\tokpropconst{eval} (\tokobjconst{appmany} \tokmetavariable{E} \tokmetavariable{ES}) \tokmetavariable{V} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{eval} \tokmetavariable{E} (\tokobjconst{lammany} \tokmetavariable{XS_E'}), \tokstdconst{map} \tokpropconst{eval} \tokmetavariable{ES} \tokmetavariable{VS},
+  \tokstdconst{applymany} \tokmetavariable{XS_E'} \tokmetavariable{VS} \tokmetavariable{E''}, \tokpropconst{eval} \tokmetavariable{E''} \tokmetavariable{V}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -225,7 +224,7 @@ representing the concrete name; and then \texttt{openmany} would just
 ignore it.
 
 \begin{verbatim}
-bind : string \ensuremath{\to} (Var \ensuremath{\to} bindmany Var Body) \ensuremath{\to} bindmany Var Body.
+\tokstdconst{bind} : \tokstdtypeid{string} \tokarrowtype{\ensuremath{\to}} (\tokmetavariable{Var} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmany} \tokmetavariable{Var} \tokmetavariable{Body}) \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmany} \tokmetavariable{Var} \tokmetavariable{Body}.
 \end{verbatim}
 
 \heroSTUDENT{} Interesting. I would like to see more about this, but maybe
@@ -244,13 +243,13 @@ would bind \texttt{f} and \texttt{g} simultaneously and then write the
 definitions and the body in that scope:
 
 \begin{verbatim}
-letrec (fun f \ensuremath{\Rightarrow} fun g \ensuremath{\Rightarrow} ([f_def, g_def], body))
+\tokobjconst{letrec} (\tokkeyword{fun} \tokconst{f} \tokkeyword{\ensuremath{\Rightarrow}} \tokkeyword{fun} \tokconst{g} \tokkeyword{\ensuremath{\Rightarrow}} ([\tokconst{f_def}, \tokconst{g_def}], \tokstdconst{body}))
 \end{verbatim}
 
 \heroSTUDENT{} I think I know how to do this then! How does this look?
 
 \begin{verbatim}
-letrec : bindmany term (list term * term) \ensuremath{\to} term.
+\tokobjconst{letrec} : \tokstdtypeid{bindmany} \toktypeid{term} (\tokstdtypeid{list} \toktypeid{term} * \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 \heroADVISOR{} Exactly! Want to try writing the typing rules?
@@ -279,10 +278,10 @@ are understood to be unification variables.
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof (letrec XS_DefsBody) T' \ensuremath{:\!-}
-  openmany XS_DefsBody (pfun XS (Defs, Body) \ensuremath{\Rightarrow}
-    assumemany typeof XS TS (map typeof Defs TS),
-    assumemany typeof XS TS (typeof Body T')).
+\tokpropconst{typeof} (\tokobjconst{letrec} \tokmetavariable{XS_DefsBody}) \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{openmany} \tokmetavariable{XS_DefsBody} (\tokkeyword{pfun} \tokmetavariable{XS} (\tokmetavariable{Defs}, \tokmetavariable{Body}) \tokkeyword{\ensuremath{\Rightarrow}}
+    \tokstdconst{assumemany} \tokpropconst{typeof} \tokmetavariable{XS} \tokmetavariable{TS} (\tokstdconst{map} \tokpropconst{typeof} \tokmetavariable{Defs} \tokmetavariable{TS}),
+    \tokstdconst{assumemany} \tokpropconst{typeof} \tokmetavariable{XS} \tokmetavariable{TS} (\tokpropconst{typeof} \tokmetavariable{Body} \tokmetavariable{T'})).
 \end{verbatim}
 
 \importantCodeblockEnd{}

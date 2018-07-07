@@ -192,4 +192,5 @@ artifact/code/ArtifactOverview*
 artifact/docker-image.tar
 artifact/code/scripts/*.sh
 artifact/code/scripts/*.awk
-artifact88.tgz
+makam-funpearl-artifact.tgz
+highlight/node_modules/

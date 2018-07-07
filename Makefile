@@ -37,7 +37,7 @@ watch-test:
 	@ (find makamcode -name \*.md; find . -name main.tex) | entr make test
 
 watch-build:
-	@ (find makamcode -name \*.md; find . -name main.tex) | entr make docker-build
+	@ (find makamcode -name \*.md; find . -name main.tex; find . -name makam-codemirror.js) | entr make docker-build
 
 test:
 	@ ./shared/run_tests.sh

@@ -19,19 +19,19 @@ polymorphism and GADTs.)
 STUDENT. OK, so let's implement simple patterns and pattern-matching like in ML... First let's determine
 the right binding structure. For a branch like:
 
-```
+```nohighlight
 | cons(hd, tl) -> ... hd .. tl ...
 ```
 
 the pattern introduces 2 variables, `hd` and `tl`, which the body of the branch can refer to. But we can't really refer to those variables in the pattern itself, at least for simple patterns\footnote{There are counterexamples, like for or-patterns in some ML dialects, or for dependent pattern matching, where consequent uses of the same variable perform exact matches rather than unification. We choose to omit the handling of cases like those in the present work for presentation purposes.}.... So there's no binding going on really within the pattern; instead, once we figure out how many variables a pattern introduces, we can do the actual binding all at once, when we get to the body of the branch:
 
-```
+```nohighlight
 branch(pattern, bind [# of variables in pattern].body)
 ```
 
 So we could write the above branch in Makam like this:
 
-```
+```nohighlight
 branch(patt_cons patt_var patt_var,
        bind (fun hd => bind (fun tl => body (.. hd .. tl ..))))
 ```
@@ -41,7 +41,7 @@ here should refer to the first occurrence of `patt_var`, and `tl` to
 the second. Based on these, I am thinking that the type of `branch`
 should be something like:
 
-```
+```nohighlight
 branch : (Pattern: patt N) (Vars_Body: vbindmany term N term) -> ...
 ```
 

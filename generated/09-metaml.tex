@@ -55,7 +55,7 @@ object-object language simple: the STLC will suffice.
 \texttt{\textasciitilde{}I} for antiquotation:
 
 \begin{verbatim}
-let power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
+let rec power (n: onat): < stlc.arrow stlc.onat stlc.onat > =
   match n with
     0 \ensuremath{\Rightarrow} < stlc.lam (fun x \ensuremath{\Rightarrow} 1) >
   | S n' \ensuremath{\Rightarrow} letobj I = power n' in
@@ -120,23 +120,23 @@ the evaluation rules of the new constructs, as they are quite simple.
 The typing rules should be quite simple to transcribe to Makam:
 
 \begin{verbatim}
-object, class, index : type.
-classof : object \ensuremath{\to} class \ensuremath{\to} prop.
-classof_index : index \ensuremath{\to} class \ensuremath{\to} prop.
-subst_obj : (I_E: index \ensuremath{\to} term) (O: object) (E_OforI: term) \ensuremath{\to} prop.
+\toktypeid{object}, \toktypeid{class}, \toktypeid{index} : \tokbuiltintype{type}.
+\tokpropconst{classof} : \toktypeid{object} \tokarrowtype{\ensuremath{\to}} \toktypeid{class} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokpropconst{classof_index} : \toktypeid{index} \tokarrowtype{\ensuremath{\to}} \toktypeid{class} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokpropconst{subst_obj} : (\tokmetavariable{I_E}: \toktypeid{index} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}) (\tokmetavariable{O}: \toktypeid{object}) (\tokmetavariable{E_OforI}: \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 
-liftobj : object \ensuremath{\to} term. liftclass : class \ensuremath{\to} typ.
-letobj : term \ensuremath{\to} (index \ensuremath{\to} term) \ensuremath{\to} term.
+\tokobjconst{liftobj} : \toktypeid{object} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}. \tokobjconst{liftclass} : \toktypeid{class} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ}.
+\tokobjconst{letobj} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} (\toktypeid{index} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 \begin{verbatim}
-typeof (liftobj O) (liftclass C) \ensuremath{:\!-} classof O C.
-typeof (letobj E EF') T \ensuremath{:\!-}
-  typeof E (liftclass C), (i:index \ensuremath{\to} classof_index i C \ensuremath{\to} typeof (EF' i) T).
+\tokpropconst{typeof} (\tokobjconst{liftobj} \tokmetavariable{O}) (\tokobjconst{liftclass} \tokmetavariable{C}) \toksymbol{\ensuremath{:\!-}} \tokpropconst{classof} \tokmetavariable{O} \tokmetavariable{C}.
+\tokpropconst{typeof} (\tokobjconst{letobj} \tokmetavariable{E} \tokmetavariable{EF'}) \tokmetavariable{T} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{typeof} \tokmetavariable{E} (\tokobjconst{liftclass} \tokmetavariable{C}), (\tokconst{i}:\toktypeid{index} \toksymbol{\ensuremath{\to}} \tokpropconst{classof_index} \tokconst{i} \tokmetavariable{C} \toksymbol{\ensuremath{\to}} \tokpropconst{typeof} (\tokmetavariable{EF'} \tokconst{i}) \tokmetavariable{T}).
 
-eval (liftobj O) (liftobj O).
-eval (letobj E I_E') V \ensuremath{:\!-}
-  eval E (liftobj O), subst_obj I_E' O E', eval E' V.
+\tokpropconst{eval} (\tokobjconst{liftobj} \tokmetavariable{O}) (\tokobjconst{liftobj} \tokmetavariable{O}).
+\tokpropconst{eval} (\tokobjconst{letobj} \tokmetavariable{E} \tokmetavariable{I_E'}) \tokmetavariable{V} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{eval} \tokmetavariable{E} (\tokobjconst{liftobj} \tokmetavariable{O}), \tokpropconst{subst_obj} \tokmetavariable{I_E'} \tokmetavariable{O} \tokmetavariable{E'}, \tokpropconst{eval} \tokmetavariable{E'} \tokmetavariable{V}.
 \end{verbatim}
 
 \heroADVISOR{} Great. I'll add the object language in a separate namespace
@@ -146,11 +146,11 @@ numbers. Let me also add our new antiquote as a new STLC term
 constructor!
 
 \begin{verbatim}
-%extend stlc.
-term : type. typ : type. typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
+\tokdirective{%extend} \tokconst{stlc}.
+\toktypeid{term} : \tokbuiltintype{type}. \toktypeid{typ} : \tokbuiltintype{type}. \tokpropconst{typeof} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 ...
-aq : index \ensuremath{\to} term.
-%end.
+\tokconst{aq} : \toktypeid{index} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
+\tokdirective{%end}.
 \end{verbatim}
 
 \heroSTUDENT{} Time to add STLC terms as \texttt{object}s and their types as
@@ -158,9 +158,9 @@ aq : index \ensuremath{\to} term.
 \texttt{classof}. And I think that's it for the typing rules!
 
 \begin{verbatim}
-obj_term : stlc.term \ensuremath{\to} object. cls_typ : stlc.typ \ensuremath{\to} class.
-classof (obj_term E) (cls_typ T) \ensuremath{:\!-} stlc.typeof E T.
-stlc.typeof (stlc.aq I) T \ensuremath{:\!-} classof_index I (cls_typ T).
+\tokobjconst{obj_term} : \toktypeid{stlc.term} \tokarrowtype{\ensuremath{\to}} \toktypeid{object}. \tokobjconst{cls_typ} : \toktypeid{stlc.typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{class}.
+\tokpropconst{classof} (\tokobjconst{obj_term} \tokmetavariable{E}) (\tokobjconst{cls_typ} \tokmetavariable{T}) \toksymbol{\ensuremath{:\!-}} \tokpropconst{stlc.typeof} \tokmetavariable{E} \tokmetavariable{T}.
+\tokpropconst{stlc.typeof} (\tokobjconst{stlc.aq} \tokmetavariable{I}) \tokmetavariable{T} \toksymbol{\ensuremath{:\!-}} \tokpropconst{classof_index} \tokmetavariable{I} (\tokobjconst{cls_typ} \tokmetavariable{T}).
 \end{verbatim}
 
 \begin{scenecomment}
@@ -169,9 +169,9 @@ wishing that Makam supported some way to write terms of object languages in thei
 \end{scenecomment}
 
 \begin{verbatim}
-typeof (letrec (bind (fun power \ensuremath{\Rightarrow} body ([ ..long term.. ], power)))) T ?
->> Yes:
->> T := arrow onat (liftclass (cls_typ (stlc.arrow stlc.onat stlc.onat))).
+\tokpropconst{typeof} (\tokobjconst{letrec} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{power} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} (\tokcomment{(*}\tokcomment{ ..long term.. *)}, \tokconst{power})))) \tokmetavariable{T} ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{T} \toksymbol{:=} \tokobjconst{arrow} \tokobjconst{onat} (\tokobjconst{liftclass} (\tokobjconst{cls_typ} (\tokobjconst{stlc.arrow} \tokobjconst{stlc.onat} \tokobjconst{stlc.onat}))).
 \end{verbatim}
 
 \heroADVISOR{} That's great! The only thing missing to try out an evaluation
@@ -179,18 +179,18 @@ example too is implementing \texttt{subst\_obj}. Thanks to
 \texttt{structural\_recursion}, though, that is very easy:
 
 \begin{verbatim}
-subst_obj_aux, subst_obj_cases : [Any]
-  (Var: index) (Replacement: object) (Where: Any) (Result: Any) \ensuremath{\to} prop.
+\tokpropconst{subst_obj_aux}, \tokpropconst{subst_obj_cases} : [\tokmetavariable{Any}]
+  (\tokmetavariable{Var}: \toktypeid{index}) (\tokmetavariable{Replacement}: \toktypeid{object}) (\tokmetavariable{Where}: \tokmetavariable{Any}) (\tokmetavariable{Result}: \tokmetavariable{Any}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 \end{verbatim}
 
 \begin{verbatim}
-subst_obj I_Term O Term_OforI \ensuremath{:\!-}
-  (i:index \ensuremath{\to} subst_obj_aux i O (I_Term i) Term_OforI).
-subst_obj_aux Var Replacement Where Result \ensuremath{:\!-}
-  if (subst_obj_cases Var Replacement Where Result)
-  then success
-  else (structural_recursion @(subst_obj_aux Var Replacement) Where Result).
-subst_obj_cases Var (obj_term Replacement) (stlc.aq Var) Replacement.
+\tokpropconst{subst_obj} \tokmetavariable{I_Term} \tokmetavariable{O} \tokmetavariable{Term_OforI} \toksymbol{\ensuremath{:\!-}}
+  (\tokconst{i}:\toktypeid{index} \toksymbol{\ensuremath{\to}} \tokpropconst{subst_obj_aux} \tokconst{i} \tokmetavariable{O} (\tokmetavariable{I_Term} \tokconst{i}) \tokmetavariable{Term_OforI}).
+\tokpropconst{subst_obj_aux} \tokmetavariable{Var} \tokmetavariable{Replacement} \tokmetavariable{Where} \tokmetavariable{Result} \toksymbol{\ensuremath{:\!-}}
+  \tokkeyword{if} (\tokpropconst{subst_obj_cases} \tokmetavariable{Var} \tokmetavariable{Replacement} \tokmetavariable{Where} \tokmetavariable{Result})
+  \tokkeyword{then} \tokstdconst{success}
+  \tokkeyword{else} (\tokstdconst{structural_recursion} @(\tokpropconst{subst_obj_aux} \tokmetavariable{Var} \tokmetavariable{Replacement}) \tokmetavariable{Where} \tokmetavariable{Result}).
+\tokpropconst{subst_obj_cases} \tokmetavariable{Var} (\tokobjconst{obj_term} \tokmetavariable{Replacement}) (\tokobjconst{stlc.aq} \tokmetavariable{Var}) \tokmetavariable{Replacement}.
 \end{verbatim}
 
 \noindent
@@ -210,10 +210,10 @@ of the pen-and-paper version.
 sense now. Well, is that all? Are we done?
 
 \begin{verbatim}
-eval (letrec (bind (fun power \ensuremath{\Rightarrow} body ([ (* .. definition of power *) ],
-        (* body of letrec: *) app power (osucc (osucc ozero)))))) V ?
->> Yes!!!
->> V := < obj_term (\foreignlanguage{greek}{λ}x.x * ((\foreignlanguage{greek}{λ}a.a * (\foreignlanguage{greek}{λ}b.1) a) x)) >.
+\tokpropconst{eval} (\tokobjconst{letrec} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{power} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} ([ \tokcomment{(*}\tokcomment{ .. definition of power *)} ],
+        \tokcomment{(*}\tokcomment{ body of letrec: *)} \tokobjconst{app} \tokconst{power} (\tokobjconst{osucc} (\tokobjconst{osucc} \tokobjconst{ozero})))))) \tokmetavariable{V} ?
+\tokquery{>>} \tokquery{Yes!!!}
+\tokquery{>>} \tokmetavariable{V} \toksymbol{:=} < \tokobjconst{obj_term} (\foreignlanguage{greek}{λ}\tokconst{x.x} * ((\foreignlanguage{greek}{λ}\tokconst{a.a} * (\foreignlanguage{greek}{λ}\tokconst{b}.\toknumber{1}) \tokconst{a}) \tokconst{x})) >.
 \end{verbatim}
 
 \heroADVISOR{} See, even the Makam REPL is
@@ -226,7 +226,7 @@ return an open term. Here's how I would write the same example from
 before:
 
 \begin{verbatim}
-let power_aux (n: onat): < [ stlc.onat ] stlc.onat > =
+let rec power_aux (n: onat): < [ stlc.onat ] stlc.onat > =
   match n with
     0 \ensuremath{\Rightarrow} < [x]. 1 >
   | S n' \ensuremath{\Rightarrow} letobj I = power_aux n' in < [x]. stlc.mult ~(I/[x]) x >
@@ -297,44 +297,44 @@ in \(\stlce\).
 write things down in Makam rather than on paper:
 
 \begin{verbatim}
-obj_openterm : bindmany stlc.term stlc.term \ensuremath{\to} object.
-cls_ctxtyp : list stlc.typ \ensuremath{\to} stlc.typ \ensuremath{\to} class.
+\tokobjconst{obj_openterm} : \tokstdtypeid{bindmany} \toktypeid{stlc.term} \toktypeid{stlc.term} \tokarrowtype{\ensuremath{\to}} \toktypeid{object}.
+\tokobjconst{cls_ctxtyp} : \tokstdtypeid{list} \toktypeid{stlc.typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{stlc.typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{class}.
 
-%extend stlc.
-aqopen : index \ensuremath{\to} list term \ensuremath{\to} term.
-typeof (aqopen I ES) T \ensuremath{:\!-}
-  classof_index I (cls_ctxtyp TS T), map typeof ES TS.
-%end.
+\tokdirective{%extend} \tokconst{stlc}.
+\tokconst{aqopen} : \toktypeid{index} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
+\tokpropconst{typeof} (\tokconst{aqopen} \tokmetavariable{I} \tokmetavariable{ES}) \tokmetavariable{T} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{classof_index} \tokmetavariable{I} (\tokobjconst{cls_ctxtyp} \tokmetavariable{TS} \tokmetavariable{T}), \tokstdconst{map} \tokpropconst{typeof} \tokmetavariable{ES} \tokmetavariable{TS}.
+\tokdirective{%end}.
 
-classof (obj_openterm XS_E) (cls_ctxtyp TS T) \ensuremath{:\!-}
-  openmany XS_E (fun xs e \ensuremath{\Rightarrow} 
-    assumemany stlc.typeof xs TS (stlc.typeof e T)).
+\tokpropconst{classof} (\tokobjconst{obj_openterm} \tokmetavariable{XS_E}) (\tokobjconst{cls_ctxtyp} \tokmetavariable{TS} \tokmetavariable{T}) \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{openmany} \tokmetavariable{XS_E} (\tokkeyword{fun} \tokconst{xs} \tokconst{e} \tokkeyword{\ensuremath{\Rightarrow}} 
+    \tokstdconst{assumemany} \tokpropconst{stlc.typeof} \tokconst{xs} \tokmetavariable{TS} (\tokpropconst{stlc.typeof} \tokconst{e} \tokmetavariable{T})).
 
-subst_obj_cases I (obj_openterm XS_E) (stlc.aqopen I ES) Result \ensuremath{:\!-}
-  subst_obj_aux I (obj_openterm XS_E) ES ES',
-  applymany XS_E ES' Result.
+\tokpropconst{subst_obj_cases} \tokmetavariable{I} (\tokobjconst{obj_openterm} \tokmetavariable{XS_E}) (\tokobjconst{stlc.aqopen} \tokmetavariable{I} \tokmetavariable{ES}) \tokmetavariable{Result} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{subst_obj_aux} \tokmetavariable{I} (\tokobjconst{obj_openterm} \tokmetavariable{XS_E}) \tokmetavariable{ES} \tokmetavariable{ES'},
+  \tokstdconst{applymany} \tokmetavariable{XS_E} \tokmetavariable{ES'} \tokmetavariable{Result}.
 \end{verbatim}
 
 \heroSTUDENT{} I think that's all! This is exciting -- let me try it out:
 
 \begin{verbatim}
-(eq _TERM (letrec (bind (fun power \ensuremath{\Rightarrow} body ([
-   lam onat (fun n \ensuremath{\Rightarrow}
-   case_or_else n (patt_ozero)
-     (vbody (liftobj (obj_openterm (bind (fun x \ensuremath{\Rightarrow}
-       body (stlc.osucc stlc.ozero))))))
-   (case_or_else n (patt_osucc patt_var)
-     (vbind (fun n' \ensuremath{\Rightarrow} vbody (
-       letobj (app power n') (fun i \ensuremath{\Rightarrow}
-       liftobj (obj_openterm (bind (fun x \ensuremath{\Rightarrow}
-         body (stlc.mult x (stlc.aqopen i [x])))))))))
-   (liftobj (obj_openterm (bind (fun x \ensuremath{\Rightarrow} body stlc.ozero))))
-   ))], app power (osucc (osucc ozero)))))),
-  typeof _TERM T, eval _TERM V) ?
->> Yes:
->> T := liftclass (cls_ctxtyp (cons stlc.onat nil) stlc.onat),
->> V := liftobj (obj_openterm (bind (fun x \ensuremath{\Rightarrow} body (
-          stlc.mult x (stlc.mult x (stlc.osucc stlc.ozero)))))).
+(\tokstdconst{eq} \tokmetavariable{_TERM} (\tokobjconst{letrec} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{power} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} ([
+   \tokobjconst{lam} \tokobjconst{onat} (\tokkeyword{fun} \tokconst{n} \tokkeyword{\ensuremath{\Rightarrow}}
+   \tokobjconst{case_or_else} \tokconst{n} (\tokobjconst{patt_ozero})
+     (\tokstdconst{vbody} (\tokobjconst{liftobj} (\tokobjconst{obj_openterm} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}}
+       \tokstdconst{body} (\tokobjconst{stlc.osucc} \tokobjconst{stlc.ozero}))))))
+   (\tokobjconst{case_or_else} \tokconst{n} (\tokobjconst{patt_osucc} \tokobjconst{patt_var})
+     (\tokstdconst{vbind} (\tokkeyword{fun} \tokconst{n'} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{vbody} (
+       \tokobjconst{letobj} (\tokobjconst{app} \tokconst{power} \tokconst{n'}) (\tokkeyword{fun} \tokconst{i} \tokkeyword{\ensuremath{\Rightarrow}}
+       \tokobjconst{liftobj} (\tokobjconst{obj_openterm} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}}
+         \tokstdconst{body} (\tokobjconst{stlc.mult} \tokconst{x} (\tokobjconst{stlc.aqopen} \tokconst{i} [\tokconst{x}])))))))))
+   (\tokobjconst{liftobj} (\tokobjconst{obj_openterm} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} \tokobjconst{stlc.ozero}))))
+   ))], \tokobjconst{app} \tokconst{power} (\tokobjconst{osucc} (\tokobjconst{osucc} \tokobjconst{ozero})))))),
+  \tokpropconst{typeof} \tokmetavariable{_TERM} \tokmetavariable{T}, \tokpropconst{eval} \tokmetavariable{_TERM} \tokmetavariable{V}) ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{T} \toksymbol{:=} \tokobjconst{liftclass} (\tokobjconst{cls_ctxtyp} (\tokstdconst{cons} \tokobjconst{stlc.onat} \tokstdconst{nil}) \tokobjconst{stlc.onat}),
+\tokquery{>>} \tokmetavariable{V} \toksymbol{:=} \tokobjconst{liftobj} (\tokobjconst{obj_openterm} (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} (
+          \tokobjconst{stlc.mult} \tokconst{x} (\tokobjconst{stlc.mult} \tokconst{x} (\tokobjconst{stlc.osucc} \tokobjconst{stlc.ozero})))))).
 \end{verbatim}
 
 \noindent

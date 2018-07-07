@@ -1,0 +1,10 @@
+{
+  "name": "makam-funpearl-highlighter",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "mock-require": "^3.0.2",
+    "pandoc-filter": "^1.0.0"
+  }
+}

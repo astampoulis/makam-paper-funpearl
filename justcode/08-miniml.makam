@@ -19,8 +19,8 @@ typeof (polyapp (polylam (fun a => lam a (fun x => x))) onat) T ?
 datadef : type. datatype_bind : (Into: type) -> type.
 datatype : (Def: datadef) (Rest: datatype_bind program) -> program.
 
-mkdatadef : (typ -> list typ) -> datadef.
 constructor : type.
+mkdatadef : (typ -> list typ) -> datadef.
 bind_datatype : (typ -> bindmany constructor A) -> datatype_bind A.
 
 constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) -> prop.

@@ -49,19 +49,19 @@ context of type definitions. I will also do the well-formed program
 rules:
 
 \begin{verbatim}
-typedef : (NewType: typ) (Definition: typ) \ensuremath{\to} prop.
-program : type. 
-main : term \ensuremath{\to} program. 
-lettype : (Definition: typ) (A_Program: typ \ensuremath{\to} program) \ensuremath{\to} program.
+\tokpropconst{typedef} : (\tokmetavariable{NewType}: \toktypeid{typ}) (\tokmetavariable{Definition}: \toktypeid{typ}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokconst{program} : \tokbuiltintype{type}. 
+\tokobjconst{main} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{program}. 
+\tokobjconst{lettype} : (\tokmetavariable{Definition}: \toktypeid{typ}) (\tokmetavariable{A_Program}: \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{program}) \tokarrowtype{\ensuremath{\to}} \toktypeid{program}.
 \end{verbatim}
 
 \importantCodeblock{}
 
 \begin{verbatim}
-wfprogram : program \ensuremath{\to} prop.
-wfprogram (main E) \ensuremath{:\!-} typeof E T.
-wfprogram (lettype T A_Program) \ensuremath{:\!-}
-  (a:typ \ensuremath{\to} typedef a T \ensuremath{\to} wfprogram (A_Program a)).
+\tokpropconst{wfprogram} : \toktypeid{program} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokpropconst{wfprogram} (\tokobjconst{main} \tokmetavariable{E}) \toksymbol{\ensuremath{:\!-}} \tokpropconst{typeof} \tokmetavariable{E} \tokmetavariable{T}.
+\tokpropconst{wfprogram} (\tokobjconst{lettype} \tokmetavariable{T} \tokmetavariable{A_Program}) \toksymbol{\ensuremath{:\!-}}
+  (\tokconst{a}:\toktypeid{typ} \toksymbol{\ensuremath{\to}} \tokpropconst{typedef} \tokconst{a} \tokmetavariable{T} \toksymbol{\ensuremath{\to}} \tokpropconst{wfprogram} (\tokmetavariable{A_Program} \tokconst{a})).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -72,13 +72,13 @@ too\ldots{}. I will name that \texttt{typeq}. I'll just write the one
 rule for now, which should be sufficient for a small example:
 
 \begin{verbatim}
-typeq : (T1: typ) (T2: typ) \ensuremath{\to} prop.
-typeof E T \ensuremath{:\!-} typeof E T', typeq T T'.
-typeq A T \ensuremath{:\!-} typedef A T.
+\tokpropconst{typeq} : (\tokmetavariable{T1}: \toktypeid{typ}) (\tokmetavariable{T2}: \toktypeid{typ}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokpropconst{typeof} \tokmetavariable{E} \tokmetavariable{T} \toksymbol{\ensuremath{:\!-}} \tokpropconst{typeof} \tokmetavariable{E} \tokmetavariable{T'}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
+\tokpropconst{typeq} \tokmetavariable{A} \tokmetavariable{T} \toksymbol{\ensuremath{:\!-}} \tokpropconst{typedef} \tokmetavariable{A} \tokmetavariable{T}.
 
-wfprogram (lettype (arrow onat onat) (fun a \ensuremath{\Rightarrow}
-          (main (lam a (fun f \ensuremath{\Rightarrow} (app f ozero)))))) ?
->> (Complete silence)
+\tokpropconst{wfprogram} (\tokobjconst{lettype} (\tokobjconst{arrow} \tokobjconst{onat} \tokobjconst{onat}) (\tokkeyword{fun} \tokconst{a} \tokkeyword{\ensuremath{\Rightarrow}}
+          (\tokobjconst{main} (\tokobjconst{lam} \tokconst{a} (\tokkeyword{fun} \tokconst{f} \tokkeyword{\ensuremath{\Rightarrow}} (\tokobjconst{app} \tokconst{f} \tokobjconst{ozero})))))) ?
+\tokquery{>>} \tokquery{(Complete silence)}
 \end{verbatim}
 
 \heroADVISOR{} Time to \texttt{Ctrl-C} out of the infinite loop?
@@ -132,7 +132,7 @@ negation\footnote{Makam follows \citet{kiselyov05backtracking} closely in terms 
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof E T \ensuremath{:\!-} not(refl.isunif T), typeof E T', typeq T T'.
+\tokpropconst{typeof} \tokmetavariable{E} \tokmetavariable{T} \toksymbol{\ensuremath{:\!-}} \tokstdconst{not}(\tokstdconst{refl.isunif} \tokmetavariable{T}), \tokpropconst{typeof} \tokmetavariable{E} \tokmetavariable{T'}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -144,8 +144,8 @@ sure. Oh, and we should add the conversion rule for
 (\ldots{}) I'll do \texttt{typeq} next.
 
 \begin{verbatim}
-typeq A T' \ensuremath{:\!-} typedef A T, typeq T T'.
-typeq T' A \ensuremath{:\!-} typedef A T, typeq T T'.
+\tokpropconst{typeq} \tokmetavariable{A} \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}} \tokpropconst{typedef} \tokmetavariable{A} \tokmetavariable{T}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
+\tokpropconst{typeq} \tokmetavariable{T'} \tokmetavariable{A} \toksymbol{\ensuremath{:\!-}} \tokpropconst{typedef} \tokmetavariable{A} \tokmetavariable{T}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
 \end{verbatim}
 
 \heroADVISOR{} I like how you added the symmetric rule, but\ldots{} this is
@@ -155,18 +155,18 @@ is concrete
 somehow\footnote{Though not supported in Makam, an alternative to this in other languages based on higher-order logic programming would be to add a \texttt{mode (i o)} declaration for \texttt{typedef}, so that \texttt{typedef A T} would fail if \texttt{A} is not concrete.}:
 
 \begin{verbatim}
-typeq A T' \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
-typeq T' A \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
+\tokpropconst{typeq} \tokmetavariable{A} \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}} \tokstdconst{not}(\tokstdconst{refl.isunif} \tokmetavariable{A}), \tokpropconst{typedef} \tokmetavariable{A} \tokmetavariable{T}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
+\tokpropconst{typeq} \tokmetavariable{T'} \tokmetavariable{A} \toksymbol{\ensuremath{:\!-}} \tokstdconst{not}(\tokstdconst{refl.isunif} \tokmetavariable{A}), \tokpropconst{typedef} \tokmetavariable{A} \tokmetavariable{T}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
 \end{verbatim}
 
 \heroSTUDENT{} I see what you mean. OK, I'll continue on to the rest of the
 cases\ldots{}.
 
 \begin{verbatim}
-typeq (arrow T1 T2) (arrow T1' T2') \ensuremath{:\!-}
-  typeq T1 T1', typeq T2 T2'.
-typeq (arrowmany TS T) (arrowmany TS' T') \ensuremath{:\!-}
-  map typeq TS TS', typeq T T'.
+\tokpropconst{typeq} (\tokobjconst{arrow} \tokmetavariable{T1} \tokmetavariable{T2}) (\tokobjconst{arrow} \tokmetavariable{T1'} \tokmetavariable{T2'}) \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{typeq} \tokmetavariable{T1} \tokmetavariable{T1'}, \tokpropconst{typeq} \tokmetavariable{T2} \tokmetavariable{T2'}.
+\tokpropconst{typeq} (\tokobjconst{arrowmany} \tokmetavariable{TS} \tokmetavariable{T}) (\tokobjconst{arrowmany} \tokmetavariable{TS'} \tokmetavariable{T'}) \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{map} \tokpropconst{typeq} \tokmetavariable{TS} \tokmetavariable{TS'}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
 \end{verbatim}
 
 \heroADVISOR{} Writing boilerplate is not fun, is it?
@@ -187,9 +187,9 @@ and adds a few lines:)
 \importantCodeblock{}
 
 \begin{verbatim}
-typeq A T' \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
-typeq T' A \ensuremath{:\!-} not(refl.isunif A), typedef A T, typeq T T'.
-typeq T T' \ensuremath{:\!-} structural_recursion @typeq T T'.
+\tokpropconst{typeq} \tokmetavariable{A} \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}} \tokstdconst{not}(\tokstdconst{refl.isunif} \tokmetavariable{A}), \tokpropconst{typedef} \tokmetavariable{A} \tokmetavariable{T}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
+\tokpropconst{typeq} \tokmetavariable{T'} \tokmetavariable{A} \toksymbol{\ensuremath{:\!-}} \tokstdconst{not}(\tokstdconst{refl.isunif} \tokmetavariable{A}), \tokpropconst{typedef} \tokmetavariable{A} \tokmetavariable{T}, \tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
+\tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}} \tokstdconst{structural_recursion} @\tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -212,8 +212,8 @@ to make sure that their constructors are the same and also that any
 \texttt{typeq}ual. So something like this:
 
 \begin{verbatim}
-typeq (Constructor Arguments) (Constructor Arguments') \ensuremath{:\!-}
-  map typeq Arguments Arguments'.
+\tokpropconst{typeq} (\tokmetavariable{Constructor} \tokmetavariable{Arguments}) (\tokmetavariable{Constructor} \tokmetavariable{Arguments'}) \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{map} \tokpropconst{typeq} \tokmetavariable{Arguments} \tokmetavariable{Arguments'}.
 \end{verbatim}
 
 \heroADVISOR{} Right. Note, though, that the types of arguments might be
@@ -232,9 +232,9 @@ with a type for them?
 the arguments of each constructor need to be of the same type!
 
 \begin{verbatim}
-typenil : type. typecons : (T: type) (TS: type) \ensuremath{\to} type.
-hlist : (TypeList: type) \ensuremath{\to} type.
-hnil : hlist typenil. hcons : T \ensuremath{\to} hlist TS \ensuremath{\to} hlist (typecons T TS).
+\tokstdtypeid{typenil} : \tokbuiltintype{type}. \tokstdtypeid{typecons} : (\tokmetavariable{T}: \tokbuiltintype{type}) (\tokmetavariable{TS}: \tokbuiltintype{type}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokstdtypeid{hlist} : (\tokmetavariable{TypeList}: \tokbuiltintype{type}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokstdconst{hnil} : \tokstdtypeid{hlist} \tokstdtypeid{typenil}. \tokstdconst{hcons} : \tokmetavariable{T} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{hlist} \tokmetavariable{TS} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{hlist} (\tokstdtypeid{typecons} \tokmetavariable{T} \tokmetavariable{TS}).
 \end{verbatim}
 
 \heroADVISOR{} Great! We will need a heterogeneous \texttt{map} for these
@@ -242,9 +242,9 @@ lists, too. We'll need a polymorphic predicate as an argument, since
 we'll have to use it for \texttt{Arguments} of different types:
 
 \begin{verbatim}
-hmap : [TS] (P: forall A (A \ensuremath{\to} A \ensuremath{\to} prop)) (XS: hlist TS) (YS: hlist TS) \ensuremath{\to} prop.
-hmap P hnil hnil.
-hmap P (hcons X XS) (hcons Y YS) \ensuremath{:\!-} forall.apply P X Y, hmap P XS YS.
+\tokstdconst{hmap} : [\tokmetavariable{TS}] (\tokmetavariable{P}: \tokstdtypeid{forall} \tokmetavariable{A} (\tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop})) (\tokmetavariable{XS}: \tokstdtypeid{hlist} \tokmetavariable{TS}) (\tokmetavariable{YS}: \tokstdtypeid{hlist} \tokmetavariable{TS}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{hmap} \tokmetavariable{P} \tokstdconst{hnil} \tokstdconst{hnil}.
+\tokstdconst{hmap} \tokmetavariable{P} (\tokstdconst{hcons} \tokmetavariable{X} \tokmetavariable{XS}) (\tokstdconst{hcons} \tokmetavariable{Y} \tokmetavariable{YS}) \toksymbol{\ensuremath{:\!-}} \tokstdconst{forall.apply} \tokmetavariable{P} \tokmetavariable{X} \tokmetavariable{Y}, \tokstdconst{hmap} \tokmetavariable{P} \tokmetavariable{XS} \tokmetavariable{YS}.
 \end{verbatim}
 
 \noindent
@@ -256,10 +256,10 @@ it.
 \heroSTUDENT{} Let me try out an example of that:
 
 \begin{verbatim}
-change : [A]A \ensuremath{\to} A \ensuremath{\to} prop. change 1 2. change "foo" "bar".
-hmap @change (hcons 1 (hcons "foo" hnil)) YS ?
->> Yes:
->> YS := hcons 2 (hcons "bar" hnil).
+\tokstdconst{change} : [\tokmetavariable{A}]\tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}. \tokstdconst{change} \toknumber{1} \toknumber{2}. \tokstdconst{change} \tokstring{"foo"} \tokstring{"bar"}.
+\tokstdconst{hmap} @\tokstdconst{change} (\tokstdconst{hcons} \toknumber{1} (\tokstdconst{hcons} \tokstring{"foo"} \tokstdconst{hnil})) \tokmetavariable{YS} ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{YS} \toksymbol{:=} \tokstdconst{hcons} \toknumber{2} (\tokstdconst{hcons} \tokstring{"bar"} \tokstdconst{hnil}).
 \end{verbatim}
 
 \noindent
@@ -277,29 +277,29 @@ without any special support, if we maintained a discipline whenever we
 add a new constructor, roughly like this:
 
 \begin{verbatim}
-refl.headargs : (Term: TermT) (Constr: ConstrT) (Args: hlist ArgsTS) \ensuremath{\to} prop.
+\tokstdconst{refl.headargs} : (\tokmetavariable{Term}: \tokmetavariable{TermT}) (\tokmetavariable{Constr}: \tokmetavariable{ConstrT}) (\tokmetavariable{Args}: \tokstdtypeid{hlist} \tokmetavariable{ArgsTS}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 
-arrowmany : (TS: list typ) (T: typ) \ensuremath{\to} typ.
-refl.headargs Term Constructor Args \ensuremath{:\!-}
-  not(refl.isunif Term), eq Term (arrowmany TS T),
-  eq Constructor arrowmany, eq Args (hcons TS (hcons T hnil)).
+\tokobjconst{arrowmany} : (\tokmetavariable{TS}: \tokstdtypeid{list} \toktypeid{typ}) (\tokmetavariable{T}: \toktypeid{typ}) \tokarrowtype{\ensuremath{\to}} \toktypeid{typ}.
+\tokstdconst{refl.headargs} \tokmetavariable{Term} \tokmetavariable{Constructor} \tokmetavariable{Args} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{not}(\tokstdconst{refl.isunif} \tokmetavariable{Term}), \tokstdconst{eq} \tokmetavariable{Term} (\tokobjconst{arrowmany} \tokmetavariable{TS} \tokmetavariable{T}),
+  \tokstdconst{eq} \tokmetavariable{Constructor} \tokobjconst{arrowmany}, \tokstdconst{eq} \tokmetavariable{Args} (\tokstdconst{hcons} \tokmetavariable{TS} (\tokstdconst{hcons} \tokmetavariable{T} \tokstdconst{hnil})).
 \end{verbatim}
 
 By the way, \texttt{eq} is a standard-library predicate that simply
 attempts unification of its two arguments:
 
 \begin{verbatim}
-eq : A \ensuremath{\to} A \ensuremath{\to} prop. eq X X.
+\tokstdconst{eq} : \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}. \tokstdconst{eq} \tokmetavariable{X} \tokmetavariable{X}.
 \end{verbatim}
 
 \heroSTUDENT{} I see. I think I can write the generic rule for \texttt{typeq}
 now, then!
 
 \begin{verbatim}
-typeq T T' \ensuremath{:\!-}
-  refl.headargs T Constr Args,
-  refl.headargs T' Constr Args',
-  hmap @typeq Args Args'.
+\tokpropconst{typeq} \tokmetavariable{T} \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{refl.headargs} \tokmetavariable{T} \tokmetavariable{Constr} \tokmetavariable{Args},
+  \tokstdconst{refl.headargs} \tokmetavariable{T'} \tokmetavariable{Constr} \tokmetavariable{Args'},
+  \tokstdconst{hmap} @\tokpropconst{typeq} \tokmetavariable{Args} \tokmetavariable{Args'}.
 \end{verbatim}
 
 \heroADVISOR{} That looks great! Simple, isn't it? You'll see that there are a
@@ -311,9 +311,9 @@ earlier! I'll give you the type; you fill in the first case:
 \importantCodeblock{}
 
 \begin{verbatim}
-structural_recursion : [Any] 
-  (RecursivePred: forall A (A \ensuremath{\to} A \ensuremath{\to} prop))
-  (X: Any) (Y: Any) \ensuremath{\to} prop.
+\tokstdconst{structural_recursion} : [\tokmetavariable{Any}] 
+  (\tokmetavariable{RecursivePred}: \tokstdtypeid{forall} \tokmetavariable{A} (\tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}))
+  (\tokmetavariable{X}: \tokmetavariable{Any}) (\tokmetavariable{Y}: \tokmetavariable{Any}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -323,10 +323,10 @@ doing this in open-recursion style? I see. Well, I can adapt the case I
 just wrote above.
 
 \begin{verbatim}
-structural_recursion Rec X Y \ensuremath{:\!-}
-  refl.headargs X Constructor Arguments,
-  refl.headargs Y Constructor Arguments',
-  hmap Rec Arguments Arguments'.
+\tokstdconst{structural_recursion} \tokmetavariable{Rec} \tokmetavariable{X} \tokmetavariable{Y} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{refl.headargs} \tokmetavariable{X} \tokmetavariable{Constructor} \tokmetavariable{Arguments},
+  \tokstdconst{refl.headargs} \tokmetavariable{Y} \tokmetavariable{Constructor} \tokmetavariable{Arguments'},
+  \tokstdconst{hmap} \tokmetavariable{Rec} \tokmetavariable{Arguments} \tokmetavariable{Arguments'}.
 \end{verbatim}
 
 \heroADVISOR{} Nice. Now, here you assume that \texttt{X} and \texttt{Y} are
@@ -336,9 +336,9 @@ both concrete terms. What happens when \texttt{X} is concrete and
 and thus reconstruct a term:
 
 \begin{verbatim}
-happly : [Constr Args Term] Constr \ensuremath{\to} hlist Args \ensuremath{\to} Term \ensuremath{\to} prop.
-happly Constr hnil Constr.
-happly Constr (hcons A AS) Term \ensuremath{:\!-} happly (Constr A) AS Term.
+\tokstdconst{happly} : [\tokmetavariable{Constr} \tokmetavariable{Args} \tokmetavariable{Term}] \tokmetavariable{Constr} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{hlist} \tokmetavariable{Args} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{Term} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{happly} \tokmetavariable{Constr} \tokstdconst{hnil} \tokmetavariable{Constr}.
+\tokstdconst{happly} \tokmetavariable{Constr} (\tokstdconst{hcons} \tokmetavariable{A} \tokmetavariable{AS}) \tokmetavariable{Term} \toksymbol{\ensuremath{:\!-}} \tokstdconst{happly} (\tokmetavariable{Constr} \tokmetavariable{A}) \tokmetavariable{AS} \tokmetavariable{Term}.
 \end{verbatim}
 
 \heroSTUDENT{} How about this? This way, we will decompose the concrete
@@ -348,10 +348,10 @@ then reapply the \texttt{Constructor} to get the result for \texttt{Y}.
 \importantCodeblock{}
 
 \begin{verbatim}
-structural_recursion Rec X Y \ensuremath{:\!-}
-  refl.headargs X Constructor Arguments,
-  hmap Rec Arguments Arguments',
-  happly Constructor Arguments' Y.
+\tokstdconst{structural_recursion} \tokmetavariable{Rec} \tokmetavariable{X} \tokmetavariable{Y} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{refl.headargs} \tokmetavariable{X} \tokmetavariable{Constructor} \tokmetavariable{Arguments},
+  \tokstdconst{hmap} \tokmetavariable{Rec} \tokmetavariable{Arguments} \tokmetavariable{Arguments'},
+  \tokstdconst{happly} \tokmetavariable{Constructor} \tokmetavariable{Arguments'} \tokmetavariable{Y}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -365,9 +365,9 @@ have to treat them specially:
 \importantCodeblock{}
 
 \begin{verbatim}
-structural_recursion Rec (X : A \ensuremath{\to} B) (Y : A \ensuremath{\to} B) \ensuremath{:\!-}
-  (x:A \ensuremath{\to} structural_recursion Rec x x \ensuremath{\to}
-    structural_recursion Rec (X x) (Y x)).
+\tokstdconst{structural_recursion} \tokmetavariable{Rec} (\tokmetavariable{X} : \tokmetavariable{A} \toksymbol{\ensuremath{\to}} \tokmetavariable{B}) (\tokmetavariable{Y} : \tokmetavariable{A} \toksymbol{\ensuremath{\to}} \tokmetavariable{B}) \toksymbol{\ensuremath{:\!-}}
+  (\tokconst{x}:\tokmetavariable{A} \toksymbol{\ensuremath{\to}} \tokstdconst{structural_recursion} \tokmetavariable{Rec} \tokconst{x} \tokconst{x} \toksymbol{\ensuremath{\to}}
+    \tokstdconst{structural_recursion} \tokmetavariable{Rec} (\tokmetavariable{X} \tokconst{x}) (\tokmetavariable{Y} \tokconst{x})).
 \end{verbatim}
 
 \importantCodeblockEnd{}

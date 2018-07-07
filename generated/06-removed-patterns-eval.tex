@@ -27,15 +27,15 @@ cases, which we have not seen so far. Let me write down the evaluation
 rule, and I'll explain:
 
 \begin{verbatim}
-match : [NBefore NAfter]
-  (Pattern: patt NBefore NAfter) (Scrutinee: term)
-  (SubstBefore: vector term NBefore) (SubstAfter: vector term NAfter) \ensuremath{\to}
-  prop.
-eval (case_or_else Scrutinee Pattern Body Else) V' \ensuremath{:\!-}
-  eval Scrutinee V,
-  if (match Pattern V vnil Subst)
-  then (vapplymany Body Subst Body', eval Body' V')
-  else (eval Else V').
+\tokpropconst{match} : [\tokmetavariable{NBefore} \tokmetavariable{NAfter}]
+  (\tokmetavariable{Pattern}: \toktypeid{patt} \tokmetavariable{NBefore} \tokmetavariable{NAfter}) (\tokmetavariable{Scrutinee}: \toktypeid{term})
+  (\tokmetavariable{SubstBefore}: \tokstdtypeid{vector} \toktypeid{term} \tokmetavariable{NBefore}) (\tokmetavariable{SubstAfter}: \tokstdtypeid{vector} \toktypeid{term} \tokmetavariable{NAfter}) \tokarrowtype{\ensuremath{\to}}
+  \tokbuiltintype{prop}.
+\tokpropconst{eval} (\tokobjconst{case_or_else} \tokmetavariable{Scrutinee} \tokmetavariable{Pattern} \tokmetavariable{Body} \tokmetavariable{Else}) \tokmetavariable{V'} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{eval} \tokmetavariable{Scrutinee} \tokmetavariable{V},
+  \tokkeyword{if} (\tokpropconst{match} \tokmetavariable{Pattern} \tokmetavariable{V} \tokstdconst{vnil} \tokmetavariable{Subst})
+  \tokkeyword{then} (\tokstdconst{vapplymany} \tokmetavariable{Body} \tokmetavariable{Subst} \tokmetavariable{Body'}, \tokpropconst{eval} \tokmetavariable{Body'} \tokmetavariable{V'})
+  \tokkeyword{else} (\tokpropconst{eval} \tokmetavariable{Else} \tokmetavariable{V'}).
 \end{verbatim}
 
 \noindent
@@ -59,20 +59,20 @@ type, \texttt{vbindmany} (also available as \texttt{appmany} for
 HOAS function application for \texttt{vbindmany}:
 
 \begin{verbatim}
-vapplymany : [N] vbindmany Var N Body \ensuremath{\to} vector Var N \ensuremath{\to} Body \ensuremath{\to} prop.
-vapplymany (vbody Body) vnil Body.
-vapplymany (vbind F) (vcons E ES) Body \ensuremath{:\!-} vapplymany (F E) ES Body.
+\tokstdconst{vapplymany} : [\tokmetavariable{N}] \tokstdtypeid{vbindmany} \tokmetavariable{Var} \tokmetavariable{N} \tokmetavariable{Body} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \tokmetavariable{Var} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{Body} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{vapplymany} (\tokstdconst{vbody} \tokmetavariable{Body}) \tokstdconst{vnil} \tokmetavariable{Body}.
+\tokstdconst{vapplymany} (\tokstdconst{vbind} \tokmetavariable{F}) (\tokstdconst{vcons} \tokmetavariable{E} \tokmetavariable{ES}) \tokmetavariable{Body} \toksymbol{\ensuremath{:\!-}} \tokstdconst{vapplymany} (\tokmetavariable{F} \tokmetavariable{E}) \tokmetavariable{ES} \tokmetavariable{Body}.
 \end{verbatim}
 
 \heroSTUDENT{} I see\ldots{} OK, I think I know how to continue. I will write
 a few of the \texttt{match} rules down.
 
 \begin{verbatim}
-match patt_var X Subst Subst' \ensuremath{:\!-} vsnoc Subst X Subst'.
-match patt_wild X Subst Subst.
-match patt_ozero ozero Subst Subst.
-match (patt_osucc P) (osucc V) Subst Subst' \ensuremath{:\!-}
-  match P V Subst Subst'.
+\tokpropconst{match} \tokobjconst{patt_var} \tokmetavariable{X} \tokmetavariable{Subst} \tokmetavariable{Subst'} \toksymbol{\ensuremath{:\!-}} \tokstdconst{vsnoc} \tokmetavariable{Subst} \tokmetavariable{X} \tokmetavariable{Subst'}.
+\tokpropconst{match} \tokobjconst{patt_wild} \tokmetavariable{X} \tokmetavariable{Subst} \tokmetavariable{Subst}.
+\tokpropconst{match} \tokobjconst{patt_ozero} \tokobjconst{ozero} \tokmetavariable{Subst} \tokmetavariable{Subst}.
+\tokpropconst{match} (\tokobjconst{patt_osucc} \tokmetavariable{P}) (\tokobjconst{osucc} \tokmetavariable{V}) \tokmetavariable{Subst} \tokmetavariable{Subst'} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{match} \tokmetavariable{P} \tokmetavariable{V} \tokmetavariable{Subst} \tokmetavariable{Subst'}.
 \end{verbatim}
 
 \begin{scenecomment}
@@ -84,10 +84,10 @@ available in the unabridged version of this story.)
 predecessor for natural numbers?
 
 \begin{verbatim}
-eval (case_or_else (osucc (osucc ozero))
-     (patt_osucc patt_var) (vbind (fun pred \ensuremath{\Rightarrow} vbody pred))
-     ozero)
-  V ?
->> Yes:
->> V := osucc ozero.
+\tokpropconst{eval} (\tokobjconst{case_or_else} (\tokobjconst{osucc} (\tokobjconst{osucc} \tokobjconst{ozero}))
+     (\tokobjconst{patt_osucc} \tokobjconst{patt_var}) (\tokstdconst{vbind} (\tokkeyword{fun} \tokconst{pred} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{vbody} \tokconst{pred}))
+     \tokobjconst{ozero})
+  \tokmetavariable{V} ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{V} \toksymbol{:=} \tokobjconst{osucc} \tokobjconst{ozero}.
 \end{verbatim}

@@ -66,13 +66,16 @@ We won't support the poly-types / to keep the system simple, \\
 and arguments to constructors? / They'll all take just a single.''
 \end{versy}
 
-```
+```nohighlight
 \textcolor{white}{~>} \textsf{data nattree = Leaf of nat | Node of (nattree * nattree) ; rest}
 ~> \textsf{data nattree = [ ("Leaf", nat), ("Node", nattree * nattree) ] ; rest}
 ~> \textsf{data nattree = [ nat, nattree * nattree ] ; λLeaf. λNode. rest}
 ~> \textsf{data (λnattree. [nat, nattree * nattree]) ; λnattree. λLeaf. λNode. rest}
 ~> \textsf{data (λnattree. [nat, nattree * nattree]) ;}
      \textsf{λnattree. bind (λLeaf. bind (λNode. body rest))}
+```
+\vspace{-0.9em}
+```
 ~> datatype (mkdatadef (fun nattree => [nat, nattree * nattree]))
      (bind_datatype (fun nattree =>
        bind (fun leaf => bind (fun node => body rest))))
@@ -84,8 +87,8 @@ Just squint your eyes a little bit; / Hagop will strum some chords.''
 \end{versy}
 
 ```makam
-mkdatadef : (typ -> list typ) -> datadef.
 constructor : type.
+mkdatadef : (typ -> list typ) -> datadef.
 bind_datatype : (typ -> bindmany constructor A) -> datatype_bind A.
 ```
 

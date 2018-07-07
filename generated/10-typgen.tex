@@ -43,16 +43,16 @@ value restriction. Transcribing this to Makam is easy, if we assume a
 predicate for generalizing the type, for now:
 
 \begin{verbatim}
-generalize : (Type: typ) (GeneralizedType: typ) \ensuremath{\to} prop.
-let : term \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
+\tokpropconst{generalize} : (\tokmetavariable{Type}: \toktypeid{typ}) (\tokmetavariable{GeneralizedType}: \toktypeid{typ}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokobjconst{let} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} (\toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof (let E F) T' \ensuremath{:\!-}
-  typeof E T, generalize T Tgen,
-  (x:term \ensuremath{\to} typeof x Tgen \ensuremath{\to} typeof (F x) T').
+\tokpropconst{typeof} (\tokobjconst{let} \tokmetavariable{E} \tokmetavariable{F}) \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{typeof} \tokmetavariable{E} \tokmetavariable{T}, \tokpropconst{generalize} \tokmetavariable{T} \tokmetavariable{Tgen},
+  (\tokconst{x}:\toktypeid{term} \toksymbol{\ensuremath{\to}} \tokpropconst{typeof} \tokconst{x} \tokmetavariable{Tgen} \toksymbol{\ensuremath{\to}} \tokpropconst{typeof} (\tokmetavariable{F} \tokconst{x}) \tokmetavariable{T'}).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -99,17 +99,17 @@ is similar to what we did already for \texttt{structural\_recursion},
 with no new surprises.
 
 \begin{verbatim}
-findunif_aux : [Any VarType]
-  (Var: option VarType) (Current: Any) (Var': option VarType) \ensuremath{\to} prop.
-findunif_aux (some Var) _ (some Var).
-findunif_aux none (Current : CurrentType) (Result: option VarType) \ensuremath{:\!-}
-  refl.isunif Current,
-  if (dyn.eq Result (some Current)) then success
-  else (eq Result none).
-findunif_aux (In: option B) Current Out \ensuremath{:\!-}
-  generic_fold @findunif_aux In Current Out.
-findunif : [Any VarType] (Search: Any) (Found: VarType) \ensuremath{\to} prop.
-findunif Search Found \ensuremath{:\!-} findunif_aux none Search (some Found).
+\tokstdconst{findunif_aux} : [\tokmetavariable{Any} \tokmetavariable{VarType}]
+  (\tokmetavariable{Var}: \tokstdtypeid{option} \tokmetavariable{VarType}) (\tokmetavariable{Current}: \tokmetavariable{Any}) (\tokmetavariable{Var'}: \tokstdtypeid{option} \tokmetavariable{VarType}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{findunif_aux} (\tokstdconst{some} \tokmetavariable{Var}) \tokmetavariable{_} (\tokstdconst{some} \tokmetavariable{Var}).
+\tokstdconst{findunif_aux} \tokstdconst{none} (\tokmetavariable{Current} : \tokmetavariable{CurrentType}) (\tokmetavariable{Result}: \tokstdtypeid{option} \tokmetavariable{VarType}) \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{refl.isunif} \tokmetavariable{Current},
+  \tokkeyword{if} (\tokstdconst{dyn}.\tokstdconst{eq} \tokmetavariable{Result} (\tokstdconst{some} \tokmetavariable{Current})) \tokkeyword{then} \tokstdconst{success}
+  \tokkeyword{else} (\tokstdconst{eq} \tokmetavariable{Result} \tokstdconst{none}).
+\tokstdconst{findunif_aux} (\tokmetavariable{In}: \tokstdtypeid{option} \tokmetavariable{B}) \tokmetavariable{Current} \tokmetavariable{Out} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{generic_fold} @\tokstdconst{findunif_aux} \tokmetavariable{In} \tokmetavariable{Current} \tokmetavariable{Out}.
+\tokstdconst{findunif} : [\tokmetavariable{Any} \tokmetavariable{VarType}] (\tokmetavariable{Search}: \tokmetavariable{Any}) (\tokmetavariable{Found}: \tokmetavariable{VarType}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{findunif} \tokmetavariable{Search} \tokmetavariable{Found} \toksymbol{\ensuremath{:\!-}} \tokstdconst{findunif_aux} \tokstdconst{none} \tokmetavariable{Search} (\tokstdconst{some} \tokmetavariable{Found}).
 \end{verbatim}
 
 Here, the second rule of \texttt{findunif\_aux} is the important one --
@@ -120,8 +120,8 @@ polymorphism in \lamprolog, making use of the \texttt{dyn.eq}
 standard-library predicate, which has a lax typing:
 
 \begin{verbatim}
-dyn.eq : [A B] A \ensuremath{\to} B \ensuremath{\to} prop.
-dyn.eq X X.
+\tokstdconst{dyn}.eq : [\tokmetavariable{A} \tokmetavariable{B}] \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{dyn}.eq \tokmetavariable{X} \tokmetavariable{X}.
 \end{verbatim}
 
 Though this predicate succeeds for the same case as the standard
@@ -137,9 +137,9 @@ With \texttt{findunif} defined, we should already be able to find
 unification variable from a type. Here is an example of its use:
 
 \begin{verbatim}
-findunif (arrowmany TS T) (X: typ) ?
->> Yes:
->> X := T.
+\tokstdconst{findunif} (\tokobjconst{arrowmany} \tokmetavariable{TS} \tokmetavariable{T}) (\tokmetavariable{X}: \toktypeid{typ}) ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{X} \toksymbol{:=} \tokmetavariable{T}.
 \end{verbatim}
 
 Now we add a predicate \texttt{replaceunif} that, given a specific
@@ -151,14 +151,14 @@ arguments are the same exact unification variable; \texttt{eq} would
 just unify them, which is not what we want.
 
 \begin{verbatim}
-replaceunif : [VarType Any]
-  (Which: VarType) (ToWhat: VarType) (Where: Any) (Result: Any) \ensuremath{\to} prop.
-replaceunif Which ToWhat Where ToWhat \ensuremath{:\!-}
-  refl.isunif Where, refl.sameunif Which Where.
-replaceunif Which ToWhat Where Where \ensuremath{:\!-}
-  refl.isunif Where, not(refl.sameunif Which Where).
-replaceunif Which ToWhat Where Result \ensuremath{:\!-} not(refl.isunif Where),
-  structural_recursion @(replaceunif Which ToWhat) Where Result.
+\tokstdconst{replaceunif} : [\tokmetavariable{VarType} \tokmetavariable{Any}]
+  (\tokmetavariable{Which}: \tokmetavariable{VarType}) (\tokmetavariable{ToWhat}: \tokmetavariable{VarType}) (\tokmetavariable{Where}: \tokmetavariable{Any}) (\tokmetavariable{Result}: \tokmetavariable{Any}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{replaceunif} \tokmetavariable{Which} \tokmetavariable{ToWhat} \tokmetavariable{Where} \tokmetavariable{ToWhat} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{refl.isunif} \tokmetavariable{Where}, \tokstdconst{refl.sameunif} \tokmetavariable{Which} \tokmetavariable{Where}.
+\tokstdconst{replaceunif} \tokmetavariable{Which} \tokmetavariable{ToWhat} \tokmetavariable{Where} \tokmetavariable{Where} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{refl.isunif} \tokmetavariable{Where}, \tokstdconst{not}(\tokstdconst{refl.sameunif} \tokmetavariable{Which} \tokmetavariable{Where}).
+\tokstdconst{replaceunif} \tokmetavariable{Which} \tokmetavariable{ToWhat} \tokmetavariable{Where} \tokmetavariable{Result} \toksymbol{\ensuremath{:\!-}} \tokstdconst{not}(\tokstdconst{refl.isunif} \tokmetavariable{Where}),
+  \tokstdconst{structural_recursion} @(\tokstdconst{replaceunif} \tokmetavariable{Which} \tokmetavariable{ToWhat}) \tokmetavariable{Where} \tokmetavariable{Result}.
 \end{verbatim}
 
 Last, we'll need an auxiliary predicate that tells us whether a
@@ -166,13 +166,13 @@ unification variable exists within a term. This is easy; it's similar to
 the above.
 
 \begin{verbatim}
-hasunif_aux : [VarType Any] VarType \ensuremath{\to} bool \ensuremath{\to} Any \ensuremath{\to} bool \ensuremath{\to} prop.
-hasunif_aux _ true _ true.
-hasunif_aux X false Y true \ensuremath{:\!-} refl.sameunif X Y.
-hasunif_aux X In Y Out \ensuremath{:\!-} generic_fold @(hasunif_aux X) In Y Out.
+\tokstdconst{hasunif_aux} : [\tokmetavariable{VarType} \tokmetavariable{Any}] \tokmetavariable{VarType} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bool} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{Any} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bool} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{hasunif_aux} \tokmetavariable{_} \tokstdconst{true} \tokmetavariable{_} \tokstdconst{true}.
+\tokstdconst{hasunif_aux} \tokmetavariable{X} \tokstdconst{false} \tokmetavariable{Y} \tokstdconst{true} \toksymbol{\ensuremath{:\!-}} \tokstdconst{refl.sameunif} \tokmetavariable{X} \tokmetavariable{Y}.
+\tokstdconst{hasunif_aux} \tokmetavariable{X} \tokmetavariable{In} \tokmetavariable{Y} \tokmetavariable{Out} \toksymbol{\ensuremath{:\!-}} \tokstdconst{generic_fold} @(\tokstdconst{hasunif_aux} \tokmetavariable{X}) \tokmetavariable{In} \tokmetavariable{Y} \tokmetavariable{Out}.
 
-hasunif : [VarType Any] VarType \ensuremath{\to} Any \ensuremath{\to} prop.
-hasunif Var Term \ensuremath{:\!-} hasunif_aux Var false Term true.
+\tokstdconst{hasunif} : [\tokmetavariable{VarType} \tokmetavariable{Any}] \tokmetavariable{VarType} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{Any} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{hasunif} \tokmetavariable{Var} \tokmetavariable{Term} \toksymbol{\ensuremath{:\!-}} \tokstdconst{hasunif_aux} \tokmetavariable{Var} \tokstdconst{false} \tokmetavariable{Term} \tokstdconst{true}.
 \end{verbatim}
 
 We are now mostly ready to implement \texttt{generalize}. We'll do this
@@ -182,7 +182,7 @@ within a type left:
 \importantCodeblock{}
 
 \begin{verbatim}
-generalize T T \ensuremath{:\!-} not(findunif T (X: typ)).
+\tokpropconst{generalize} \tokmetavariable{T} \tokmetavariable{T} \toksymbol{\ensuremath{:\!-}} \tokstdconst{not}(\tokstdconst{findunif} \tokmetavariable{T} (\tokmetavariable{X}: \toktypeid{typ})).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -198,12 +198,12 @@ write the recursive case down:
 \importantCodeblock{}
 
 \begin{verbatim}
-get_types_in_environment : [A] A \ensuremath{\to} prop.
-generalize T Res \ensuremath{:\!-}
-  findunif T Var, get_types_in_environment GammaTypes,
-  (x:typ \ensuremath{\to} (replaceunif Var x T (T' x), generalize (T' x) (T'' x))),
-  if (hasunif Var GammaTypes) then (eq Res (T'' Var))
-  else (eq Res (tforall T'')).
+\tokpropconst{get_types_in_environment} : [\tokmetavariable{A}] \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokpropconst{generalize} \tokmetavariable{T} \tokmetavariable{Res} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{findunif} \tokmetavariable{T} \tokmetavariable{Var}, \tokpropconst{get_types_in_environment} \tokmetavariable{GammaTypes},
+  (\tokconst{x}:\toktypeid{typ} \toksymbol{\ensuremath{\to}} (\tokstdconst{replaceunif} \tokmetavariable{Var} \tokconst{x} \tokmetavariable{T} (\tokmetavariable{T'} \tokconst{x}), \tokpropconst{generalize} (\tokmetavariable{T'} \tokconst{x}) (\tokmetavariable{T''} \tokconst{x}))),
+  \tokkeyword{if} (\tokstdconst{hasunif} \tokmetavariable{Var} \tokmetavariable{GammaTypes}) \tokkeyword{then} (\tokstdconst{eq} \tokmetavariable{Res} (\tokmetavariable{T''} \tokmetavariable{Var}))
+  \tokkeyword{else} (\tokstdconst{eq} \tokmetavariable{Res} (\tokobjconst{tforall} \tokmetavariable{T''})).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -228,8 +228,8 @@ assumptions will include all the types in \(\Gamma\)\ldots{}.
 \importantCodeblock{}
 
 \begin{verbatim}
-get_types_in_environment Assumptions \ensuremath{:\!-}
-  refl.assume_get typeof Assumptions.
+\tokpropconst{get_types_in_environment} \tokmetavariable{Assumptions} \toksymbol{\ensuremath{:\!-}}
+  \tokstdconst{refl.assume_get} \tokpropconst{typeof} \tokmetavariable{Assumptions}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -237,9 +237,9 @@ get_types_in_environment Assumptions \ensuremath{:\!-}
 \heroSTUDENT{} Wait. It can't be.
 
 \begin{verbatim}
-typeof (let (lam _ (fun x \ensuremath{\Rightarrow} let x (fun y \ensuremath{\Rightarrow} y))) (fun id \ensuremath{\Rightarrow} id)) T ?
->> Yes:
->> T := tforall (fun a \ensuremath{\Rightarrow} arrow a a).
+\tokpropconst{typeof} (\tokobjconst{let} (\tokobjconst{lam} \tokmetavariable{_} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokobjconst{let} \tokconst{x} (\tokkeyword{fun} \tokconst{y} \tokkeyword{\ensuremath{\Rightarrow}} \tokconst{y}))) (\tokkeyword{fun} \tokconst{id} \tokkeyword{\ensuremath{\Rightarrow}} \tokconst{id})) \tokmetavariable{T} ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{T} \toksymbol{:=} \tokobjconst{tforall} (\tokkeyword{fun} \tokconst{a} \tokkeyword{\ensuremath{\Rightarrow}} \tokobjconst{arrow} \tokconst{a} \tokconst{a}).
 \end{verbatim}
 
 \heroADVISOR{} And yet, it can.

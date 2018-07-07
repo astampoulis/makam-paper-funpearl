@@ -18,16 +18,16 @@ you can take a mini-break / like Lambros from next door.''
 \end{versy}
 
 \begin{verbatim}
-tforall : (typ \ensuremath{\to} typ) \ensuremath{\to} typ.
-polylam : (typ \ensuremath{\to} term) \ensuremath{\to} term.
-polyapp : term \ensuremath{\to} typ \ensuremath{\to} term.
+\tokobjconst{tforall} : (\toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ}) \tokarrowtype{\ensuremath{\to}} \toktypeid{typ}.
+\tokobjconst{polylam} : (\toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
+\tokobjconst{polyapp} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof (polylam E) (tforall T) \ensuremath{:\!-} (a:typ \ensuremath{\to} typeof (E a) (T a)).
-typeof (polyapp E T) T' \ensuremath{:\!-} typeof E (tforall TF), eq T' (TF T).
+\tokpropconst{typeof} (\tokobjconst{polylam} \tokmetavariable{E}) (\tokobjconst{tforall} \tokmetavariable{T}) \toksymbol{\ensuremath{:\!-}} (\tokconst{a}:\toktypeid{typ} \toksymbol{\ensuremath{\to}} \tokpropconst{typeof} (\tokmetavariable{E} \tokconst{a}) (\tokmetavariable{T} \tokconst{a})).
+\tokpropconst{typeof} (\tokobjconst{polyapp} \tokmetavariable{E} \tokmetavariable{T}) \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}} \tokpropconst{typeof} \tokmetavariable{E} (\tokobjconst{tforall} \tokmetavariable{TF}), \tokstdconst{eq} \tokmetavariable{T'} (\tokmetavariable{TF} \tokmetavariable{T}).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -40,8 +40,8 @@ wonder who's the lunatic / who writes papers in verse.''
 \end{versy}
 
 \begin{verbatim}
-datadef : type. datatype_bind : (Into: type) \ensuremath{\to} type.
-datatype : (Def: datadef) (Rest: datatype_bind program) \ensuremath{\to} program.
+\tokconst{datadef} : \tokbuiltintype{type}. \tokconst{datatype_bind} : (\tokmetavariable{Into}: \tokbuiltintype{type}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokobjconst{datatype} : (\tokmetavariable{Def}: \toktypeid{datadef}) (\tokmetavariable{Rest}: \toktypeid{datatype_bind} \toktypeid{program}) \tokarrowtype{\ensuremath{\to}} \toktypeid{program}.
 \end{verbatim}
 
 \begin{versy}
@@ -58,9 +58,14 @@ and arguments to constructors? / They'll all take just a single.''
 \ensuremath{\rightsquigarrow} \textsf{data (\foreignlanguage{greek}{λ}nattree. [nat, nattree * nattree]) ; \foreignlanguage{greek}{λ}nattree. \foreignlanguage{greek}{λ}Leaf. \foreignlanguage{greek}{λ}Node. rest}
 \ensuremath{\rightsquigarrow} \textsf{data (\foreignlanguage{greek}{λ}nattree. [nat, nattree * nattree]) ;}
      \textsf{\foreignlanguage{greek}{λ}nattree. bind (\foreignlanguage{greek}{λ}Leaf. bind (\foreignlanguage{greek}{λ}Node. body rest))}
-\ensuremath{\rightsquigarrow} datatype (mkdatadef (fun nattree \ensuremath{\Rightarrow} [nat, nattree * nattree]))
-     (bind_datatype (fun nattree \ensuremath{\Rightarrow}
-       bind (fun leaf \ensuremath{\Rightarrow} bind (fun node \ensuremath{\Rightarrow} body rest))))
+\end{verbatim}
+
+\vspace{-0.9em}
+
+\begin{verbatim}
+\ensuremath{\rightsquigarrow} \tokobjconst{datatype} (\tokobjconst{mkdatadef} (\tokkeyword{fun} \tokconst{nattree} \tokkeyword{\ensuremath{\Rightarrow}} [\tokconst{nat}, \tokconst{nattree} * \tokconst{nattree}]))
+     (\tokobjconst{bind_datatype} (\tokkeyword{fun} \tokconst{nattree} \tokkeyword{\ensuremath{\Rightarrow}}
+       \tokstdconst{bind} (\tokkeyword{fun} \tokconst{leaf} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{bind} (\tokkeyword{fun} \tokconst{node} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} \tokconst{rest}))))
 \end{verbatim}
 
 \begin{versy}
@@ -69,9 +74,9 @@ Just squint your eyes a little bit; / Hagop will strum some chords.''
 \end{versy}
 
 \begin{verbatim}
-mkdatadef : (typ \ensuremath{\to} list typ) \ensuremath{\to} datadef.
-constructor : type.
-bind_datatype : (typ \ensuremath{\to} bindmany constructor A) \ensuremath{\to} datatype_bind A.
+\toktypeid{constructor} : \tokbuiltintype{type}.
+\tokobjconst{mkdatadef} : (\toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \toktypeid{typ}) \tokarrowtype{\ensuremath{\to}} \toktypeid{datadef}.
+\tokobjconst{bind_datatype} : (\toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{bindmany} \toktypeid{constructor} \tokmetavariable{A}) \tokarrowtype{\ensuremath{\to}} \toktypeid{datatype_bind} \tokmetavariable{A}.
 \end{verbatim}
 
 \begin{versy}
@@ -82,7 +87,7 @@ But first we'll need an env. with types that / \texttt{constructor}s expose.''
 \end{versy}
 
 \begin{verbatim}
-constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) \ensuremath{\to} prop.
+\tokpropconst{constructor_typ} : (\tokmetavariable{DataType}: \toktypeid{typ}) (\tokmetavariable{C}: \toktypeid{constructor}) (\tokmetavariable{ArgType}: \toktypeid{typ}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 \end{verbatim}
 
 \begin{versy}
@@ -93,11 +98,11 @@ constructor_typ : (DataType: typ) (C: constructor) (ArgType: typ) \ensuremath{\t
 \importantCodeblock{}
 
 \begin{verbatim}
-wfprogram (datatype (mkdatadef DT_ConstrArgTypes)
-                    (bind_datatype DT_Constrs_Rest)) \ensuremath{:\!-}
-  (dt:typ \ensuremath{\to} openmany (DT_Constrs_Rest dt) (pfun Constrs Rest \ensuremath{\Rightarrow}
-    assumemany (constructor_typ dt) Constrs (DT_ConstrArgTypes dt)
-    (wfprogram Rest))).
+\tokpropconst{wfprogram} (\tokobjconst{datatype} (\tokobjconst{mkdatadef} \tokmetavariable{DT_ConstrArgTypes})
+                    (\tokobjconst{bind_datatype} \tokmetavariable{DT_Constrs_Rest})) \toksymbol{\ensuremath{:\!-}}
+  (\tokconst{dt}:\toktypeid{typ} \toksymbol{\ensuremath{\to}} \tokstdconst{openmany} (\tokmetavariable{DT_Constrs_Rest} \tokconst{dt}) (\tokkeyword{pfun} \tokmetavariable{Constrs} \tokmetavariable{Rest} \tokkeyword{\ensuremath{\Rightarrow}}
+    \tokstdconst{assumemany} (\tokpropconst{constructor_typ} \tokconst{dt}) \tokmetavariable{Constrs} (\tokmetavariable{DT_ConstrArgTypes} \tokconst{dt})
+    (\tokpropconst{wfprogram} \tokmetavariable{Rest}))).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -108,12 +113,12 @@ We can't use the constructors, though / remember \texttt{term}s and \texttt{patt
 \end{versy}
 
 \begin{verbatim}
-constr : (C: constructor) (Arg: term) \ensuremath{\to} term.
-patt_constr : (C: constructor) (Arg: patt N N') \ensuremath{\to} patt N N'.
-typeof (constr C Arg) Datatype \ensuremath{:\!-}
-  constructor_typ Datatype C ArgType, typeof Arg ArgType.
-typeof_patt (patt_constr C Arg) Datatype S S' \ensuremath{:\!-}
-  constructor_typ Datatype C ArgType, typeof_patt Arg ArgType S S'.
+\tokobjconst{constr} : (\tokmetavariable{C}: \toktypeid{constructor}) (\tokmetavariable{Arg}: \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
+\tokobjconst{patt_constr} : (\tokmetavariable{C}: \toktypeid{constructor}) (\tokmetavariable{Arg}: \toktypeid{patt} \tokmetavariable{N} \tokmetavariable{N'}) \tokarrowtype{\ensuremath{\to}} \toktypeid{patt} \tokmetavariable{N} \tokmetavariable{N'}.
+\tokpropconst{typeof} (\tokobjconst{constr} \tokmetavariable{C} \tokmetavariable{Arg}) \tokmetavariable{Datatype} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{constructor_typ} \tokmetavariable{Datatype} \tokmetavariable{C} \tokmetavariable{ArgType}, \tokpropconst{typeof} \tokmetavariable{Arg} \tokmetavariable{ArgType}.
+\tokpropconst{typeof_patt} (\tokobjconst{patt_constr} \tokmetavariable{C} \tokmetavariable{Arg}) \tokmetavariable{Datatype} \tokmetavariable{S} \tokmetavariable{S'} \toksymbol{\ensuremath{:\!-}}
+  \tokpropconst{constructor_typ} \tokmetavariable{Datatype} \tokmetavariable{C} \tokmetavariable{ArgType}, \tokpropconst{typeof_patt} \tokmetavariable{Arg} \tokmetavariable{ArgType} \tokmetavariable{S} \tokmetavariable{S'}.
 \end{verbatim}
 
 \begin{versy}

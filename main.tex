@@ -124,6 +124,38 @@
 \newcommand{\NormalTok}[1]{{#1}}
 % =====
 
+% ====
+% highlighting makam
+
+\newcommand\colorgreen[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand\colorred[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand\colorblue[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+
+\newcommand\tokkeyword[1]{#1}
+\newcommand\toksymbol[1]{#1}
+\newcommand\tokarrowtype[1]{#1}
+
+\newcommand\toknumber[1]{#1}
+\newcommand\tokstring[1]{#1}
+
+\newcommand\tokmetavariable[1]{\colorblue{#1}}
+
+\newcommand\tokbuiltintype[1]{\textbf{#1}}
+\newcommand\tokstdtypeid[1]{#1}
+\newcommand\toktypeid[1]{\colorred{#1}}
+
+\newcommand\tokstdconst[1]{#1}
+\newcommand\tokpropconst[1]{\colorgreen{#1}}
+\newcommand\tokobjconst[1]{\colorred{\textbf{#1}}}
+\newcommand\tokconst[1]{\colorred{\textbf{#1}}}
+
+\newcommand\tokquery[1]{#1}
+
+\newcommand\tokcomment[1]{#1}
+\newcommand\tokdirective[1]{#1}
+
+% ====
+
 \begin{abstract}
 We demonstrate how the framework of \emph{higher-order logic programming}, as exemplified
 in the \lamprolog language design, is a prime vehicle for rapid prototyping of

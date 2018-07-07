@@ -11,8 +11,8 @@ these two sorts:
 \importantCodeblock{}
 
 \begin{verbatim}
-term : type.
-typ : type.
+\toktypeid{term} : \tokbuiltintype{type}.
+\toktypeid{typ} : \tokbuiltintype{type}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -25,8 +25,8 @@ kind of types, and we'll use \texttt{typ} for our object-level types?
 \importantCodeblock{}
 
 \begin{verbatim}
-app : term \ensuremath{\to} term \ensuremath{\to} term.
-arrow : typ \ensuremath{\to} typ \ensuremath{\to} typ.
+\tokobjconst{app} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
+\tokobjconst{arrow} : \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -46,7 +46,7 @@ Church-style lambdas:
 \importantCodeblock{}
 
 \begin{verbatim}
-lam : typ \ensuremath{\to} (term \ensuremath{\to} term) \ensuremath{\to} term.
+\tokobjconst{lam} : \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} (\toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -62,7 +62,7 @@ context of assumptions that will serve the same purpose.
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof : term \ensuremath{\to} typ \ensuremath{\to} prop.
+\tokpropconst{typeof} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -76,7 +76,7 @@ this work?
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof (app E1 E2) T' \ensuremath{:\!-} typeof E1 (arrow T T'), typeof E2 T.
+\tokpropconst{typeof} (\tokobjconst{app} \tokmetavariable{E1} \tokmetavariable{E2}) \tokmetavariable{T'} \toksymbol{\ensuremath{:\!-}} \tokpropconst{typeof} \tokmetavariable{E1} (\tokobjconst{arrow} \tokmetavariable{T} \tokmetavariable{T'}), \tokpropconst{typeof} \tokmetavariable{E2} \tokmetavariable{T}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -93,8 +93,8 @@ typing rule for it:
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof (lam T1 E) (arrow T1 T2) \ensuremath{:\!-}
-  (x:term \ensuremath{\to} typeof x T1 \ensuremath{\to} typeof (E x) T2).
+\tokpropconst{typeof} (\tokobjconst{lam} \tokmetavariable{T1} \tokmetavariable{E}) (\tokobjconst{arrow} \tokmetavariable{T1} \tokmetavariable{T2}) \toksymbol{\ensuremath{:\!-}}
+  (\tokconst{x}:\toktypeid{term} \toksymbol{\ensuremath{\to}} \tokpropconst{typeof} \tokconst{x} \tokmetavariable{T1} \toksymbol{\ensuremath{\to}} \tokpropconst{typeof} (\tokmetavariable{E} \tokconst{x}) \tokmetavariable{T2}).
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -116,9 +116,9 @@ predicate to type-check terms. Observe:
 \importantCodeblock{}
 
 \begin{verbatim}
-typeof (lam _ (fun x \ensuremath{\Rightarrow} x)) T ?
->> Yes:
->> T := arrow T1 T1.
+\tokpropconst{typeof} (\tokobjconst{lam} \tokmetavariable{_} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokconst{x})) \tokmetavariable{T} ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{T} \toksymbol{:=} \tokobjconst{arrow} \tokmetavariable{T1} \tokmetavariable{T1}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -133,8 +133,8 @@ implementation it was easy to make it go into an infinite loop with
 includes it:
 
 \begin{verbatim}
-typeof (lam _ (fun x \ensuremath{\Rightarrow} app x x)) T' ?
->> Impossible.
+\tokpropconst{typeof} (\tokobjconst{lam} \tokmetavariable{_} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokobjconst{app} \tokconst{x} \tokconst{x})) \tokmetavariable{T'} ?
+\tokquery{>>} \tokquery{Impossible.}
 \end{verbatim}
 
 \heroSTUDENT{} Right. So let's see, what else can we do? How about adding
@@ -144,13 +144,13 @@ tuples to our language? Can we use something like a polymorphic list?
 predicates. Here's how lists are defined in the standard library:
 
 \begin{verbatim}
-list : type \ensuremath{\to} type.
-nil : list A.
-cons : A \ensuremath{\to} list A \ensuremath{\to} list A.
+\tokstdtypeid{list} : \tokbuiltintype{type} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokstdconst{nil} : \tokstdtypeid{list} \tokmetavariable{A}.
+\tokstdconst{cons} : \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \tokmetavariable{A}.
 
-map : (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} list A \ensuremath{\to} list B \ensuremath{\to} prop.
-map P nil nil.
-map P (cons X XS) (cons Y YS) \ensuremath{:\!-} P X Y, map P XS YS.
+\tokstdconst{map} : (\tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}) \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{list} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{map} \tokmetavariable{P} \tokstdconst{nil} \tokstdconst{nil}.
+\tokstdconst{map} \tokmetavariable{P} (\tokstdconst{cons} \tokmetavariable{X} \tokmetavariable{XS}) (\tokstdconst{cons} \tokmetavariable{Y} \tokmetavariable{YS}) \toksymbol{\ensuremath{:\!-}} \tokmetavariable{P} \tokmetavariable{X} \tokmetavariable{Y}, \tokstdconst{map} \tokmetavariable{P} \tokmetavariable{XS} \tokmetavariable{YS}.
 \end{verbatim}
 
 \heroSTUDENT{} Nice! I guess that's why you wanted to go with \foreignlanguage{greek}{λ}Prolog for
@@ -167,9 +167,9 @@ all of our metatheoretic proofs. Or maybe we could use Abella
 \importantCodeblock{}
 
 \begin{verbatim}
-tuple : list term \ensuremath{\to} term.
-product : list typ \ensuremath{\to} typ.
-typeof (tuple ES) (product TS) \ensuremath{:\!-} map typeof ES TS.
+\tokobjconst{tuple} : \tokstdtypeid{list} \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
+\tokobjconst{product} : \tokstdtypeid{list} \toktypeid{typ} \tokarrowtype{\ensuremath{\to}} \toktypeid{typ}.
+\tokpropconst{typeof} (\tokobjconst{tuple} \tokmetavariable{ES}) (\tokobjconst{product} \tokmetavariable{TS}) \toksymbol{\ensuremath{:\!-}} \tokstdconst{map} \tokpropconst{typeof} \tokmetavariable{ES} \tokmetavariable{TS}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -178,9 +178,9 @@ typeof (tuple ES) (product TS) \ensuremath{:\!-} map typeof ES TS.
 \texttt{nil} too:
 
 \begin{verbatim}
-typeof (lam _ (fun x \ensuremath{\Rightarrow} lam _ (fun y \ensuremath{\Rightarrow} tuple [x, y]))) T ?
->> Yes:
->> T := arrow T1 (arrow T2 (product [T1, T2])).
+\tokpropconst{typeof} (\tokobjconst{lam} \tokmetavariable{_} (\tokkeyword{fun} \tokconst{x} \tokkeyword{\ensuremath{\Rightarrow}} \tokobjconst{lam} \tokmetavariable{_} (\tokkeyword{fun} \tokconst{y} \tokkeyword{\ensuremath{\Rightarrow}} \tokobjconst{tuple} [\tokconst{x}, \tokconst{y}]))) \tokmetavariable{T} ?
+\tokquery{>>} \tokquery{Yes:}
+\tokquery{>>} \tokmetavariable{T} \toksymbol{:=} \tokobjconst{arrow} \tokmetavariable{T1} (\tokobjconst{arrow} \tokmetavariable{T2} (\tokobjconst{product} [\tokmetavariable{T1}, \tokmetavariable{T2}])).
 \end{verbatim}
 
 \heroSTUDENT{} So how about evaluation? Can we write the big-step semantics
@@ -191,9 +191,9 @@ too?
 \importantCodeblock{}
 
 \begin{verbatim}
-eval : term \ensuremath{\to} term \ensuremath{\to} prop.
-eval (lam T F) (lam T F).
-eval (tuple ES) (tuple VS) \ensuremath{:\!-} map eval ES VS.
+\tokpropconst{eval} : \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \toktypeid{term} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokpropconst{eval} (\tokobjconst{lam} \tokmetavariable{T} \tokmetavariable{F}) (\tokobjconst{lam} \tokmetavariable{T} \tokmetavariable{F}).
+\tokpropconst{eval} (\tokobjconst{tuple} \tokmetavariable{ES}) (\tokobjconst{tuple} \tokmetavariable{VS}) \toksymbol{\ensuremath{:\!-}} \tokstdconst{map} \tokpropconst{eval} \tokmetavariable{ES} \tokmetavariable{VS}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -205,7 +205,7 @@ exactly capture-avoiding substitution, so this should be fine:
 \importantCodeblock{}
 
 \begin{verbatim}
-eval (app E E') V'' \ensuremath{:\!-} eval E (lam _ F), eval E' V', eval (F V') V''.
+\tokpropconst{eval} (\tokobjconst{app} \tokmetavariable{E} \tokmetavariable{E'}) \tokmetavariable{V''} \toksymbol{\ensuremath{:\!-}} \tokpropconst{eval} \tokmetavariable{E} (\tokobjconst{lam} \tokmetavariable{_} \tokmetavariable{F}), \tokpropconst{eval} \tokmetavariable{E'} \tokmetavariable{V'}, \tokpropconst{eval} (\tokmetavariable{F} \tokmetavariable{V'}) \tokmetavariable{V''}.
 \end{verbatim}
 
 \importantCodeblockEnd{}

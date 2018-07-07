@@ -38,7 +38,7 @@ arguments. This can be used to define polymorphic predicates that behave differe
 types, like this, where we are essentially doing a `typecase` and we choose a rule depending on the
 *type* of the argument (as opposed to its value):
 
-```
+```nohighlight
 print : [A] A -> prop.
 print (I: int) :- (... code for printing integers ...)
 print (S: string) :- (... code for printing strings ...)

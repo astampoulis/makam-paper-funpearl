@@ -69,18 +69,18 @@ also to work with GADTs in our land? Consider this! The venerable List
 that Knows Its Length:
 
 \begin{verbatim}
-zero : type. succ : type \ensuremath{\to} type.
-vector : type \ensuremath{\to} type \ensuremath{\to} type.
-vnil : vector A zero.
-vcons : A \ensuremath{\to} vector A N \ensuremath{\to} vector A (succ N).
+\tokstdtypeid{zero} : \tokbuiltintype{type}. \tokstdtypeid{succ} : \tokbuiltintype{type} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokstdtypeid{vector} : \tokbuiltintype{type} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokstdconst{vnil} : \tokstdtypeid{vector} \tokmetavariable{A} \tokstdtypeid{zero}.
+\tokstdconst{vcons} : \tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \tokmetavariable{A} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \tokmetavariable{A} (\tokstdtypeid{succ} \tokmetavariable{N}).
 \end{verbatim}
 
 And now for the essential \texttt{vmap}:
 
 \begin{verbatim}
-vmap : [N] (A \ensuremath{\to} B \ensuremath{\to} prop) \ensuremath{\to} vector A N \ensuremath{\to} vector B N \ensuremath{\to} prop.
-vmap P vnil vnil.
-vmap P (vcons X XS) (vcons Y YS) \ensuremath{:\!-} P X Y, vmap P XS YS.
+\tokstdconst{vmap} : [\tokmetavariable{N}] (\tokmetavariable{A} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{B} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}) \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \tokmetavariable{A} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vector} \tokmetavariable{B} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{vmap} \tokmetavariable{P} \tokstdconst{vnil} \tokstdconst{vnil}.
+\tokstdconst{vmap} \tokmetavariable{P} (\tokstdconst{vcons} \tokmetavariable{X} \tokmetavariable{XS}) (\tokstdconst{vcons} \tokmetavariable{Y} \tokmetavariable{YS}) \toksymbol{\ensuremath{:\!-}} \tokmetavariable{P} \tokmetavariable{X} \tokmetavariable{Y}, \tokstdconst{vmap} \tokmetavariable{P} \tokmetavariable{XS} \tokmetavariable{YS}.
 \end{verbatim}
 
 In each rule, the first argument already specializes the \texttt{N} type
@@ -90,7 +90,7 @@ specialization would not be accepted as well-typed sayings in our
 language:
 
 \begin{verbatim}
-vmap P vnil (vcons X XS) \ensuremath{:\!-} ...
+\tokstdconst{vmap} \tokmetavariable{P} \tokstdconst{vnil} (\tokstdconst{vcons} \tokmetavariable{X} \tokmetavariable{XS}) \toksymbol{\ensuremath{:\!-}} ...
 \end{verbatim}
 
 And we should note that in this usage of Ad-Hoc Polymorphism for GADTs,
@@ -107,9 +107,9 @@ Its Length}:
 \importantCodeblock{}
 
 \begin{verbatim}
-vbindmany : (Var: type) (N: type) (Body: type) \ensuremath{\to} type.
-vbody : Body \ensuremath{\to} vbindmany Var zero Body.
-vbind : (Var \ensuremath{\to} vbindmany Var N Body) \ensuremath{\to} vbindmany Var (succ N) Body.
+\tokstdtypeid{vbindmany} : (\tokmetavariable{Var}: \tokbuiltintype{type}) (\tokmetavariable{N}: \tokbuiltintype{type}) (\tokmetavariable{Body}: \tokbuiltintype{type}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{type}.
+\tokstdconst{vbody} : \tokmetavariable{Body} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vbindmany} \tokmetavariable{Var} \tokstdtypeid{zero} \tokmetavariable{Body}.
+\tokstdconst{vbind} : (\tokmetavariable{Var} \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vbindmany} \tokmetavariable{Var} \tokmetavariable{N} \tokmetavariable{Body}) \tokarrowtype{\ensuremath{\to}} \tokstdtypeid{vbindmany} \tokmetavariable{Var} (\tokstdtypeid{succ} \tokmetavariable{N}) \tokmetavariable{Body}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
@@ -122,10 +122,10 @@ In the \texttt{openmany} version for \texttt{vbindmany}, the rules are
 exactly as before, though the static type is more precise:
 
 \begin{verbatim}
-vopenmany : [N] vbindmany Var N Body \ensuremath{\to} (vector Var N \ensuremath{\to} Body \ensuremath{\to} prop) \ensuremath{\to} prop.
-vopenmany (vbody Body) Q \ensuremath{:\!-} Q vnil Body.
-vopenmany (vbind F) Q \ensuremath{:\!-}
-  (x:A \ensuremath{\to} vopenmany (F x) (fun xs \ensuremath{\Rightarrow} Q (vcons x xs))).
+\tokstdconst{vopenmany} : [\tokmetavariable{N}] \tokstdtypeid{vbindmany} \tokmetavariable{Var} \tokmetavariable{N} \tokmetavariable{Body} \tokarrowtype{\ensuremath{\to}} (\tokstdtypeid{vector} \tokmetavariable{Var} \tokmetavariable{N} \tokarrowtype{\ensuremath{\to}} \tokmetavariable{Body} \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}) \tokarrowtype{\ensuremath{\to}} \tokbuiltintype{prop}.
+\tokstdconst{vopenmany} (\tokstdconst{vbody} \tokmetavariable{Body}) \tokmetavariable{Q} \toksymbol{\ensuremath{:\!-}} \tokmetavariable{Q} \tokstdconst{vnil} \tokmetavariable{Body}.
+\tokstdconst{vopenmany} (\tokstdconst{vbind} \tokmetavariable{F}) \tokmetavariable{Q} \toksymbol{\ensuremath{:\!-}}
+  (\tokconst{x}:\tokmetavariable{A} \toksymbol{\ensuremath{\to}} \tokstdconst{vopenmany} (\tokmetavariable{F} \tokconst{x}) (\tokkeyword{fun} \tokconst{xs} \tokkeyword{\ensuremath{\Rightarrow}} \tokmetavariable{Q} (\tokstdconst{vcons} \tokconst{x} \tokconst{xs}))).
 \end{verbatim}
 
 We can also showcase the \emph{Accurate Encoding of the Letrec}:
@@ -133,7 +133,7 @@ We can also showcase the \emph{Accurate Encoding of the Letrec}:
 \importantCodeblock{}
 
 \begin{verbatim}
-vletrec : vbindmany term N (vector term N * term) \ensuremath{\to} term.
+\tokobjconst{vletrec} : \tokstdtypeid{vbindmany} \toktypeid{term} \tokmetavariable{N} (\tokstdtypeid{vector} \toktypeid{term} \tokmetavariable{N} * \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} \toktypeid{term}.
 \end{verbatim}
 
 \importantCodeblockEnd{}
