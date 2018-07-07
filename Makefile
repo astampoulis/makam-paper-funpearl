@@ -51,4 +51,8 @@ test-artifact:
 artifact:
 	@ ./shared/build-artifact.sh
 
-.PHONY: all build build-to-tmp clean tmpclean watch test docker-build watch-test watch-build artifact
+sourcezip:
+	@ rm -f source.zip
+	@ zip source.zip main.tex main.bib generated/*.tex acmart.cls shared/ACM-Reference-Format.bst
+
+.PHONY: all build build-to-tmp clean tmpclean watch test docker-build watch-test watch-build artifact sourcezip
