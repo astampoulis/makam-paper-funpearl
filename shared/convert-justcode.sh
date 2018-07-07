@@ -8,6 +8,4 @@ TOPDIR=$(realpath $(dirname $0))/..
 
 rm -f justcode/*.makam;
 
-shared/extract-code.sh makamcode justcode;
-
-ls justcode)
+shared/extract-code.sh makamcode justcode)

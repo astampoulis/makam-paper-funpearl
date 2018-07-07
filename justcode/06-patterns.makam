@@ -30,10 +30,6 @@ typeof (case_or_else Scrutinee Pattern Vars_Body Else) BodyT :-
 typeof_patt patt_var T VarTypes VarTypes' :-
   vsnoc VarTypes T VarTypes'.
 
-vsnoc : [N] vector A N -> A -> vector A (succ N) -> prop.
-vsnoc vnil Y (vcons Y vnil).
-vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
-
 typeof_patt patt_ozero onat VarTypes VarTypes.
 
 typeof_patt (patt_osucc P) onat VarTypes VarTypes' :-

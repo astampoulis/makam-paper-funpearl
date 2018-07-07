@@ -188,7 +188,7 @@ OK, here I need `vsnoc` to add an element to the end of a vector.
 That should yield the correct order for the types of pattern variables;
 I am visiting the pattern left-to-right after all.
 
-```makam
+```
 vsnoc : [N] vector A N -> A -> vector A (succ N) -> prop.
 vsnoc vnil Y (vcons Y vnil).
 vsnoc (vcons X XS) Y (vcons X XS_Y) :- vsnoc XS Y XS_Y.
