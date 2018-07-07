@@ -89,8 +89,8 @@ form. That was the case above -- for `E = f`, we knew that `T = a`, but the typi
 required that `T' = arrow T1 T2` for some `T1`, `T2`.
 
 STUDENT. Oh. In that case we could try running the typing rules *without* the existing typing information that we
-have, like `T = a`? We would get a type `T'` that way and we can then check whether `T'` matches
-the type `T` that we expect, up to $\delta$-equality.
+have, like `T = a`? We would get a new type `T'` that way and we can then check whether it matches
+the original `T` type that we expect, up to $\delta$-equality.
 
 ADVISOR. Exactly. So we need to change the rule you wrote to apply only in the case where `T` starts
 with a concrete constructor (so we already know something about it), rather than when it is an
@@ -185,7 +185,7 @@ typeq (Constructor Arguments) (Constructor Arguments') :-
   map typeq Arguments Arguments'.
 ```
 
-ADVISOR. Right. Note, though, that the types of arguments might be different than `typ`. So even if we start comparing two types at the top level, we might end up having to compare two lists of types that they contain -- imagine the case for `arrowmany` for example.
+ADVISOR. Right. Note, though, that the types of arguments might be different than `typ`. So even if we start comparing two types at the top level, we might end up having to compare, say, two lists of types that they contain -- as will be the case for `arrowmany` for example.
 
 STUDENT. I see! That's why you edited `typeq` to be polymorphic above; you have extended it to work on *any type* (of the metalanguage) that might contain a `typ`.
 

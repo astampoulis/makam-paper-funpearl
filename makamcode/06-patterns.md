@@ -31,9 +31,9 @@ branch(pattern, bind [# of variables in pattern].body)
 
 So we could write the above branch in Makam like this:
 
-```nohighlight
-branch(patt_cons patt_var patt_var,
-       bind (fun hd => bind (fun tl => body (.. hd .. tl ..))))
+```
+branch (patt_cons patt_var patt_var)
+       (bind (fun hd => bind (fun tl => body (.. hd .. tl ..))))
 ```
 
 We do have to keep the order of variables consistent somehow, so `hd`
@@ -41,7 +41,7 @@ here should refer to the first occurrence of `patt_var`, and `tl` to
 the second. Based on these, I am thinking that the type of `branch`
 should be something like:
 
-```nohighlight
+```
 branch : (Pattern: patt N) (Vars_Body: vbindmany term N term) -> ...
 ```
 

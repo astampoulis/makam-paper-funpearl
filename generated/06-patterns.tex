@@ -33,8 +33,8 @@ branch(pattern, bind [# of variables in pattern].body)
 So we could write the above branch in Makam like this:
 
 \begin{verbatim}
-branch(patt_cons patt_var patt_var,
-       bind (fun hd \ensuremath{\Rightarrow} bind (fun tl \ensuremath{\Rightarrow} body (.. hd .. tl ..))))
+\tokconst{branch} (\tokconst{patt_cons} \tokobjconst{patt_var} \tokobjconst{patt_var})
+       (\tokstdconst{bind} (\tokkeyword{fun} \tokconst{hd} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{bind} (\tokkeyword{fun} \tokconst{tl} \tokkeyword{\ensuremath{\Rightarrow}} \tokstdconst{body} (.. \tokconst{hd} .. \tokconst{tl} ..))))
 \end{verbatim}
 
 We do have to keep the order of variables consistent somehow, so
@@ -43,7 +43,7 @@ We do have to keep the order of variables consistent somehow, so
 thinking that the type of \texttt{branch} should be something like:
 
 \begin{verbatim}
-branch : (Pattern: patt N) (Vars_Body: vbindmany term N term) \ensuremath{\to} ...
+\tokconst{branch} : (\tokmetavariable{Pattern}: \toktypeid{patt} \tokmetavariable{N}) (\tokmetavariable{Vars_Body}: \tokstdtypeid{vbindmany} \toktypeid{term} \tokmetavariable{N} \toktypeid{term}) \tokarrowtype{\ensuremath{\to}} ...
 \end{verbatim}
 
 Wait, before I get into the weeds let me just set up some things. First,

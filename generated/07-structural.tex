@@ -108,9 +108,9 @@ the typing rule for \texttt{app} required that
 
 \heroSTUDENT{} Oh. In that case we could try running the typing rules
 \emph{without} the existing typing information that we have, like
-\texttt{T\ =\ a}? We would get a type \texttt{T\textquotesingle{}} that
-way and we can then check whether \texttt{T\textquotesingle{}} matches
-the type \texttt{T} that we expect, up to \(\delta\)-equality.
+\texttt{T\ =\ a}? We would get a new type \texttt{T\textquotesingle{}}
+that way and we can then check whether it matches the original
+\texttt{T} type that we expect, up to \(\delta\)-equality.
 
 \heroADVISOR{} Exactly. So we need to change the rule you wrote to apply only
 in the case where \texttt{T} starts with a concrete constructor (so we
@@ -218,8 +218,9 @@ to make sure that their constructors are the same and also that any
 
 \heroADVISOR{} Right. Note, though, that the types of arguments might be
 different than \texttt{typ}. So even if we start comparing two types at
-the top level, we might end up having to compare two lists of types that
-they contain -- imagine the case for \texttt{arrowmany} for example.
+the top level, we might end up having to compare, say, two lists of
+types that they contain -- as will be the case for \texttt{arrowmany}
+for example.
 
 \heroSTUDENT{} I see! That's why you edited \texttt{typeq} to be polymorphic
 above; you have extended it to work on \emph{any type} (of the
