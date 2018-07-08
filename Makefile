@@ -53,6 +53,6 @@ artifact:
 
 sourcezip:
 	@ rm -f source.zip
-	@ zip source.zip main.tex main.bib generated/*.tex acmart.cls shared/ACM-Reference-Format.bst
+	@ bash -c "zip source.zip main.tex main.bib generated/{01*,02*,03*,04*,05-gadts,06-patterns,07*,08*,09*,10*,11*,12*}.tex acmart.cls shared/ACM-Reference-Format.bst"
 
 .PHONY: all build build-to-tmp clean tmpclean watch test docker-build watch-test watch-build artifact sourcezip
