@@ -26,7 +26,8 @@ the right binding structure. For a branch like:
 the pattern introduces 2 variables, `hd` and `tl`, which the body of the branch can refer to. But we can't really refer to those variables in the pattern itself, at least for simple patterns\footnote{There are counterexamples, like for or-patterns in some ML dialects, or for dependent pattern matching, where consequent uses of the same variable perform exact matches rather than unification. We choose to omit the handling of cases like those in the present work for presentation purposes.}.... So there's no binding going on really within the pattern; instead, once we figure out how many variables a pattern introduces, we can do the actual binding all at once, when we get to the body of the branch:
 
 ```nohighlight
-branch(pattern, bind [# of variables in pattern].body)
+branch(pattern,
+       bind [# of variables in pattern].( .. body of the branch .. ))
 ```
 
 So we could write the above branch in Makam like this:

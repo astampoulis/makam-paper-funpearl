@@ -27,7 +27,8 @@ we figure out how many variables a pattern introduces, we can do the
 actual binding all at once, when we get to the body of the branch:
 
 \begin{verbatim}
-branch(pattern, bind [# of variables in pattern].body)
+branch(pattern,
+       bind [# of variables in pattern].( .. body of the branch .. ))
 \end{verbatim}
 
 So we could write the above branch in Makam like this:
