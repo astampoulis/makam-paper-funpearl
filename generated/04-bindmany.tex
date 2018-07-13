@@ -243,7 +243,7 @@ would bind \texttt{f} and \texttt{g} simultaneously and then write the
 definitions and the body in that scope:
 
 \begin{verbatim}
-\tokobjconst{letrec} (\tokkeyword{fun} \tokconst{f} \tokkeyword{\ensuremath{\Rightarrow}} \tokkeyword{fun} \tokconst{g} \tokkeyword{\ensuremath{\Rightarrow}} ([\tokconst{f_def}, \tokconst{g_def}], \tokstdconst{body}))
+letrec (fun f \ensuremath{\Rightarrow} fun g \ensuremath{\Rightarrow} ([f_def, g_def], body))
 \end{verbatim}
 
 \heroSTUDENT{} I think I know how to do this then! How does this look?

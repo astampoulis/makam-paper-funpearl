@@ -20,7 +20,7 @@
 \usepackage{mathpartir}
 \usepackage{indentfirst}
 \usepackage{hyperref}
-\usepackage{color}
+\usepackage{xcolor}
 \usepackage{fancyvrb}
 
 \bibliographystyle{shared/ACM-Reference-Format}
@@ -68,11 +68,19 @@
 \newcommand\lamprolog[0]{\foreignlanguage{greek}{λ}Prolog\xspace}
 \newcommand\fomega[0]{F$\omega$\xspace}
 
-\newcommand\colorone[1]{\textcolor[rgb]{0.00,0.29,0.09}{#1}} % green, 004b16
-\newcommand\colortwo[1]{\textcolor[rgb]{0.49,0.11,0.00}{#1}} % red, 7c1d00
-\newcommand\colorthree[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}} % blue, 05297d
-\newcommand\colorfour[1]{\textcolor[rgb]{0.4,0.0,0.55}{#1}} % purple, 65008d
-\definecolor{accentbgcolor}{rgb}{0.81,0.83,0.95} % light blue, cfd4f2
+% original, darker
+%% \newcommand\colorone[1]{\textcolor[rgb]{0.00,0.29,0.09}{#1}} % green, 004b16
+%% \newcommand\colortwo[1]{\textcolor[rgb]{0.49,0.11,0.00}{#1}} % red, 7c1d00
+%% \newcommand\colorthree[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}} % blue, 05297d
+%% \newcommand\colorfour[1]{\textcolor[rgb]{0.4,0.0,0.55}{#1}} % purple, 65008d
+%% \definecolor{accentbgcolor}{rgb}{0.81,0.83,0.95} % light blue, cfd4f2
+
+% based on pygments default, with contrast fixes
+\newcommand\colorone[1]{\textcolor[HTML]{006000}{#1}} % green
+\newcommand\colortwo[1]{\textcolor[HTML]{a10000}{#1}} % red
+\newcommand\colorthree[1]{\textcolor[HTML]{05297D}{#1}} % blue
+\newcommand\colorfour[1]{\textcolor[HTML]{7013ab}{#1}} % purple
+\definecolor{accentbgcolor}{HTML}{E9F5FF} % light blue
 
 \newsavebox{\selvestebox}
 \newtoggle{important}
@@ -80,7 +88,7 @@
 \newcommand\importantCodeblock[0]{\toggletrue{important}}
 \newcommand\importantCodeblockEnd[0]{\togglefalse{important}}
 \renewenvironment{verbatim}{\iftoggle{important}{\newenvironment{colbox}{\begin{lrbox}{\selvestebox}%
-   \begin{minipage}{\dimexpr\columnwidth-2\fboxsep\relax}}{\end{minipage}\end{lrbox}%
+   \begin{minipage}{\dimexpr\columnwidth}}{\end{minipage}\end{lrbox}%
    \begin{center}\hspace{-6pt}%
    \colorbox{accentbgcolor}{\usebox{\selvestebox}}%
    \end{center}}}{\newenvironment{colbox}{}{}}%

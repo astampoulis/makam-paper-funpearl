@@ -221,7 +221,7 @@ let rec f = f_def and g = g_def in body
 If we write this in a way where the binding structure is explicit, we would bind
 `f` and `g` simultaneously and then write the definitions and the body in that scope:
 
-```
+```nohighlight
 letrec (fun f => fun g => ([f_def, g_def], body))
 ```
 
