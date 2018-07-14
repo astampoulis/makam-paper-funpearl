@@ -22,7 +22,6 @@ mkdir code/scripts/;
 cp ../shared/extract-code.sh code/scripts/;
 cp ../shared/generate-isolated-makam.awk code/scripts/;
 
-pandoc README.md -o README.txt ;
 cp README.md code/ArtifactOverview.md ;
 
 rm -f docker-image.tar;
