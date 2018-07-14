@@ -1,7 +1,10 @@
 # Getting started
 
 This artifact can be used to run the Makam code that is contained in
-the paper and to experiment with changes and additional queries.
+the paper "Prototyping a Functional Language using Higher-Order Logic
+Programming: A Functional Pearl on Learning the Ways of λProlog/Makam"
+by Antonis Stampoulis and Adam Chlipala and to experiment with changes
+and additional queries.
 
 We include a Makam installation as a Docker image, along with the
 Makam code fragments from the paper. As the paper is a literate
