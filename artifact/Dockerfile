@@ -1,6 +1,7 @@
 FROM ocaml/opam:alpine_ocaml-4.06.0 as makam
 RUN sudo apk update && sudo apk add git m4
 RUN git clone https://github.com/astampoulis/makam.git makam-code # need 520ab701f9ae8b4beb56c53eaa22cdb776af5dc3
+RUN cp -R makam-code makam-code-src
 WORKDIR makam-code
 # switch to makam version 0.7.13:
 RUN git checkout 520ab701f9ae8b4beb56c53eaa22cdb776af5dc3
@@ -18,6 +19,7 @@ RUN apk update && apk add bash
 RUN mkdir makam
 COPY --from=makam /home/opam/makam-code/makam /home/opam/makam-code/nativerepl.native makam/
 COPY --from=makam /home/opam/makam-code/stdlib makam/stdlib
+COPY --from=makam /home/opam/makam-code-src /makam-src
 COPY --from=rlwrap /usr/local/bin/rlwrap /usr/bin/rlwrap
 RUN sed -i -e "s/%extend peg/(\* %extend peg/" -e 's/%use "syntax\/init"./%use "syntax\/init". \*)/' makam/stdlib/init.makam
 RUN ln -s $(pwd)/makam/makam /usr/local/bin/makam

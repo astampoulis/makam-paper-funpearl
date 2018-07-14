@@ -255,6 +255,12 @@ This artifact bundles Makam version 0.7.13, accessible through the URL:
 
 <https://github.com/astampoulis/makam/releases/tag/v0.7.13>
 
+The source code for Makam v0.7.13 is also included within the artifact:
+
+    ./run-shell.sh
+    cd /makam-src
+    ls
+
 The source code of the paper, along with CircleCI integration which builds the
 paper and this artifact, are available at:
 
