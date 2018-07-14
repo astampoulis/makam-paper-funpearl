@@ -48,6 +48,13 @@ test-artifact:
 	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests literate/10-typgen.md
 	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests 10-typgen
 
+test-artifact-ci:
+	@ rm -rf tmp/makam-funpearl-artifact/
+	@ mkdir -p tmp/
+	@ tar xvzf makam-funpearl-artifact.tgz -C tmp/
+	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests /static/init literate/10-typgen.md
+	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests /static/init 10-typgen
+
 artifact:
 	@ ./shared/build-artifact.sh
 

@@ -1,5 +1,7 @@
 # Makam Functional Pearl paper (ICFP'18)
 
+[![CircleCI](https://circleci.com/gh/astampoulis/makam-paper-funpearl.svg?style=svg)](https://circleci.com/gh/astampoulis/makam-paper-funpearl)
+
 Source code for "Prototyping a Functional Language using Higher-Order Logic Programming:
 A Functional Pearl on learning the ways of λProlog/Makam", by Antonis Stampoulis and Adam
 Chlipala, to appear in the ICFP 2018 issue of PACMPL.

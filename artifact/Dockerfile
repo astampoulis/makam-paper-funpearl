@@ -8,8 +8,8 @@ RUN opam pin add makam . --no-action && opam install makam --deps-only && opam c
 
 # Compile rlwrap for alpine, no package exists in the repositories
 FROM alpine:3.6 as rlwrap
-RUN apk update && apk add --update openssl build-base readline-dev ncurses-dev
-RUN wget https://github.com/hanslub42/rlwrap/releases/download/v0.43/rlwrap-0.43.tar.gz && tar xvzf rlwrap-0.43.tar.gz
+RUN apk update && apk add --update openssl build-base readline-dev ncurses-dev curl
+RUN curl -L https://github.com/hanslub42/rlwrap/releases/download/v0.43/rlwrap-0.43.tar.gz --output rlwrap.tgz && tar xvzf rlwrap.tgz
 WORKDIR rlwrap-0.43
 RUN ./configure && make && make install
 

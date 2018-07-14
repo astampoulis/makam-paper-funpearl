@@ -40,8 +40,9 @@ jobs:
             mv /tmp/docker/* /usr/bin
             apt-get update && apt-get install -y gawk
       - run: make artifact
+      - run: make test-artifact-ci
       - store_artifacts:
-          path: artifact88.tgz
+          path: makam-funpearl-artifact.tgz
 
 workflows:
   version: 2
