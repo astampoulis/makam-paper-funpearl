@@ -22,6 +22,7 @@ mkdir code/scripts/;
 cp ../shared/extract-code.sh code/scripts/;
 cp ../shared/generate-isolated-makam.awk code/scripts/;
 
+pandoc README.md -o README.txt ;
 cp README.md code/ArtifactOverview.md ;
 
 rm -f docker-image.tar;
@@ -33,6 +34,14 @@ docker save --output docker-image.tar makam-icfp2018-artifact ;
 docker rmi makam-icfp2018-artifact ;
 
 cd ../ ;
-rm -f makam-funpearl-artifact.tgz ;
-tar --transform='s/^artifact/makam-funpearl-artifact/' -cvzf makam-funpearl-artifact.tgz artifact
+rm -f makam-funpearl-artifact.zip ;
+tar --transform='s/^artifact/makam-funpearl-artifact/' -cvf makam-funpearl-artifact.tar artifact ;
+mkdir -p tmp ;
+rm -rf tmp/makam-funpearl-artifact ;
+tar xf makam-funpearl-artifact.tar -C tmp/ ;
+(cd tmp; zip makam-funpearl-artifact.zip $(tar tf ../makam-funpearl-artifact.tar) ) ;
+
+mv tmp/makam-funpearl-artifact.zip .;
+rm makam-funpearl-artifact.tar
+
 )

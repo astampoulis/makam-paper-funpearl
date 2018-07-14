@@ -38,11 +38,11 @@ jobs:
             curl -L -o /tmp/docker-$VER.tgz https://download.docker.com/linux/static/stable/x86_64/docker-$VER.tgz
             tar -xz -C /tmp -f /tmp/docker-$VER.tgz
             mv /tmp/docker/* /usr/bin
-            apt-get update && apt-get install -y gawk
+            apt-get update && apt-get install -y gawk zip unzip
       - run: make artifact
       - run: make test-artifact-ci
       - store_artifacts:
-          path: makam-funpearl-artifact.tgz
+          path: makam-funpearl-artifact.zip
 
 workflows:
   version: 2

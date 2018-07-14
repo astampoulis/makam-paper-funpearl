@@ -18,10 +18,10 @@ follow instructions for your system from:
 
 (At the time of writing, the latest Docker version is 18.03.1-ce-0.)
 
-The artifact is a gzipped tar file, extract it and switch to its main
-directory using:
+The artifact is a zip file, extract it and switch to its main directory
+using:
 
-    tar xvzf makam-funpearl-artifact.tgz
+    unzip makam-funpearl-artifact.zip
     cd makam-funpearl-artifact
 
 You can use the `run-makam.sh` script to load the Docker image and start

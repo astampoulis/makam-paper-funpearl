@@ -44,14 +44,14 @@ test:
 
 test-artifact:
 	@ rm -rf tmp/makam-funpearl-artifact/
-	@ tar xvzf makam-funpearl-artifact.tgz -C tmp/
+	@ unzip makam-funpearl-artifact.zip -d tmp/
 	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests literate/10-typgen.md
 	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests 10-typgen
 
 test-artifact-ci:
 	@ rm -rf tmp/makam-funpearl-artifact/
 	@ mkdir -p tmp/
-	@ tar xvzf makam-funpearl-artifact.tgz -C tmp/
+	@ unzip makam-funpearl-artifact.zip -d tmp/
 	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests /static/init /static/literate/10-typgen.md
 	@ tmp/makam-funpearl-artifact/run-makam.sh --run-tests /static/init 10-typgen
 
