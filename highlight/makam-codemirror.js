@@ -14,7 +14,7 @@
   const objprop = /(typeof|eval|typeof_patt|typeof_pattlist|match|matchlist|typedef|wfprogram|typeq|constructor_typ|evalprogram|classof|classof_index|subst_obj|stlc\.typeof|stlc\.eval|stlc\.do_oadd|stlc\.do_omult|subst_obj_aux|subst_obj_cases|generalize|get_types_in_environment)\b/;
   const objconst = /(app|arrow|lam|tuple|product|lammany|arrowmany|appmany|letrec|vletrec|onat|ozero|osucc|patt_var|patt_ozero|patt_osucc|patt_wild|patt_tuple|pnil|pcons|case_or_else|main|lettype|tforall|polylam|polyapp|datatype|mkdatadef|bind_datatype|constr|patt_constr|liftobj|liftclass|letobj|stlc\.app|stlc\.lam|stlc\.arrow|stlc\.tuple|stlc\.product|stlc\.onat|stlc\.ozero|stlc\.osucc|stlc\.add|stlc\.mult|stlc\.aq|obj_term|cls_typ|obj_openterm|cls_ctxtyp|stlc\.aqopen|let)\b/;
 
-  const definition_start = options => [
+  const definition_start = (function(options) { return [
     Object.assign(
       {},
       {
@@ -63,7 +63,7 @@
       },
       options
     )
-  ];
+  ]; });
 
   const base = [].concat(
     [

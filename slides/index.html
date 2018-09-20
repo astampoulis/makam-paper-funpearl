@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <title>Makam</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/css/reveal.css">
+  <style type="text/css">code{white-space: pre;}</style>
+  <link rel="stylesheet" href="https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/css/theme/custom.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/css/print/pdf.css' : 'https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/lib/js/html5shiv.js"></script>
+  <![endif]-->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_HTML-full" type="text/javascript"></script>
+  <script src="https://unpkg.com/codemirror/lib/codemirror.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/codemirror/lib/codemirror.css" />
+  <script src="https://unpkg.com/codemirror/mode/javascript/javascript.js"></script>
+  <script src="https://unpkg.com/codemirror/addon/mode/simple.js"></script>
+  <script src="https://unpkg.com/codemirror/addon/runmode/runmode.js"></script>
+  <script src="https://unpkg.com/codemirror/addon/display/autorefresh.js"></script>
+  <script src="./makam-codemirror.js"></script>
+  <script src="https://unpkg.com/makam-webui/makam-webui.js"></script>
+  <link rel="stylesheet" href="slides.css" />
+  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; makamWebUIOnLoad(options);</script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+
+<section id="prototyping-a-functional-language-using-higher-order-logic-programming" class="slide level1">
+<h1>Prototyping a Functional Language <br /> using Higher-Order Logic Programming</h1>
+<div style="margin-top: 1em;">
+<h4 id="a-functional-pearl-on-learning-the-ways-of-λprologmakam">A Functional Pearl on Learning the Ways of λProlog/Makam</h4>
+</div>
+<div style="margin-top: 3em;">
+<p>Antonis Stampoulis (Originate NYC), Adam Chlipala (MIT CSAIL)</p>
+</div>
+</section>
+<section id="pl-research-ideas-implementation-time-ability-to-experiment" class="slide level1">
+<h1>PL research ideas: <br/> implementation time ↔ ability to experiment</h1>
+</section>
+<section id="metalanguages-help-minimize-implementation-time" class="slide level1">
+<h1>Metalanguages help minimize implementation time</h1>
+<div class="fragment" data-fragment-index="1">
+<ul>
+<li>Racket</li>
+<li>PLT Redex</li>
+<li>K Framework</li>
+<li>Spoofax</li>
+<li>Ott</li>
+</ul>
+</div>
+<div class="fragment" data-fragment-index="2" style="margin-top: 3em;">
+<h3 id="or-λprologmakam">... or, λProlog/Makam</h3>
+</div>
+<aside class="notes">
+<p>Many of these frameworks are particularly well-suited to implementing specific aspects of a language, e.g. PLT Redex and K Framework for operational semantics, Racket for sophisticated DSLs, etc.</p>
+λProlog is particularly well-suited to implementing advanced type systems. In the paper, this is what we attempt.
+</aside>
+</section>
+<section class="slide level1">
+
+<ul>
+<li>Simply-typed lambda calculus</li>
+<li>System F polymorphism</li>
+<li>Multi-arity functions and letrec</li>
+<li>Pattern matching</li>
+<li>Algebraic datatypes</li>
+<li>Type synonyms</li>
+<li>Heterogeneous metaprogramming</li>
+<li>ML-style generalization</li>
+</ul>
+</section>
+<section id="also-in-the-paper" class="slide level1">
+<h1>Also in the paper:</h1>
+<ul>
+<li>Complex binding structures</li>
+<li>Structural recursion</li>
+<li>Use of reflective predicates</li>
+<li>GADT support in λProlog</li>
+</ul>
+</section>
+<section class="slide level1">
+
+<p><img src="Smyrna_Trio.jpg" /></p>
+</section>
+<section class="slide level1">
+
+<h3 id="lets-write-some-makam">Let's write some Makam!</h3>
+</section>
+<section class="slide level1">
+
+<pre><code class="language-makam-hidden">tests : testsuite. %testsuite tests.
+%use &quot;00-adapted-stdlib.makam&quot;.</code></pre>
+<pre><code class="language-makam">term : type.
+typ : type.
+typeof : term -&gt; typ -&gt; prop.</code></pre>
+</section>
+<section class="slide level1">
+
+<p><span class="math display">\[t := t_1 t_2\]</span> <span class="math display">\[\tau := \tau_1 \to \tau_2\]</span></p>
+<pre><code class="language-makam">app : term -&gt; term -&gt; term.
+arrow : typ -&gt; typ -&gt; typ.</code></pre>
+</section>
+<section class="slide level1">
+
+<p><span class="math display">\[\frac{\Gamma, x : \tau \vdash e : \tau&#39;}{\Gamma \vdash \lambda x : \tau.e : \tau \to \tau&#39;}\]</span></p>
+<pre><code class="language-makam">lam : typ -&gt; (term -&gt; term) -&gt; term.
+
+typeof (lam T X_E) (arrow T T&#39;) :-
+  (x:term -&gt; typeof x T -&gt; typeof (X_E x) T&#39;).
+
+typeof (lam _ (fun x =&gt; x)) T ?</code></pre>
+<pre><code class="language-makam-hidden">&gt;&gt; Yes:
+&gt;&gt; T := arrow T1 T1.</code></pre>
+</section>
+<section class="slide level1">
+
+</section>
+<section class="slide level1">
+
+<p>Tests:</p>
+<pre><code class="language-makam-input">run_tests X ?</code></pre>
+</section>
+    </div>
+  </div>
+
+  <script src="https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/lib/js/head.min.js"></script>
+  <script src="https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Push each slide change to the browser history
+        history: true, keyboardCondition: (function(ev) { return ev.target.tagName == "BODY"; }),
+        // Transition style
+        transition: 'fade', // none/fade/slide/convex/concave/zoom
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 800,
+        height: 600,
+        // Factor of the display size that should remain empty around the content
+        margin: 2.5e-2,
+        // Bounds for smallest/largest possible scale to apply to content
+        minScale: 1,
+        maxScale: 1,
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/plugin/zoom-js/zoom.js', async: true },
+          { src: 'https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>

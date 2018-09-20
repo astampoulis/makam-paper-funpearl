@@ -5,6 +5,7 @@ services:
       context: .
     volumes:
       - ./:/code:ro
+      - ./slides:/code/slides
       - ./generated:/code/generated
       - ./justcode:/code/justcode
       - ./tmp:/code/tmp
