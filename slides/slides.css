@@ -39,3 +39,5 @@ ul > li:before {
 }
 
 .CodeMirror-focused .CodeMirror-selected { background: #9794d0; }
+
+code { white-space: pre-wrap !important; }
