@@ -28,10 +28,10 @@
   <script src="https://unpkg.com/codemirror/addon/mode/simple.js"></script>
   <script src="https://unpkg.com/codemirror/addon/runmode/runmode.js"></script>
   <script src="https://unpkg.com/codemirror/addon/display/autorefresh.js"></script>
-  <script src="./makam-codemirror.js"></script>
+  <script src="../highlight/makam-codemirror.js"></script>
   <script src="https://unpkg.com/makam-webui/makam-webui.js"></script>
   <link rel="stylesheet" href="slides.css" />
-  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; makamWebUIOnLoad(options);</script>
+  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; options['urlOfDependency'] = (function(filename) { return new URL("../justcode/" + filename, document.baseURI).href; }); makamWebUIOnLoad(options);</script>
 </head>
 <body>
   <div class="reveal">

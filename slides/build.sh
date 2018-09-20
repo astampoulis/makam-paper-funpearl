@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-cp -f ../justcode/00-adapted-stdlib.makam .
-cp -f ../highlight/makam-codemirror.js .
-
 MATHJAX="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-AMS_HTML-full"
 case "x$1" in
   "xdev")

@@ -194,7 +194,5 @@ artifact/code/scripts/*.sh
 artifact/code/scripts/*.awk
 highlight/node_modules/
 
-slides/00-adapted-stdlib.makam
-slides/makam-codemirror.js
 slides/reveal.js/
 slides/dev.html
