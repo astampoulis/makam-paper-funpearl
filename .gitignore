@@ -195,4 +195,6 @@ artifact/code/scripts/*.awk
 highlight/node_modules/
 
 slides/reveal.js/
+slides/MathJax/
+slides/offline.html
 slides/dev.html
