@@ -28,10 +28,11 @@
   <script src="https://unpkg.com/codemirror/addon/mode/simple.js"></script>
   <script src="https://unpkg.com/codemirror/addon/runmode/runmode.js"></script>
   <script src="https://unpkg.com/codemirror/addon/display/autorefresh.js"></script>
+  <script src="https://unpkg.com/codemirror/addon/edit/matchbrackets.js"></script>
   <script src="../highlight/makam-codemirror.js"></script>
   <script src="https://unpkg.com/makam-webui/makam-webui.js"></script>
   <link rel="stylesheet" href="slides.css" />
-  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; options['urlOfDependency'] = (function(filename) { return new URL("../justcode/" + filename, document.baseURI).href; }); makamWebUIOnLoad(options);</script>
+  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; options['matchBrackets'] = true; options['urlOfDependency'] = (function(filename) { return new URL("../justcode/" + filename, document.baseURI).href; }); makamWebUIOnLoad(options);</script>
 </head>
 <body>
   <div class="reveal">
@@ -47,83 +48,211 @@
 <p>Antonis Stampoulis (Originate NYC), Adam Chlipala (MIT CSAIL)</p>
 </div>
 </section>
-<section id="pl-research-ideas-implementation-time-ability-to-experiment" class="slide level1">
-<h1>PL research ideas: <br/> implementation time ↔ ability to experiment</h1>
+<section id="pl-research-ideas-ability-to-experiment-implementation-time" class="slide level1">
+<h1>PL research ideas: <br/> ability to experiment ↔ implementation time</h1>
 </section>
 <section id="metalanguages-help-minimize-implementation-time" class="slide level1">
 <h1>Metalanguages help minimize implementation time</h1>
+<aside class="notes">
+For example, PLT Redex and the K framework can be used to implement operational semantics quickly, Racket for implementing sophisticated DSLs, etc.
+</aside>
+</section>
+<section id="λprolog-is-good-for-prototyping-advanced-type-systems" class="slide level1">
+<h1>λProlog is good for prototyping advanced type systems</h1>
 <div class="fragment" data-fragment-index="1">
 <ul>
-<li>Racket</li>
-<li>PLT Redex</li>
-<li>K Framework</li>
-<li>Spoofax</li>
-<li>Ott</li>
+<li>Concise and readable rules</li>
+<li>Very expressive</li>
+<li>Incremental definitions</li>
 </ul>
 </div>
-<div class="fragment" data-fragment-index="2" style="margin-top: 3em;">
-<h3 id="or-λprologmakam">... or, λProlog/Makam</h3>
-</div>
-<aside class="notes">
-<p>Many of these frameworks are particularly well-suited to implementing specific aspects of a language, e.g. PLT Redex and K Framework for operational semantics, Racket for sophisticated DSLs, etc.</p>
-λProlog is particularly well-suited to implementing advanced type systems. In the paper, this is what we attempt.
-</aside>
 </section>
 <section class="slide level1">
 
 <ul>
 <li>Simply-typed lambda calculus</li>
-<li>System F polymorphism</li>
 <li>Multi-arity functions and letrec</li>
+<li>System F polymorphism</li>
 <li>Pattern matching</li>
 <li>Algebraic datatypes</li>
 <li>Type synonyms</li>
 <li>Heterogeneous metaprogramming</li>
-<li>ML-style generalization</li>
+<li>Hindley-Milner generalization</li>
 </ul>
 </section>
 <section id="also-in-the-paper" class="slide level1">
 <h1>Also in the paper:</h1>
 <ul>
 <li>Complex binding structures</li>
+<li>GADT support in λProlog</li>
 <li>Structural recursion</li>
 <li>Use of reflective predicates</li>
-<li>GADT support in λProlog</li>
 </ul>
 </section>
 <section class="slide level1">
 
 <p><img src="Smyrna_Trio.jpg" /></p>
+<div class="fragment" data-fragment-index="1">
+<div style="position: absolute; top: 60px; left: 275px; color: black; font-weight: bold; font-size: 1.1em; background: rgba(255,255,255,0.8); width: 150px;">
+Roza<br/>(advisor)
+</div>
+<div style="position: absolute; top: 40px; left: 480px; color: black; font-weight: bold; font-size: 1.1em; background: rgba(255,255,255,0.8); width: 150px;">
+Hagop<br/>(student)
+</div>
+<div style="position: absolute; top: 400px; left: 75px; color: black; font-weight: bold; font-size: 0.9em; background: rgba(255,255,255,0.8); width: 200px;">
+Lambros<br/>from next door
+</div>
+</div>
 </section>
 <section class="slide level1">
 
-<h3 id="lets-write-some-makam">Let's write some Makam!</h3>
+<h3 id="simply-typed-lambda-calculus">Simply-typed lambda calculus</h3>
 </section>
 <section class="slide level1">
 
 <pre><code class="language-makam-hidden">tests : testsuite. %testsuite tests.
 %use &quot;00-adapted-stdlib.makam&quot;.</code></pre>
-<pre><code class="language-makam">term : type.
+<pre><code class="language-makam-hidden">term : type.
+typ : type.
+typeof : term -&gt; typ -&gt; prop.
+
+app : term -&gt; term -&gt; term.
+lam : typ -&gt; (term -&gt; term) -&gt; term.
+arrow : typ -&gt; typ -&gt; typ.</code></pre>
+<p><span class="math display">\[\frac{\Gamma \vdash e_1 : \tau \to \tau&#39; \hspace{1.0em} \Gamma \vdash e_2: \tau}{\Gamma \vdash e_1 \; e_2 : \tau&#39;} \hspace{2em} \frac{\Gamma, x : \tau \vdash e : \tau&#39;}{\Gamma \vdash \lambda x : \tau.e : \tau \to \tau&#39;}\]</span></p>
+<pre><code class="language-makam">typeof (app E1 E2) T&#39; :-
+  typeof E1 (arrow T T&#39;), typeof E2 T.
+
+typeof (lam T X_E) (arrow T T&#39;) :-
+  (x:term -&gt; typeof x T -&gt; typeof (X_E x) T&#39;).</code></pre>
+</section>
+<section class="slide level1">
+
+<pre><code class="language-makam">typeof (lam _ (fun x =&gt; x)) T ?</code></pre>
+<pre><code class="language-makam-hidden">&gt;&gt; Yes:
+&gt;&gt; T := arrow T1 T1.</code></pre>
+</section>
+<section class="slide level1">
+
+<pre><code class="language-makam-noeval">term : type.
 typ : type.
 typeof : term -&gt; typ -&gt; prop.</code></pre>
 </section>
 <section class="slide level1">
 
-<p><span class="math display">\[t := t_1 t_2\]</span> <span class="math display">\[\tau := \tau_1 \to \tau_2\]</span></p>
-<pre><code class="language-makam">app : term -&gt; term -&gt; term.
+<p><span class="math display">\[t := t_1 t_2 \; | \; λx:\tau.t \\ \tau := \tau_1 \to \tau_2\]</span></p>
+<pre><code class="language-makam-noeval">app : term -&gt; term -&gt; term.
+lam : typ -&gt; (term -&gt; term) -&gt; term.
 arrow : typ -&gt; typ -&gt; typ.</code></pre>
 </section>
 <section class="slide level1">
 
-<p><span class="math display">\[\frac{\Gamma, x : \tau \vdash e : \tau&#39;}{\Gamma \vdash \lambda x : \tau.e : \tau \to \tau&#39;}\]</span></p>
-<pre><code class="language-makam">lam : typ -&gt; (term -&gt; term) -&gt; term.
+<p><span class="math display">\[t := \texttt{app}(t_1, t_2) \; | \; \texttt{lam}(\tau, x.t) \\ \tau := \texttt{arrow}(\tau_1, \tau_2)\]</span></p>
+<pre><code class="language-makam-noeval">app : term -&gt; term -&gt; term.
+lam : typ -&gt; (term -&gt; term) -&gt; term.
+arrow : typ -&gt; typ -&gt; typ.</code></pre>
+</section>
+<section class="slide level1">
 
-typeof (lam T X_E) (arrow T T&#39;) :-
-  (x:term -&gt; typeof x T -&gt; typeof (X_E x) T&#39;).
+<h3 id="multi-arity-functions-and-let-rec">Multi-arity functions and let rec</h3>
+</section>
+<section class="slide level1">
 
-typeof (lam _ (fun x =&gt; x)) T ?</code></pre>
-<pre><code class="language-makam-hidden">&gt;&gt; Yes:
-&gt;&gt; T := arrow T1 T1.</code></pre>
+<p><span class="math display">\[t := \texttt{lammany}(\vec{xs}.t) \; | \; \texttt{appmany}(e, \vec{es}) \\ \tau := \texttt{arrowmany}(\vec{ts}, t)\]</span></p>
+<div class="fragment" data-fragment-index="1">
+<pre><code class="language-makam">lammany : bindmany term term -&gt; term.
+appmany : term -&gt; list term -&gt; term.
+arrowmany : list typ -&gt; typ -&gt; typ.</code></pre>
+</div>
+</section>
+<section class="slide level1">
+
+<!-- $$\frac{\Gamma, \vec{xs} : \vec{\tau{}s} \vdash e : \tau}{\Gamma \vdash \texttt{lammany}(\vec{xs}.e) : \vec{\tau{}s} \to \tau} \hspace{2em} \frac{\Gamma \vdash e : \vec{\tau{}s} \to \tau \hspace{1em} \forall i.\Gamma \vdash e_i : \tau_i}{\Gamma \vdash \texttt{appmany}(e, \vec{es})}$$ -->
+<pre><code class="language-makam">typeof (lammany XS_E) (arrowmany TS T) :-
+  openmany XS_E (pfun XS E =&gt;
+    assumemany typeof XS TS (typeof E T)).
+
+typeof (appmany E ES) T :-
+  typeof E (arrowmany TS T), map typeof ES TS.</code></pre>
+</section>
+<section class="slide level1">
+
+<p><span class="math display">\[t := \texttt{letrec}(\vec{xs}.(es, e))\]</span></p>
+<pre><code class="language-makam-noeval">letrec : bindmany term
+           (list term * term) -&gt; term.</code></pre>
+</section>
+<section class="slide level1">
+
+<p><span class="math display">\[t := \texttt{letrec}(\vec{xs}.(es, e))\]</span></p>
+<pre><code class="language-makam">letrec : vbindmany term N
+           (vector term N * term) -&gt; term.</code></pre>
+</section>
+<section class="slide level1">
+
+<pre><code class="language-makam">typeof (letrec XS_DefsBody) T&#39; :-
+  vopenmany XS_DefsBody (pfun XS (Defs, Body) =&gt;
+    vassumemany typeof XS TS (vmap typeof Defs TS),
+    vassumemany typeof XS TS (typeof Body T&#39;)).</code></pre>
+</section>
+<section class="slide level1">
+
+<h3 id="ml-style-generalization">ML-style generalization</h3>
+<p style="font-size: 0.5em;">
+``We mentioned Hindley-Milner / we don't want you to be sad. <br /> This talk is very short I feel, / I hope it isn't bad. <br /> Please come and find me afterwards / to talk about these things,<br /> or if you'd like to learn about / the songs that Roza sings.''
+</p>
+</section>
+<section class="slide level1">
+
+<pre><code class="language-makam-hidden">generalize : (Type: typ) (GeneralizedType: typ) -&gt; prop.
+let : term -&gt; (term -&gt; term) -&gt; term.
+get_types_in_environment : [A] A -&gt; prop.
+tforall : (typ -&gt; typ) -&gt; typ.
+
+get_types_in_environment Gamma :-
+  refl.assume_get typeof Gamma.</code></pre>
+<p><span class="math display">\[\frac{\Gamma \vdash e : \tau \hspace{1em} \Gamma \vdash \tau \leadsto \tau_{gen} \hspace{1em} \Gamma, x : \tau_{gen} \vdash e&#39; : \tau&#39;}{\Gamma \vdash \text{let} \; x = e \; \text{in} \; e&#39; : \tau&#39;}\]</span></p>
+<pre><code class="language-makam">typeof (let E X_Body) T&#39; :-
+  typeof E T,
+  generalize T Tgen,
+  (x:term -&gt; typeof x Tgen -&gt; typeof (X_Body x) T&#39;).</code></pre>
+</section>
+<section class="slide level1">
+
+<p><span class="math display">\[\frac{\vec{\alpha} = \text{fv}(\tau) - \text{fv}(\Gamma)}{\Gamma \vdash \tau \leadsto \forall \vec{\alpha}.\tau}\]</span></p>
+</section>
+<section class="slide level1">
+
+<pre><code class="language-makam">generalize T T :-
+  not(findunif T (A: typ)).
+
+generalize T Res :-
+  findunif T A,
+  get_types_in_environment GammaTypes,
+  (a:typ -&gt;
+    (replaceunif A a T (T&#39; a),
+     generalize (T&#39; a) (T&#39;&#39; a))),
+  if (hasunif A GammaTypes)
+  then (eq Res (T&#39;&#39; A))
+  else (eq Res (tforall T&#39;&#39;)).</code></pre>
+</section>
+<section class="slide level1">
+
+<pre><code class="language-makam-noeval">replaceunif Which ToWhat Where ToWhat :-
+  refl.isunif Where,
+  refl.sameunif Which Where.
+
+replaceunif Which ToWhat Where Where :-
+  refl.isunif Where,
+  not(refl.sameunif Which Where).
+
+replaceunif Which ToWhat Where Result :-
+  not(refl.isunif Where),
+  structural_recursion @(replaceunif Which ToWhat)
+    Where Result.</code></pre>
+</section>
+<section class="slide level1">
+
+<pre><code class="language-makam">typeof (let (lam _ (fun x =&gt; x)) (fun id =&gt; id)) T ?</code></pre>
 </section>
 <section class="slide level1">
 
