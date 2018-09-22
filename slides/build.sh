@@ -37,7 +37,7 @@ pandoc --mathjax=$MATHJAX $EXTRAOPTS -s -t revealjs slides.md -o $OUTPUT
 sed -i -r \
         -e 's@<pre class="([^"]+)"><code>@<pre><code class="language-\1">@' \
         -e 's@history: true,@history: true, keyboardCondition: (function(ev) { return ev.target.tagName == "BODY"; }),@' \
-        -e '/}\);$/ aReveal.addKeyBinding(81, function(){ webUI.reset({ animations: false }); });\n' \
+        -e '/Reveal.initialize\(\{$/ iReveal.addKeyBinding(81, function(){ webUI.reset({ animations: false }); });\n' \
         $OUTPUT
 
 if [[ $MODE == "offline" ]]; then
