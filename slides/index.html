@@ -32,7 +32,7 @@
   <script src="../highlight/makam-codemirror.js"></script>
   <script src="https://unpkg.com/makam-webui/makam-webui.js"></script>
   <link rel="stylesheet" href="slides.css" />
-  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; options['matchBrackets'] = true; options['urlOfDependency'] = (function(filename) { return new URL("../justcode/" + filename, document.baseURI).href; }); makamWebUIOnLoad(options);</script>
+  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; options['matchBrackets'] = true; options['urlOfDependency'] = (function(filename) { return new URL("../justcode/" + filename, document.baseURI).href; }); var webUI; document.addEventListener("DOMContentLoaded", function() { webUI = new LiterateWebUI(options); webUI.initialize(); });</script>
 </head>
 <body>
   <div class="reveal">
@@ -67,10 +67,10 @@ For example, PLT Redex and the K framework can be used to implement operational 
 </ul>
 </div>
 </section>
-<section class="slide level1">
-
+<section id="example-implemented-in-the-paper" class="slide level1">
+<h1>Example implemented in the paper</h1>
 <ul>
-<li>Simply-typed lambda calculus</li>
+<li>Simply typed lambda calculus</li>
 <li>Multi-arity functions and letrec</li>
 <li>System F polymorphism</li>
 <li>Pattern matching</li>
@@ -81,7 +81,7 @@ For example, PLT Redex and the K framework can be used to implement operational 
 </ul>
 </section>
 <section id="also-in-the-paper" class="slide level1">
-<h1>Also in the paper:</h1>
+<h1>Also in the paper</h1>
 <ul>
 <li>Complex binding structures</li>
 <li>GADT support in λProlog</li>
@@ -106,7 +106,7 @@ Lambros<br/>from next door
 </section>
 <section class="slide level1">
 
-<h3 id="simply-typed-lambda-calculus">Simply-typed lambda calculus</h3>
+<h3 id="simply-typed-lambda-calculus">Simply typed lambda calculus</h3>
 </section>
 <section class="slide level1">
 
@@ -129,8 +129,6 @@ typeof (lam T X_E) (arrow T T&#39;) :-
 <section class="slide level1">
 
 <pre><code class="language-makam">typeof (lam _ (fun x =&gt; x)) T ?</code></pre>
-<pre><code class="language-makam-hidden">&gt;&gt; Yes:
-&gt;&gt; T := arrow T1 T1.</code></pre>
 </section>
 <section class="slide level1">
 
@@ -197,7 +195,7 @@ typeof (appmany E ES) T :-
 <section class="slide level1">
 
 <h3 id="ml-style-generalization">ML-style generalization</h3>
-<p style="font-size: 0.5em;">
+<p class="verse">
 ``We mentioned Hindley-Milner / we don't want you to be sad. <br /> This talk is very short I feel, / I hope it isn't bad. <br /> Please come and find me afterwards / to talk about these things,<br /> or if you'd like to learn about / the songs that Roza sings.''
 </p>
 </section>
@@ -256,11 +254,43 @@ replaceunif Which ToWhat Where Result :-
 </section>
 <section class="slide level1">
 
+<h2 id="thank-you">Thank you!</h2>
 </section>
 <section class="slide level1">
 
-<p>Tests:</p>
-<pre><code class="language-makam-input">run_tests X ?</code></pre>
+</section>
+<section id="additional-slides" class="slide level1">
+<h1>Additional slides</h1>
+</section>
+<section class="slide level1">
+
+<h2 id="tests">Tests:</h2>
+<pre><code class="language-makam-hidden">&gt;&gt; typeof (lam _ (fun x =&gt; x)) T ?
+&gt;&gt; Yes:
+&gt;&gt; T := arrow T1 T1.</code></pre>
+<pre><code class="language-makam-hidden">&gt;&gt; typeof (lam _ (fun x =&gt; app x x)) T ?
+&gt;&gt; Impossible.</code></pre>
+<pre><code class="language-makam-hidden">typeof (lammany (bind (fun x =&gt; bind (fun y =&gt; body (app y x))))) T ?
+&gt;&gt; Yes:
+&gt;&gt; T := arrowmany [T_X, arrow T_X T_Y] T_Y.</code></pre>
+<pre><code class="language-makam-hidden">typeof (letrec (vbind (fun f =&gt; vbody (vcons (lam _ (fun x =&gt; app f x)) vnil, f)))) T ?
+&gt;&gt; Yes:
+&gt;&gt; T := arrow T1 T2.</code></pre>
+<pre><code class="language-makam-hidden">&gt;&gt; generalize (arrow T T) X ?
+&gt;&gt; Yes:
+&gt;&gt; X := tforall (fun a =&gt; arrow a a).</code></pre>
+<pre><code class="language-makam-hidden">&gt;&gt; typeof (let (lam _ (fun x =&gt; x)) (fun id =&gt; id)) T ?
+&gt;&gt; Yes:
+&gt;&gt; T := tforall (fun a =&gt; arrow a a).</code></pre>
+<pre><code class="language-makam-hidden">&gt;&gt; typeof (let (lam _ (fun x =&gt; let x (fun y =&gt; y))) (fun id =&gt; id)) T ?
+&gt;&gt; Yes:
+&gt;&gt; T := tforall (fun a =&gt; arrow a a).</code></pre>
+<pre><code class="language-makam">run_tests X ?</code></pre>
+</section>
+<section class="slide level1">
+
+<h2 id="free-input">Free Input:</h2>
+<pre><code class="language-makam-input"></code></pre>
 </section>
     </div>
   </div>
@@ -295,6 +325,8 @@ replaceunif Which ToWhat Where Result :-
           { src: 'https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui/plugin/notes/notes.js', async: true }
         ]
       });
+Reveal.addKeyBinding(81, function(){ webUI.reset({ animations: false }); });
+
     </script>
     </body>
 </html>

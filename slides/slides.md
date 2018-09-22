@@ -10,7 +10,7 @@ header-includes:
   <script src="../highlight/makam-codemirror.js"></script>
   <script src="https://unpkg.com/makam-webui/makam-webui.js"></script>
   <link rel="stylesheet" href="slides.css" />
-  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; options['matchBrackets'] = true; options['urlOfDependency'] = (function(filename) { return new URL("../justcode/" + filename, document.baseURI).href; }); makamWebUIOnLoad(options);</script>
+  <script type="text/javascript">var options = {}; options['makamLambdaURL'] = 'https://gj20qvg6wb.execute-api.us-east-1.amazonaws.com/icfp2018talk/makam/query'; options['stateBlocksEditable'] = true; options['autoRefresh'] = true; options['matchBrackets'] = true; options['urlOfDependency'] = (function(filename) { return new URL("../justcode/" + filename, document.baseURI).href; }); var webUI; document.addEventListener("DOMContentLoaded", function() { webUI = new LiterateWebUI(options); webUI.initialize(); });</script>
 transition: fade
 theme: custom
 history: true
@@ -56,7 +56,9 @@ For example, PLT Redex and the K framework can be used to implement operational 
 
 ---
 
-- Simply-typed lambda calculus
+# Example implemented in the paper
+
+- Simply typed lambda calculus
 - Multi-arity functions and letrec
 - System F polymorphism
 - Pattern matching
@@ -67,7 +69,7 @@ For example, PLT Redex and the K framework can be used to implement operational 
 
 ---
 
-# Also in the paper:
+# Also in the paper
 
 - Complex binding structures
 - GADT support in λProlog
@@ -86,7 +88,7 @@ For example, PLT Redex and the K framework can be used to implement operational 
 
 ---
 
-### Simply-typed lambda calculus
+### Simply typed lambda calculus
 
 ---
 
@@ -119,10 +121,6 @@ typeof (lam T X_E) (arrow T T') :-
 
 ```makam
 typeof (lam _ (fun x => x)) T ?
-```
-```makam-hidden
->> Yes:
->> T := arrow T1 T1.
 ```
 
 ---
@@ -213,7 +211,7 @@ typeof (letrec XS_DefsBody) T' :-
 
 ### ML-style generalization
 
-<p style="font-size: 0.5em;">
+<p class="verse">
 ``We mentioned Hindley-Milner / we don't want you to be sad. <br />
 This talk is very short I feel, / I hope it isn't bad. <br />
 Please come and find me afterwards / to talk about these things,<br />
@@ -287,10 +285,66 @@ typeof (let (lam _ (fun x => x)) (fun id => id)) T ?
 
 ---
 
+## Thank you!
+
 ---
 
-Tests:
+---
+
+# Additional slides
+
+---
+
+## Tests:
+
+```makam-hidden
+>> typeof (lam _ (fun x => x)) T ?
+>> Yes:
+>> T := arrow T1 T1.
+```
+
+```makam-hidden
+>> typeof (lam _ (fun x => app x x)) T ?
+>> Impossible.
+```
+
+```makam-hidden
+typeof (lammany (bind (fun x => bind (fun y => body (app y x))))) T ?
+>> Yes:
+>> T := arrowmany [T_X, arrow T_X T_Y] T_Y.
+```
+
+```makam-hidden
+typeof (letrec (vbind (fun f => vbody (vcons (lam _ (fun x => app f x)) vnil, f)))) T ?
+>> Yes:
+>> T := arrow T1 T2.
+```
+
+```makam-hidden
+>> generalize (arrow T T) X ?
+>> Yes:
+>> X := tforall (fun a => arrow a a).
+```
+
+```makam-hidden
+>> typeof (let (lam _ (fun x => x)) (fun id => id)) T ?
+>> Yes:
+>> T := tforall (fun a => arrow a a).
+```
+
+```makam-hidden
+>> typeof (let (lam _ (fun x => let x (fun y => y))) (fun id => id)) T ?
+>> Yes:
+>> T := tforall (fun a => arrow a a).
+```
+
+```makam
+run_tests X ?
+```
+
+---
+
+## Free Input:
 
 ```makam-input
-run_tests X ?
 ```

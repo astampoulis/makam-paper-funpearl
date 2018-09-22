@@ -1,10 +1,27 @@
+.slides {
+    border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
 .makam-button-container {
-    right: 120px !important;
+    right: 50px !important;
+    bottom: -5px;
+    transform: scale(0.5);
+}
+
+.controls {
+    transform: scale(0.5);
 }
 
 #makam-edit {
     display: none;
 }
+
+.CodeMirror {
+    border-radius: 8.7px;
+    font-size: 22px;
+}
+
+.cm-makam-annotation { width: auto; margin-right: 20px; }
 
 .cm-keyword { color: inherit; }
 .cm-symbol { color: inherit; }
@@ -41,3 +58,5 @@ ul > li:before {
 .CodeMirror-focused .CodeMirror-selected { background: #9794d0; }
 
 code { white-space: pre-wrap !important; }
+
+.verse { font-size: 0.75em !important; }
