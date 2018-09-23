@@ -133,17 +133,15 @@ typeof : term -> typ -> prop.
 
 ---
 
-$$t := t_1 t_2 \; | \; λx:\tau.t \\ \tau := \tau_1 \to \tau_2$$
-
-```makam-noeval
-app : term -> term -> term.
-lam : typ -> (term -> term) -> term.
-arrow : typ -> typ -> typ.
-```
+$$e := e_1 e_2 \; | \; λx:\tau.e \\ \tau := \tau_1 \to \tau_2$$
 
 ---
 
-$$t := \texttt{app}(t_1, t_2) \; | \; \texttt{lam}(\tau, x.t) \\ \tau := \texttt{arrow}(\tau_1, \tau_2)$$
+$$e := \texttt{app}(e_1, e_2) \; | \; \texttt{lam}(\tau, x.e) \\ \tau := \texttt{arrow}(\tau_1, \tau_2)$$
+
+---
+
+$$e := \texttt{app}(e_1, e_2) \; | \; \texttt{lam}(\tau, x.e) \\ \tau := \texttt{arrow}(\tau_1, \tau_2)$$
 
 ```makam-noeval
 app : term -> term -> term.
@@ -157,7 +155,7 @@ arrow : typ -> typ -> typ.
 
 ---
 
-$$t := \texttt{lammany}(\vec{xs}.t) \; | \; \texttt{appmany}(e, \vec{es}) \\ \tau := \texttt{arrowmany}(\vec{ts}, t)$$
+$$e := \texttt{lammany}(\vec{xs}.e) \; | \; \texttt{appmany}(e, \vec{es}) \\ \tau := \texttt{arrowmany}(\vec{\tau{}s}, \tau)$$
 
 <div class="fragment" data-fragment-index="1">
 ```makam
@@ -182,16 +180,18 @@ typeof (appmany E ES) T :-
 
 ---
 
-$$t := \texttt{letrec}(\vec{xs}.(es, e))$$
+$$e := \texttt{letrec}(\vec{xs}.(\vec{es}, e))$$
 
+<div class="fragment" data-fragment-index="1">
 ```makam-noeval
 letrec : bindmany term
            (list term * term) -> term.
 ```
+</div>
 
 ---
 
-$$t := \texttt{letrec}(\vec{xs}.(es, e))$$
+$$e := \texttt{letrec}(\vec{xs}.(\vec{es}, e))$$
 
 ```makam
 letrec : vbindmany term N
@@ -241,7 +241,7 @@ typeof (let E X_Body) T' :-
 
 ---
 
-$$\frac{\vec{\alpha} = \text{fv}(\tau) - \text{fv}(\Gamma)}{\Gamma \vdash \tau \leadsto \forall \vec{\alpha}.\tau}$$
+$$\frac{\vec{\alpha} = \text{fv}(\tau) - \text{fv}(\Gamma)}{\Gamma \vdash \tau \leadsto \forall \vec{\alpha'}.\tau[\vec{\alpha'}/\vec{\alpha}]}$$
 
 ---
 
@@ -251,10 +251,10 @@ generalize T T :-
 
 generalize T Res :-
   findunif T A,
-  get_types_in_environment GammaTypes,
   (a:typ ->
     (replaceunif A a T (T' a),
      generalize (T' a) (T'' a))),
+  get_types_in_environment GammaTypes,
   if (hasunif A GammaTypes)
   then (eq Res (T'' A))
   else (eq Res (tforall T'')).
@@ -286,6 +286,13 @@ typeof (let (lam _ (fun x => x)) (fun id => id)) T ?
 ---
 
 ## Thank you!
+<p class="verse">
+``That's it, thank you so much folks, / the talk is now done.<br />
+A note before I leave though / and off this stage I run:<br />
+The company I work for / is hiring engineers<br />
+So if you're looking for a job / I'll pay for all the beers''
+</p>
+
 
 ---
 

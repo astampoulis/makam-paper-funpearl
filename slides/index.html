@@ -138,14 +138,15 @@ typeof : term -&gt; typ -&gt; prop.</code></pre>
 </section>
 <section class="slide level1">
 
-<p><span class="math display">\[t := t_1 t_2 \; | \; λx:\tau.t \\ \tau := \tau_1 \to \tau_2\]</span></p>
-<pre><code class="language-makam-noeval">app : term -&gt; term -&gt; term.
-lam : typ -&gt; (term -&gt; term) -&gt; term.
-arrow : typ -&gt; typ -&gt; typ.</code></pre>
+<p><span class="math display">\[e := e_1 e_2 \; | \; λx:\tau.e \\ \tau := \tau_1 \to \tau_2\]</span></p>
 </section>
 <section class="slide level1">
 
-<p><span class="math display">\[t := \texttt{app}(t_1, t_2) \; | \; \texttt{lam}(\tau, x.t) \\ \tau := \texttt{arrow}(\tau_1, \tau_2)\]</span></p>
+<p><span class="math display">\[e := \texttt{app}(e_1, e_2) \; | \; \texttt{lam}(\tau, x.e) \\ \tau := \texttt{arrow}(\tau_1, \tau_2)\]</span></p>
+</section>
+<section class="slide level1">
+
+<p><span class="math display">\[e := \texttt{app}(e_1, e_2) \; | \; \texttt{lam}(\tau, x.e) \\ \tau := \texttt{arrow}(\tau_1, \tau_2)\]</span></p>
 <pre><code class="language-makam-noeval">app : term -&gt; term -&gt; term.
 lam : typ -&gt; (term -&gt; term) -&gt; term.
 arrow : typ -&gt; typ -&gt; typ.</code></pre>
@@ -156,7 +157,7 @@ arrow : typ -&gt; typ -&gt; typ.</code></pre>
 </section>
 <section class="slide level1">
 
-<p><span class="math display">\[t := \texttt{lammany}(\vec{xs}.t) \; | \; \texttt{appmany}(e, \vec{es}) \\ \tau := \texttt{arrowmany}(\vec{ts}, t)\]</span></p>
+<p><span class="math display">\[e := \texttt{lammany}(\vec{xs}.e) \; | \; \texttt{appmany}(e, \vec{es}) \\ \tau := \texttt{arrowmany}(\vec{\tau{}s}, \tau)\]</span></p>
 <div class="fragment" data-fragment-index="1">
 <pre><code class="language-makam">lammany : bindmany term term -&gt; term.
 appmany : term -&gt; list term -&gt; term.
@@ -175,13 +176,15 @@ typeof (appmany E ES) T :-
 </section>
 <section class="slide level1">
 
-<p><span class="math display">\[t := \texttt{letrec}(\vec{xs}.(es, e))\]</span></p>
+<p><span class="math display">\[e := \texttt{letrec}(\vec{xs}.(\vec{es}, e))\]</span></p>
+<div class="fragment" data-fragment-index="1">
 <pre><code class="language-makam-noeval">letrec : bindmany term
            (list term * term) -&gt; term.</code></pre>
+</div>
 </section>
 <section class="slide level1">
 
-<p><span class="math display">\[t := \texttt{letrec}(\vec{xs}.(es, e))\]</span></p>
+<p><span class="math display">\[e := \texttt{letrec}(\vec{xs}.(\vec{es}, e))\]</span></p>
 <pre><code class="language-makam">letrec : vbindmany term N
            (vector term N * term) -&gt; term.</code></pre>
 </section>
@@ -216,7 +219,7 @@ get_types_in_environment Gamma :-
 </section>
 <section class="slide level1">
 
-<p><span class="math display">\[\frac{\vec{\alpha} = \text{fv}(\tau) - \text{fv}(\Gamma)}{\Gamma \vdash \tau \leadsto \forall \vec{\alpha}.\tau}\]</span></p>
+<p><span class="math display">\[\frac{\vec{\alpha} = \text{fv}(\tau) - \text{fv}(\Gamma)}{\Gamma \vdash \tau \leadsto \forall \vec{\alpha&#39;}.\tau[\vec{\alpha&#39;}/\vec{\alpha}]}\]</span></p>
 </section>
 <section class="slide level1">
 
@@ -225,10 +228,10 @@ get_types_in_environment Gamma :-
 
 generalize T Res :-
   findunif T A,
-  get_types_in_environment GammaTypes,
   (a:typ -&gt;
     (replaceunif A a T (T&#39; a),
      generalize (T&#39; a) (T&#39;&#39; a))),
+  get_types_in_environment GammaTypes,
   if (hasunif A GammaTypes)
   then (eq Res (T&#39;&#39; A))
   else (eq Res (tforall T&#39;&#39;)).</code></pre>
@@ -255,6 +258,9 @@ replaceunif Which ToWhat Where Result :-
 <section class="slide level1">
 
 <h2 id="thank-you">Thank you!</h2>
+<p class="verse">
+``That's it, thank you so much folks, / the talk is now done.<br /> A note before I leave though / and off this stage I run:<br /> The company I work for / is hiring engineers<br /> So if you're looking for a job / I'll pay for all the beers''
+</p>
 </section>
 <section class="slide level1">
 
