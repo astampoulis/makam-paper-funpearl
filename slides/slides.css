@@ -1,0 +1,58 @@
+.makam-button-container {
+    right: 50px !important;
+    bottom: -5px;
+    transform: scale(0.5);
+}
+
+.controls {
+    transform: scale(0.5);
+}
+
+#makam-edit {
+    display: none;
+}
+
+.CodeMirror {
+    border-radius: 8.7px;
+    font-size: 22px;
+}
+
+.cm-makam-annotation { width: auto; margin-right: 20px; }
+
+.cm-keyword { color: inherit; }
+.cm-symbol { color: inherit; }
+.cm-arrowtype { color: inherit; }
+.cm-number { color: inherit; }
+.cm-string { color: inherit; }
+.cm-metavariable { color: navy; }
+.cm-typemetavariable { color: inherit; }
+.cm-builtintype { font-weight: bold !important; }
+.cm-stdtypeid { color: inherit; }
+.cm-typeid { color: #006000; }
+.cm-stdconst { color: inherit; }
+.cm-propconst { color: #7013ab; }
+.cm-objconst { color: #a10000; }
+.cm-const { color: #a10000; }
+.cm-query { color: inherit; }
+.cm-comment { color: inherit; }
+.cm-directive { color: inherit; }
+
+h1, h2, h3, h4, h5, h6 { text-transform: none !important; }
+
+ul {
+    list-style: none !important;
+    margin-left: 0;
+    padding-left: 1em;
+}
+ul > li:before {
+    display: inline-block;
+    content: "-";
+    width: 1em;
+    margin-left: -1em;
+}
+
+.CodeMirror-focused .CodeMirror-selected { background: #9794d0; }
+
+code { white-space: pre-wrap !important; }
+
+.verse { font-size: 0.75em !important; }

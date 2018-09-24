@@ -5,6 +5,20 @@ services:
       context: .
     volumes:
       - ./:/code:ro
+      - ./slides:/code/slides
       - ./generated:/code/generated
       - ./justcode:/code/justcode
       - ./tmp:/code/tmp
+  slides:
+    build:
+      context: slides
+    volumes:
+      - ./:/code:ro
+      - ./slides:/code/slides
+      - ./generated:/code/generated
+      - ./justcode:/code/justcode
+      - ./tmp:/code/tmp
+    ports:
+      - 3000:3000
+      - 8000:8000
+    working_dir: /code

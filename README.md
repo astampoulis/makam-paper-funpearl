@@ -24,6 +24,12 @@ To build the artifact:
 
 - `make artifact`
 
+To build and run the presentation:
+
+- `make docker-slides-offline`
+- `make run-slides-offline`
+- Visit http://localhost:8000/ in your browser
+
 ## Running the code and the tests
 
 Please follow instructions for running the artifact in `artifact/README.md`.
