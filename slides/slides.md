@@ -180,6 +180,10 @@ typeof (appmany E ES) T :-
 
 ---
 
+$$e := \texttt{letrec} \; \vec{xs} \; = \; \vec{es} \; \texttt{in} \; e$$
+
+---
+
 $$e := \texttt{letrec}(\vec{xs}.(\vec{es}, e))$$
 
 <div class="fragment" data-fragment-index="1">
