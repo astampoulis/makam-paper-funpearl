@@ -10,7 +10,7 @@ case "x$1" in
   "xonline")
     MODE="online"
     OUTPUT="index.html"
-    EXTRAOPTS="-V revealjs-url:https://rawgit.com/astampoulis/reveal.js/as-fixes-for-makam-webui"
+    EXTRAOPTS="-V revealjs-url:https://cdn.jsdelivr.net/gh/astampoulis/reveal.js@3.7.0-makam"
     ;;
   "xoffline")
     MODE="offline"
