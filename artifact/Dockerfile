@@ -1,4 +1,4 @@
-FROM ocaml/opam:alpine_ocaml-4.06.0 as makam
+FROM ocaml/opam-dev:alpine_ocaml-4.06.0 as makam
 RUN sudo apk update && sudo apk add git m4
 RUN git clone https://github.com/astampoulis/makam.git makam-code # need 520ab701f9ae8b4beb56c53eaa22cdb776af5dc3
 RUN cp -R makam-code makam-code-src
