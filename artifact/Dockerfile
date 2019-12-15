@@ -5,7 +5,7 @@ RUN cp -R makam-code makam-code-src
 WORKDIR makam-code
 # switch to makam version 0.7.13:
 RUN git checkout 520ab701f9ae8b4beb56c53eaa22cdb776af5dc3
-RUN opam pin add makam . --no-action && opam install makam --deps-only && opam config exec make
+RUN opam pin add makam . --yes --no-action && opam install makam --yes --deps-only && opam config exec make
 
 # Compile rlwrap for alpine, no package exists in the repositories
 FROM alpine:3.6 as rlwrap
